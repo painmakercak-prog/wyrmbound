@@ -119,6 +119,25 @@ nav button.dot:after{content:'';position:absolute;top:-3px;right:-2px;width:11px
 .aexit{position:absolute;right:8px;top:30px;width:auto;z-index:6;padding:4px 10px}
 #panel{position:absolute;left:0;right:0;bottom:0;height:64%;z-index:12;display:none;border-top:4px solid #0a1734;border-radius:16px 16px 0 0;box-shadow:0 -6px 20px #0008}
 .phd{display:flex;justify-content:space-between;align-items:center;margin:-2px 0 5px}.phd b{font-size:15px;text-shadow:0 2px 0 #0a1734}.phd button{width:30px;height:30px;border-radius:50%;border:2.5px solid #0a1734;background:linear-gradient(#ff7a6a,#c42a20);color:#fff;font-weight:900}
+
+/* v3 polish */
+.sk img{width:58%;height:52%;object-fit:contain;display:block;margin:3px auto 0;filter:drop-shadow(0 2px 1px #0008);position:relative;z-index:1}
+.sk small{font-size:8px;margin-top:-1px}
+.fsk .s0 img{width:62%;height:56%}
+#autob.on img{animation:spin 6s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}
+.sk:active{transform:scale(.92)}
+#toast{top:calc(env(safe-area-inset-top) + 178px);white-space:normal;max-width:86vw;text-align:center;line-height:1.25}
+#qtr{width:calc(100% - 104px);max-width:270px}#qtr b,#qtr span{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#autost{left:50%;right:auto;transform:translateX(-50%);max-width:calc(100% - 20px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;background:rgba(10,23,52,.72);border:1.5px solid #ffffff30;border-radius:99px;padding:3px 12px;font-size:11.5px}
+#autost:empty{display:none}
+#tick2{width:calc(100% - 232px);min-width:110px}
+.mmw small{background:rgba(10,23,52,.75);border-radius:6px;padding:1px 4px;margin-top:3px}
+#tframe{top:auto;bottom:calc(100% - 110px)}
+#tframe{top:58px;bottom:auto;border-width:2.5px;box-shadow:0 3px 0 #0008}
+nav button img{height:30px;width:36px}
+.egg img{height:96px;width:auto}
+.shop .si img{width:30px;height:30px;object-fit:contain;display:block}
+#dlg{box-shadow:0 0 0 2px #ffd54a,0 4px 0 #0008}
 </style></head><body><div id="app">
 <div id="top"><div class="av"><img id="avi" src=""></div><div class="lvw"><b id="lvl">Lv 1</b> <small>Power <span id="pw">0</span></small><div class="xp"><i id="xpb"></i><em id="xpt"></em></div></div>
 <div class="pill"><img src="__icon_gold__"><span id="gold">0</span></div><div class="pill"><img src="__icon_gem__"><span id="shards">0</span></div></div>
@@ -127,11 +146,11 @@ nav button.dot:after{content:'';position:absolute;top:-3px;right:-2px;width:11px
 <div class="mmw"><canvas id="mini" width="180" height="256"></canvas><small id="znm"></small></div>
 <div id="tframe"></div><div id="autost"></div>
 <div id="tick2"><b>World</b> <span id="ticker">Adventurers are out hunting…</span></div>
-<div class="fsk"><button id="fs0" class="sk s0" onclick="useSkillF(0)"><span>💥</span><small>Strike</small></button><button id="fs1" class="sk s1" onclick="useSkillF(1)"><span>🐾</span><small>Rally</small></button><button id="fs2" class="sk s2" onclick="useSkillF(2)"><span>💚</span><small>Mend</small></button></div>
-<button id="mtb" class="sk mt" onclick="F.h.mount=F.h.mount?0:1;F.manualT=F.now"><span>🐺</span><small>Mount</small></button>
-<button id="autob" class="sk au" onclick="toggleAuto()"><span>🤖</span><small>AUTO</small></button>
+<div class="fsk"><button id="fs0" class="sk s0" onclick="useSkillF(0)"><img src="__icon_slash__"><small>Strike</small></button><button id="fs1" class="sk s1" onclick="useSkillF(1)"><img src="__comp_fire_drake__"><small>Rally</small></button><button id="fs2" class="sk s2" onclick="useSkillF(2)"><img src="__icon_potion__"><small>Mend</small></button></div>
+<button id="mtb" class="sk mt" onclick="F.h.mount=F.h.mount?0:1;F.manualT=F.now"><img src="__mount_wolf__"><small>Mount</small></button>
+<button id="autob" class="sk au" onclick="toggleAuto()"><img src="__icon_compass__"><small>AUTO</small></button>
 <div id="dlg" onclick="dlgNext()"></div>
 <div id="arena"></div><div id="panel"></div></div>
-<nav><button data-t="hero"><img src="__wpn_steel_sword__">Hero</button><button data-t="pets"><img src="__comp_fire_drake__">Dragons</button><button data-t="nest"><span style="font-size:24px;line-height:28px">🥚</span>Nest</button><button data-t="quests"><img src="__boss_treant_king__">Quests</button><button data-t="lodge"><img src="__arm_round_shield__">Lodge</button><button data-t="shop"><img src="__icon_gem__">Shop</button></nav>
+<nav><button data-t="hero"><img src="__wpn_steel_sword__">Hero</button><button data-t="pets"><img src="__comp_fire_drake__">Dragons</button><button data-t="nest"><img src="__icon_egg__">Nest</button><button data-t="quests"><img src="__icon_scroll__">Quests</button><button data-t="lodge"><img src="__icon_banner__">Lodge</button><button data-t="shop"><img src="__icon_pouch__">Shop</button></nav>
 </div><div id="modal" onclick="if(event.target===this&&!document.querySelector('.clsg'))closeM()"><div id="mbody"></div></div><div id="toast"></div>
 <script>const IMG=__IMG__;

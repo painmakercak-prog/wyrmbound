@@ -183,7 +183,7 @@ function gearInfo(k){const g=S.gear[k];if(!g){toast('Open relic chests to find '
 function statSheet(){const s=stats(),t=s.t;modal(`<h3>Stats</h3>${Object.keys(SUB).map(k=>`<div class="srw"><span>${SUB[k].n}</span><b>${t[k].toFixed(1)}${SUB[k].p?'%':''}</b></div>`).join('')}<div class="srw"><span>Power</span><b>${fmt(s.power)}</b></div><button class="btn" onclick="closeM()">Close</button>`)}
 function tPets(){const L=[...S.pets].sort((a,b)=>(S.team.includes(b.id)-S.team.includes(a.id))||b.r-a.r||b.lv-a.lv);
  return`<div class="hd"><b>Team ${S.team.length}/3</b><span>🍖 ${S.treats}</span></div><div class="pgrid">${L.length?L.map(p=>`<button class="pcard r${p.r}${S.team.includes(p.id)?' in':''}" onclick="petInfo(${p.id})">${img(PETS[p.s].k,petE(p))}<b>${petN(p)}</b><small>Lv ${p.lv}/${petCap(p)}${p.lv>=petCap(p)&&p.st<2?' ⬆️':''}</small></button>`).join(''):'<p class="ctr">No pets yet. Visit the Nest to hatch eggs.</p>'}</div>`}
-function tNest(){return`<div class="nest">${`<div class="egg">🥚</div>`}<p class="ctr"><b>${S.eggs}</b> eggs</p></div>
+function tNest(){return`<div class="nest">${`<div class="egg">${img('icon_egg','🥚')}</div>`}<p class="ctr"><b>${S.eggs}</b> eggs</p></div>
  <div class="row2"><button class="btn g big" onclick="hatch(1)">Hatch 1 🥚</button><button class="btn y big" onclick="hatch(10)">Hatch 10 (9🥚)</button></div>
  <button class="btn b" onclick="buyEggs()">Buy egg · 100 💎</button>
  <div class="card odds"><b>Hatch odds</b><br>Epic Umbrakit 1.5% · Voltkin/Dawnpip 6.5% · Rimecoil 27% · Cinderwing/Mossnout 65%. 15% chance a pet hatches one rarity higher.</div>`}
@@ -198,7 +198,7 @@ function tLodge(){const L=S.lodge,c=Math.round(200*Math.pow(1.3,L.lv-1));return`
  <div class="row2"><button class="btn b sm" onclick="buyBuff('A')">ATK +${L.buffA}% · ${40+L.buffA*15}💎</button><button class="btn b sm" onclick="buyBuff('H')">HP +${L.buffH}% · ${40+L.buffH*15}💎</button></div>
  <div id="chat" class="chat">${chatLog.slice(-8).map(m=>`<div><b>${m[0]}</b> ${m[1].replace(/</g,'&lt;')}</div>`).join('')}</div>
  <div class="cin"><input id="cin" placeholder="Say hi to the lodge" maxlength="80"><button class="btn g sm" onclick="sendChat()">Send</button></div>`}
-function tShop(){const r=(k,ic,n,d,c)=>`<div class="shop"><span class="si">${ic}</span><div><b>${n}</b><small>${d}</small></div><button class="btn g sm" onclick="shopBuy('${k}')">💎${c}</button></div>`;
+function tShop(){const SI={eggs:'icon_egg',eggs10:'icon_egg',keys:'loot_key',treats:'loot_meat',gold:'icon_pouch',ticket:'icon_banner',hunt:'icon_slash'};const r=(k,ic,n,d,c)=>`<div class="shop"><span class="si">${img(SI[k],ic)}</span><div><b>${n}</b><small>${d}</small></div><button class="btn g sm" onclick="shopBuy('${k}')">💎${c}</button></div>`;
  return`<div class="hd"><b>💎 ${fmt(S.shards)} Starshards</b><span>earned in game only</span></div>
  ${r('eggs','🥚','Egg','Hatch a new pet',90)}${r('eggs10','🧺','Egg Basket','10 eggs',800)}${r('keys','🗝️','Key Ring','10 relic chest keys',60)}${r('treats','🍖','Treat Sack','10 pet treats',50)}
  ${r('gold','💰','Gold Purse','Gold based on level',50)}${r('ticket','🎟️','Duel Ticket','+1 arena duel today',40)}${r('hunt','🐲','Hunt Pass','+1 boss hunt today',60)}`}
