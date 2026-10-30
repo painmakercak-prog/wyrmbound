@@ -101,3 +101,9 @@ function draw(){if(!F||!CX)return;if(!F.z.tiled&&im('tile_'+BIO[S.isle%4]))F.z=b
 // unit separation so sprites stop stacking on top of each other
 function separate(){const h=F.h,ms=F.mobs.concat(F.boss?[F.boss]:[]).filter(m=>!m.dead);for(let i=0;i<ms.length;i++){const a=ms[i];for(let j=i+1;j<ms.length;j++){const b=ms[j],dx=b.x-a.x,dy=(b.y-a.y)*1.6,d=Math.hypot(dx,dy)||1,mn=(a.boss||b.boss)?90:42;if(d<mn){const p=(mn-d)/2/d;a.x-=dx*p;a.y-=dy*p/1.6;b.x+=dx*p;b.y+=dy*p/1.6}}
   if(!h.dead){const dx=a.x-h.x,dy=(a.y-h.y)*1.6,d=Math.hypot(dx,dy)||1,mn=a.boss?80:38;if(d<mn){const p=(mn-d)/d;a.x+=dx*p;a.y+=dy*p/1.6}}}}
+
+function titleInit(){const t=document.getElementById('ttl');if(!t)return;let p=0;const ims=[...document.images],tot=Math.max(1,ims.length);
+ const iv=setInterval(()=>{const ok=ims.filter(i=>i.complete).length/tot;p=Math.min(100,p+4,Math.max(p,Math.round(ok*100)));
+  document.getElementById('ttlb').style.width=p+'%';document.getElementById('ttlt').textContent=(p<100?'Loading... ':'Ready! ')+p+'%';
+  if(p>=100){clearInterval(iv);t.classList.add('rdy')}},70);
+ document.getElementById('ttlg').onclick=()=>{t.style.opacity=0;t.style.pointerEvents='none';setTimeout(()=>t.remove(),460)}}

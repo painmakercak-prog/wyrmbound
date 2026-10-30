@@ -138,7 +138,20 @@ nav button img{height:30px;width:36px}
 .egg img{height:96px;width:auto}
 .shop .si img{width:30px;height:30px;object-fit:contain;display:block}
 #dlg{box-shadow:0 0 0 2px #ffd54a,0 4px 0 #0008}
-</style></head><body><div id="app">
+
+#ttl{position:fixed;inset:0;z-index:9999;background:#0b1430 url(__keyart__) center/cover no-repeat;display:flex;flex-direction:column;align-items:center;justify-content:space-between;overflow:hidden;transition:opacity .45s;touch-action:manipulation}
+#ttl:before{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(5,10,30,.78) 0%,rgba(5,10,30,.15) 26%,rgba(5,10,30,0) 50%,rgba(5,10,30,.55) 72%,rgba(5,10,30,.92) 100%)}
+#ttl>*{position:relative}
+#ttl .lg{margin-top:calc(env(safe-area-inset-top) + 7vh);text-align:center;font:900 clamp(40px,12.5vw,58px)/1 system-ui,-apple-system,sans-serif;letter-spacing:2px;color:#ffe27a;background:linear-gradient(180deg,#fff6c8,#ffcf3f 55%,#e08a12);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 3px 0 #5a2a00) drop-shadow(0 0 12px #000a)}
+#ttl .lg small{display:block;margin-top:8px;font-size:13px;letter-spacing:4px;-webkit-text-fill-color:#e9f1ff;color:#e9f1ff;font-weight:800}
+#ttl .bt{margin-bottom:calc(env(safe-area-inset-bottom) + 8vh);width:76%;max-width:320px;text-align:center}
+#ttl .lb{height:16px;border-radius:99px;background:#0a1734cc;border:2px solid #ffd54a;overflow:hidden;box-shadow:0 3px 0 #0008}
+#ttl .lb i{display:block;height:100%;width:0;background:linear-gradient(180deg,#ffe98a,#f5a623);border-radius:99px;transition:width .15s}
+#ttl .lt{margin-top:8px;color:#fff;font:800 13px system-ui,sans-serif;text-shadow:0 2px 2px #000}
+#ttl button{display:none;width:100%;padding:16px 0;border:0;border-radius:99px;font:900 22px system-ui,sans-serif;letter-spacing:1px;color:#3a1c00;background:linear-gradient(180deg,#fff1a0,#ffc23a 60%,#ef8f12);box-shadow:0 5px 0 #8a4a00,0 0 24px #ffd54a88;animation:pul 1.4s ease-in-out infinite}
+@keyframes pul{50%{transform:scale(1.05)}}
+#ttl.rdy .lb,#ttl.rdy .lt{display:none}#ttl.rdy button{display:block}
+</style></head><body><div id="ttl"><div class="lg">WYRMBOUND<small>DRAGON TAMER RPG</small></div><div class="bt"><div class="lb"><i id="ttlb"></i></div><div class="lt" id="ttlt">Loading... 0%</div><button id="ttlg">TAP TO PLAY</button></div></div><div id="app">
 <div id="top"><div class="av"><img id="avi" src=""></div><div class="lvw"><b id="lvl">Lv 1</b> <small>Power <span id="pw">0</span></small><div class="xp"><i id="xpb"></i><em id="xpt"></em></div></div>
 <div class="pill"><img src="__icon_gold__"><span id="gold">0</span></div><div class="pill"><img src="__icon_gem__"><span id="shards">0</span></div></div>
 <div id="world"><canvas id="cv"></canvas>
