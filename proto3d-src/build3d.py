@@ -27,6 +27,10 @@ f=open(f'{B}/field.js').read();o="if(auto||S.auto)for(let i=0;i<3;i++)";assert o
 o="if(av&&av.src!==ak)av.src=ak"
 if o in f:f=f.replace(o,"if(av&&S.avi&&av.src!==S.avi)av.src=S.avi")
 else:print('WARN avatar patch')
+# natural MMO pace (px/s, world = px*0.1): mobs chase 3.0 u/s, boss 2.6, wander 1.2, sim players 3.4, pets capped 7 u/s with easing
+for o,n in [("const sp=m.boss?55:75;","const sp=m.boss?26:30;"),("m.x+=dx/dd*30*dt;m.y+=dy/dd*30*dt","m.x+=dx/dd*12*dt;m.y+=dy/dd*12*dt"),("o.x+=dx/d*110*dt;o.y+=dy/d*110*dt","o.x+=dx/d*34*dt;o.y+=dy/d*34*dt"),
+ ("p.x+=(tx-p.x)*Math.min(1,dt*4)","p.x+=Math.sign(tx-p.x)*Math.min(Math.abs(tx-p.x),Math.min(70,Math.abs(tx-p.x)*1.6)*dt)"),("p.y+=(ty-p.y)*Math.min(1,dt*4)","p.y+=Math.sign(ty-p.y)*Math.min(Math.abs(ty-p.y),Math.min(70,Math.abs(ty-p.y)*1.6)*dt)")]:
+  assert o in f,o;f=f.replace(o,n)
 x=open(f'{B}/gfx3.js').read();p=open('src/proto.js').read()
 # packs (binary as base64 text so the text-only push path works)
 items=[(os.path.basename(f),b64(f)) for f in sorted(glob.glob('out/assets/*.glb'))]+[(os.path.basename(f),b64(f)) for f in sorted(glob.glob('out/a96/*.mp3'))]

@@ -66,3 +66,12 @@ function muteHud(){const b=$('mute');if(b)b.textContent=AUD.mute?'🔇':'🔊'}
 function creditsM(){modal(`<h3>Credits</h3><div class="card" style="max-height:52dvh;overflow:auto">${(window.CREDITS_HTML||'')}</div><button class="btn" onclick="closeM()">Close</button>`)}
 setInterval(powerTick,100);
 const _rd=render;render=function(){_rd();if(PWS!==null){const e=$('pw');if(e)e.textContent=Math.round(PWS).toLocaleString()}vipHud()};
+
+// smooth hero locomotion: eased velocity instead of instant full speed (world speeds: walk/jog 3.8 u/s, wolf mount 6.2 u/s)
+const HSPD=38,MSPD=62;
+function moveH(vx,vy,dt){const h=F.h,sp=h.mount?MSPD:HSPD;h.vx=h.vx||0;h.vy=h.vy||0;const k=Math.min(1,dt*((vx||vy)?5:8));h.vx+=(vx*sp-h.vx)*k;h.vy+=(vy*sp-h.vy)*k;if(Math.abs(h.vx)+Math.abs(h.vy)<.5&&!vx&&!vy){h.vx=h.vy=0}
+ h.x=Math.max(30,Math.min(ZW-30,h.x+h.vx*dt));h.y=Math.max(60,Math.min(ZH-30,h.y+h.vy*dt));if(vx)h.face=vx>0?1:-1;h.walk=vx||vy?h.walk+dt:0}
+{const _us=useSkillF;useSkillF=function(i){const b=F.h.sk[i];_us(i);if(F.h.sk[i]!==b)F.h.skAnim=(F.h.skAnim||0)+1}}
+
+// level-up: keep only the banner
+{const _f=addFx;addFx=function(x,y,t,...r){if(typeof t==='string'&&t.startsWith('LEVEL UP'))return;return _f(x,y,t,...r)};const _t=toast;toast=function(t,...r){if(typeof t==='string'&&t.startsWith('Level up!'))return;return _t(t,...r)}}
