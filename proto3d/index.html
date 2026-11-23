@@ -97,7 +97,7 @@ nav button.on{background:linear-gradient(#9ff06a,#4cb82a 60%,#2f9418);transform:
 @keyframes pul{50%{transform:scale(1.04)}}
 #ttls{color:#e9f1ff;font-weight:800;font-size:13px;margin-bottom:10px;text-shadow:0 2px 2px #000}
 #ttl .cr{position:absolute;bottom:calc(env(safe-area-inset-bottom) + 10px);font-size:10px;opacity:.75}
-#cs{position:fixed;inset:0;z-index:99;background:linear-gradient(180deg,#2a5bb0,#122c60);display:none;flex-direction:column;padding:calc(env(safe-area-inset-top) + 16px) 12px calc(env(safe-area-inset-bottom) + 14px)}
+#cs{position:fixed;inset:0;z-index:101;background:linear-gradient(180deg,#2a5bb0,#122c60);display:none;flex-direction:column;padding:calc(env(safe-area-inset-top) + 16px) 12px calc(env(safe-area-inset-bottom) + 14px)}
 #cs.on{display:flex}
 #cs h2{text-align:center;color:#ffe066;font-size:21px;text-shadow:0 2px 0 #0a1734;margin-bottom:10px}
 #csl{display:grid;grid-template-columns:1fr 1fr;gap:8px;overflow-y:auto}
@@ -105,7 +105,7 @@ nav button.on{background:linear-gradient(#9ff06a,#4cb82a 60%,#2f9418);transform:
 .cls img{height:86px;max-width:100%;object-fit:contain;display:block;margin:0 auto}
 .cls b{display:block;font-size:14px;margin:2px 0}.cls small{font-size:10.5px;opacity:.8;line-height:1.25;display:block}
 </style></head><body>
-<div id="ttl"><img class="lgimg" id="ttllogo" alt="Journey of Aethra"><div class="bt"><div id="ttls">Prototype build · 2.5D</div><button id="ttlg">TAP TO PLAY</button></div><div class="cr">Journey of Aethra · v11 rebuild</div></div>
+<div id="ttl"><img class="lgimg" id="ttllogo" alt="Journey of Aethra"><div class="bt"><div id="ttls">Prototype build · 2.5D</div><button id="ttlg">TAP TO PLAY</button></div><div class="cr">Journey of Aethra · v12 rebuild</div></div>
 <div id="cs"><h2>Choose your class</h2><div id="csl"></div></div>
 <div id="app">
 <div id="world"><canvas id="cv"></canvas>
@@ -507,7 +507,7 @@ function startGame(){dailyReset();
  setInterval(save,8000);setInterval(chatTick,6000)}
 function pickClass(k){S.cls=k;if(!S.pets.length){const p=mkPet(0);S.pets.push(p);S.team=[p.id]}save();
  $('cs').classList.remove('on');$('ttl').style.display='none';startGame();toast('Welcome, '+CLASSES[k].n+'! Auto is on.')}
-function openSelect(){const L=$('csl');L.innerHTML=CLS_ORDER.map(k=>{const c=CLASSES[k];return`<button class="cls" onclick="pickClass('${k}')"><img src="${IMG[c.spr+'_idle']||''}"><b>${c.e} ${c.n}</b><small>${c.d}</small></button>`}).join('');
+function openSelect(){$('ttl').style.display='none';const L=$('csl');L.innerHTML=CLS_ORDER.map(k=>{const c=CLASSES[k];return`<button class="cls" onclick="pickClass('${k}')"><img src="${IMG[c.spr+'_idle']||''}"><b>${c.e} ${c.n}</b><small>${c.d}</small></button>`}).join('');
  $('cs').classList.add('on')}
 window.addEventListener('load',()=>{ /* IMG preload warm-up */ for(const k in IMG)im(k);
  dailyReset();
