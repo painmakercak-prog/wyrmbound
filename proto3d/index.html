@@ -242,7 +242,7 @@ const CLASSES={knight:{n:'Wyrmguard',d:'Sword and shield. +40% HP, takes 20% les
 const RAR=['Common','Uncommon','Rare','Epic','Mythic'],RC=['#9aa7b8','#55c24a','#3a8cf0','#a650f0','#ff9a1a'];
 const SLOTS=['weapon','helm','armor','gloves','boots','charm'],SLN={weapon:'Weapon',helm:'Helm',armor:'Armor',gloves:'Gloves',boots:'Boots',charm:'Charm'};
 const SLE={weapon:'⚔️',helm:'⛑️',armor:'🥋',gloves:'🧤',boots:'👢',charm:'📿'};
-const GN={weapon:['Blade','Bow','Staff','Fang'],helm:['Cap','Circlet','Crest'],armor:['Mail','Robe','Coat'],gloves:['Grips','Wraps'],boots:['Treads','Striders'],charm:['Amulet','Totem','Locket']};
+const GN={weapon:['Blade','Bow','Staff','Fang','Six-Iron','Long Iron'],helm:['Cap','Circlet','Crest'],armor:['Mail','Robe','Coat'],gloves:['Grips','Wraps'],boots:['Treads','Striders'],charm:['Amulet','Totem','Locket']};
 const ICON={weapon:['wpn_battle_axe','wpn_crystal_staff','wpn_flame_greatsword','wpn_longbow','wpn_magic_orb','wpn_spear','wpn_steel_sword','wpn_thunder_hammer','wpn_twin_daggers','wpn_wand'],helm:['arm_knight_helm','arm_wizard_hat'],armor:['arm_chestplate','arm_leather_vest'],gloves:['arm_gauntlets'],boots:['arm_boots'],charm:['amulet_emerald','ring_ruby','ring_sapphire','arm_round_shield']};
 const GA=['Mossy','Brave','Coral','Ember','Frost','Storm','Sunlit','Moonlit','Ancient','Starforged'];
 const SUB={cc:{n:'Crit Chance',p:1,r:[1,3]},cd:{n:'Crit Damage',p:1,r:[4,10]},as:{n:'Attack Speed',p:1,r:[2,5]},ls:{n:'Lifesteal',p:1,r:[1,2.5]},
@@ -287,7 +287,7 @@ function stats(){const c=CLASSES[S.cls||'knight'],t=subTot();let a=10+S.lv*4,h=1
  for(const s of SLOTS){const g=S.gear[s];if(g){a+=g.atk;h+=g.hp}}
  a*=c.atk*(1+S.lodge.buffA/100);h*=c.hp*(1+S.lodge.buffH/100);
  let pa=0,ph=0,heal=0;for(const id of S.team){const p=S.pets.find(x=>x.id===id);if(p){const q=petStats(p);pa+=q.atk;ph+=q.hp;heal+=q.heal}}
- pa*=1+t.pd/100;const cc=Math.min(.8,.08+t.cc/100+(S.cls==='ranger'?.15:0)),cm=1.5+t.cd/100;
+ pa*=1+t.pd/100;const cc=Math.min(.8,.08+t.cc/100+(S.cls==='ranger'?.15:0)+(S.cls==='gunslinger'?.1:0)),cm=1.5+t.cd/100+(S.cls==='gunslinger'?.35:0);
  const rg=t.rg*S.lv*.5+(0)+heal;
  const power=Math.round((a*(1+cc*(cm-1))*(1+t.as/100)+pa)*6+(h+ph)*.6+rg*8);
  return{atk:Math.round(a),hp:Math.round(h),pa:Math.round(pa),ph:Math.round(ph),cc,cm,t,rg,power}}
@@ -558,8 +558,8 @@ function step(dt){if(!F||B)return;F.now+=dt;const h=F.h,s=stats(),mx=hmax();F.ba
  moveH(vx,vy,dt);
  // hero attack
  const t=F.tgt;if(t&&!t.dead&&D(t,h)<range()+6){h.combatT=0;h.mount=0;if(t.x!==h.x)h.face=t.x>h.x?1:-1;
-  if(h.cd<=0){h.cd=.9/(1+s.t.as/100);let d=s.atk,cr=R()<s.cc;if(cr)d*=s.cm;if(t.boss)d*=1+s.t.bd/100;
-   if(range()>100)F.fx.push({x:h.x,y:h.y-40,tx:t,proj:1,l:0,c:S.cls==='mage'?'#ff8a2a':'#cfe8ff',d,cr});else{hitMob(t,d,cr?'CRIT ':'');F.fx.push({slash:1,x:t.x,y:t.y-30,face:h.face,l:0})}h.pose='attack';h.pt=.25;h.hp=Math.min(mx,h.hp+d*s.t.ls/100)}
+  if(h.cd<=0){h.cd=(S.cls==='gunslinger'?.68:.9)/(1+s.t.as/100);let d=s.atk,cr=R()<s.cc;if(cr)d*=s.cm;if(t.boss)d*=1+s.t.bd/100;
+   if(range()>100)F.fx.push({x:h.x,y:h.y-40,tx:t,proj:1,l:0,c:S.cls==='mage'?'#ff8a2a':S.cls==='gunslinger'?'#ffd54a':'#cfe8ff',d,cr});else{hitMob(t,d,cr?'CRIT ':'');F.fx.push({slash:1,x:t.x,y:t.y-30,face:h.face,l:0})}h.pose='attack';h.pt=.25;h.hp=Math.min(mx,h.hp+d*s.t.ls/100)}
   if(S.autoSkill)for(let i=0;i<3;i++)if(h.sk[i]<=0&&(i<2||h.hp<mx*.5))useSkillF(i)}
  // pets
  const team=S.team.map(id=>S.pets.find(p=>p.id===id)).filter(Boolean);while(F.pets.length<team.length)F.pets.push({x:h.x,y:h.y,cd:1});F.pets.length=team.length;
@@ -768,11 +768,12 @@ function titleInit(){const t=document.getElementById('ttl');if(!t)return;let p=0
 CLASSES.knight.n='Swordsman';CLASSES.knight.e='⚔️';CLASSES.ranger.n='Archer';CLASSES.mage.n='Sorcerer';
 CLASSES.assassin={n:'Assassin',d:'Twin daggers. Huge crits, lighter armor.',e:'🗡️',atk:1.3,hp:.9};
 CLASSES.scholar={n:'Scholar',d:'Tome magic. Steady ranged damage and strong heals.',e:'📖',atk:1.05,hp:1.1};
-const CLS_ORDER=['knight','ranger','mage','assassin','scholar'];
+ CLASSES.gunslinger={n:'Gunslinger',d:'Crossbow and twin irons. Longest range, fastest shots, big crits. Light armor.',e:'🤠',atk:1.18,hp:.92};
+const CLS_ORDER=['knight','ranger','gunslinger','mage','assassin','scholar'];
 const MELEE={knight:1,assassin:1};
-range=function(){return MELEE[S.cls]?58:(S.cls==='mage'||S.cls==='scholar')?170:190};
-const SKI={knight:['swordsman_flame_slash','swordsman_whirlwind'],ranger:['archer_power_shot','archer_arrow_rain'],mage:['sorcerer_rune_orb','sorcerer_storm'],assassin:['assassin_shadow_blades','swordsman_whirlwind'],scholar:['sorcerer_rune_orb','scholar_tome_heal']};
-const SKN={knight:['Flame Slash','Whirlwind'],ranger:['Power Shot','Arrow Rain'],mage:['Rune Orb','Storm'],assassin:['Shadow Blades','Whirl'],scholar:['Rune Orb','Tome Bolt']};
+range=function(){return MELEE[S.cls]?58:S.cls==='gunslinger'?215:(S.cls==='mage'||S.cls==='scholar')?170:190};
+const SKI={knight:['swordsman_flame_slash','swordsman_whirlwind'],ranger:['archer_power_shot','archer_arrow_rain'],mage:['sorcerer_rune_orb','sorcerer_storm'],assassin:['assassin_shadow_blades','swordsman_whirlwind'],scholar:['sorcerer_rune_orb','scholar_tome_heal'],gunslinger:['archer_power_shot','archer_arrow_rain']};
+const SKN={knight:['Flame Slash','Whirlwind'],ranger:['Power Shot','Arrow Rain'],mage:['Rune Orb','Storm'],assassin:['Shadow Blades','Whirl'],scholar:['Rune Orb','Tome Bolt'],gunslinger:['Deadeye Shot','Fan the Hammer']};
 classPick=function(){}; // class select is the 3D screen (g3d.js)
 if(S.autoSkill===undefined)S.autoSkill=false; // auto-skill toggle, OFF by default (auto basic attacks always on)
 function toggleAutoSkill(){S.autoSkill=!S.autoSkill;toast(S.autoSkill?'Auto Skill ON':'Auto Skill OFF: tap skills yourself',1);save();hudSkills()}
@@ -843,4 +844,4 @@ function moveH(vx,vy,dt){const h=F.h,sp=h.mount?MSPD:HSPD;h.vx=h.vx||0;h.vy=h.vy
 
 window.CREDITS_HTML="<p>Characters: KayKit Character Pack Adventures and Skeletons by Kay Lousberg (kaylousberg.com), CC0 1.0.</p><p>Creatures and wolf mount: Quaternius animated animal and monster packs (quaternius.com), CC0 1.0.</p><p>Nature and village props: Quaternius Ultimate Nature and Medieval Village packs (quaternius.com), CC0 1.0.</p><p>Engine: three.js (MIT), meshoptimizer decoder (MIT).</p><p>Music and stingers: original audio, Copyright (c) 2026 Kasey Carroll, generated by gen_audio.py. Free for any use.</p><p>UI kit, logo and dragon companion: original art made for Journey of Aethra.</p><p>Heroes: Quaternius \"Hooded Adventurer\", \"Adventurer\", \"Ultimate Modular Men/Women\" characters, \"Witch\" and \"Animated Wizard\" (quaternius.com via poly.pizza), CC0 1.0. Weapons/shield from KayKit Adventurers (Kay Lousberg), CC0 1.0.</p><p>- Hero base: \"HairSample_Male\" VRoid beta sample model, pixiv Inc., CC0 (per VRM meta + pixiv VRoid help). Recolored, armor/sword added procedurally.</p><p>- Dragon pet + boar mob meshes: generated with TRELLIS (Microsoft, MIT License) via the public trellis-community/TRELLIS Hugging Face Space, from original AI-generated reference images. Decimated/re-textured with gltf-transform (MIT).</p><p>- Sword: KayKit Adventurers (Kay Lousberg), CC0.</p>";window.P3D_PACKS=["packs/p0.json?v=8", "packs/p1.json?v=8", "packs/p2.json?v=8", "packs/p3.json?v=8", "packs/p4.json?v=8", "packs/p5.json?v=8", "packs/p6.json?v=8", "packs/p7.json?v=8", "packs/p8.json?v=8", "packs/p9.json?v=8", "packs/p10.json?v=8", "packs/p11.json?v=8"];window.P3D_SIZE=16148395;
 boot();
-</script><script type="importmap">{"imports":{"three":"./lib/three.module.js"}}</script><script type="module" src="./g3d.js?v=8"></script></body></html>
+</script><script type="importmap">{"imports":{"three":"./lib/three.module.js"}}</script><script type="module" src="./g3d.js?v=9"></script></body></html>
