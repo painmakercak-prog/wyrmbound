@@ -36,6 +36,7 @@ const DEF=()=>({v:1,cls:null,name:'Hero',lv:1,xp:0,gold:300,shards:120,eggs:2,tr
  day:'',login:0,claimed:-1,tasks:{},tdone:{},sound:1,t:Date.now(),kills:0,stat:{hatch:0,chest:0,feed:0,arena:0,kills:0}});
 let S;try{S=Object.assign(DEF(),JSON.parse(localStorage.getItem('wyrm1')||'null')||{})}catch(e){S=DEF()}
 if(!S.v||S.v<2){S.v=2;if(S.pms===undefined)S.pms=0;if(!S.fs)S.fs={};if(S.bossKills===undefined)S.bossKills=0}
+if(!S.v||S.v<3){S.v=3;if(S.wbest===undefined)S.wbest=0;if(S.wruns===undefined)S.wruns=0}
 const save=()=>{S.t=Date.now();localStorage.setItem('wyrm1',JSON.stringify(S))};
 // ---------- items ----------
 function rollRar(boost){const r=R()*100;const t=[[4,.6+boost*.4],[3,3+boost*2],[2,12+boost*4],[1,32]];for(const[k,p]of t)if(r<p)return k;return 0}
@@ -52,10 +53,10 @@ const petCap=p=>[10,25,50][p.st];
 // ---------- stats ----------
 function subTot(){const t={};for(const k in SUB)t[k]=0;for(const s of SLOTS){const g=S.gear[s];if(g)for(const k in g.sub)t[k]+=g.sub[k]}return t}
 function stats(){const c=CLASSES[S.cls||'knight'],t=subTot();let a=10+S.lv*4,h=120+S.lv*30;
- for(const s of SLOTS){const g=S.gear[s];if(g){a+=g.atk;h+=g.hp}}
+ for(const s of SLOTS){const g=S.gear[s];if(g){const fm=1+.06*(g.up||0);a+=g.atk*fm;h+=g.hp*fm}}
  a*=c.atk*(1+S.lodge.buffA/100);h*=c.hp*(1+S.lodge.buffH/100);
  let pa=0,ph=0,heal=0;for(const id of S.team){const p=S.pets.find(x=>x.id===id);if(p){const q=petStats(p);pa+=q.atk;ph+=q.hp;heal+=q.heal}}
- pa*=1+t.pd/100;if(S.cls==='gunslinger')t.as+=18;const cc=Math.min(.8,.08+t.cc/100+(S.cls==='ranger'?.15:S.cls==='gunslinger'?.12:0)),cm=1.5+t.cd/100;
+ pa*=1+t.pd/100;if(S.cls==='gunslinger')t.as+=10;const cc=Math.min(.8,.08+t.cc/100+(S.cls==='ranger'?.15:S.cls==='gunslinger'?.06:0)),cm=1.5+t.cd/100;
  const rg=t.rg*S.lv*.5+(0)+heal;
  const power=Math.round((a*(1+cc*(cm-1))*(1+t.as/100)+pa)*6+(h+ph)*.6+rg*8);
  return{atk:Math.round(a),hp:Math.round(h),pa:Math.round(pa),ph:Math.round(ph),cc,cm,t,rg,power}}
@@ -180,7 +181,9 @@ function tHero(s){return`<div class="gear">${SLOTS.map(k=>{const g=S.gear[k];ret
  <div class="row2"><button class="btn b" onclick="autoPull()">${autoRun?'Stop Auto':'Auto: open until upgrade'}</button><button class="btn sm" onclick="statSheet()">Stats</button></div>
  <div class="card"><div class="kv"><span>${CLASSES[S.cls||'knight'].e} ${CLASSES[S.cls||'knight'].n} · ATK ${fmt(s.atk)} · HP ${fmt(s.hp)}</span></div><div class="kv"><span>Pets ATK ${fmt(s.pa)} · HP ${fmt(s.ph)}</span><span>Crit ${(s.cc*100).toFixed(0)}%</span></div></div>
  <div class="tick" id="ticker">World chat is live…</div>`}
-function gearInfo(k){const g=S.gear[k];if(!g){toast('Open relic chests to find '+SLN[k].toLowerCase()+'s');return}modal(`<h3>${SLN[k]}</h3>${cardH(g,undefined,'Equipped')}<button class="btn" onclick="closeM()">Close</button>`)}
+const forgeCost=it=>Math.round(40*(it.lv||1)*Math.pow(1.5,it.up||0));
+function forgeUp(k,silent){const it=S.gear[k];if(!it)return false;const c=forgeCost(it);if(S.gold<c){if(!silent)toast('Need '+fmt(c)+' gold to forge');return false}S.gold-=c;it.up=(it.up||0)+1;if(!silent){toast(it.name+' forged to +'+it.up);gearInfo(k)}save();return true}
+function gearInfo(k){const g=S.gear[k];if(!g){toast('Open relic chests to find '+SLN[k].toLowerCase()+'s');return}modal(`<h3>${SLN[k]}</h3>${cardH(g,undefined,'Equipped')}<button class="btn y" onclick="forgeUp('${k}')">Forge +1 (${fmt(forgeCost(g))} gold)</button> <button class="btn" onclick="closeM()">Close</button>`) }
 function statSheet(){const s=stats(),t=s.t;modal(`<h3>Stats</h3>${Object.keys(SUB).map(k=>`<div class="srw"><span>${SUB[k].n}</span><b>${t[k].toFixed(1)}${SUB[k].p?'%':''}</b></div>`).join('')}<div class="srw"><span>Power</span><b>${fmt(s.power)}</b></div><button class="btn" onclick="closeM()">Close</button>`)}
 function tPets(){const L=[...S.pets].sort((a,b)=>(S.team.includes(b.id)-S.team.includes(a.id))||b.r-a.r||b.lv-a.lv);
  return`<div class="hd"><b>Team ${S.team.length}/3</b><span>🍖 ${S.treats}</span></div><div class="pgrid">${L.length?L.map(p=>`<button class="pcard r${p.r}${S.team.includes(p.id)?' in':''}" onclick="petInfo(${p.id})">${img(PETS[p.s].k,petE(p))}<b>${petN(p)}</b><small>Lv ${p.lv}/${petCap(p)}${p.lv>=petCap(p)&&p.st<2?' ⬆️':''}</small></button>`).join(''):'<p class="ctr">No pets yet. Visit the Nest to hatch eggs.</p>'}</div>`}

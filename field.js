@@ -33,8 +33,8 @@ const IC={};function im(k){if(!IMG[k])return null;if(!IC[k]){IC[k]=new Image();I
 function mobStat(t){return{hp:Math.round(60*Math.pow(1.17,t-1)),atk:Math.round(6*Math.pow(1.17,t-1))}}
 function zoneTier(){return S.isle*10+1}
 function spawnMob(camp){const I=ISLES[S.isle%4],ci={A:0,B:1,C:2}[camp],t=zoneTier()+ci*2,st=mobStat(Math.min(t,26)),[hx,hy]=PTS[camp],a=R()*7,d=R()*110;
- return{k:I.foes[ci],n:FOE[I.foes[ci]][0],camp,x:hx+Math.cos(a)*d,y:hy+Math.sin(a)*d*.7,hx,hy,hp:st.hp,mhp:st.hp,atk:st.atk,lv:t,cd:1,dead:0,rt:0,fl:0,hit:0,wt:R()*3}}
-function spawnBoss(){const I=ISLES[S.isle%4],t=zoneTier()+7,st=mobStat(t);return{k:I.boss,n:FOE[I.boss][0],camp:'lair',boss:1,x:PTS.lair[0],y:PTS.lair[1],hx:PTS.lair[0],hy:PTS.lair[1],hp:Math.round(st.hp*[48,20,8,4][S.isle%4]*(S.cls==='gunslinger'?1.9:1)),mhp:Math.round(st.hp*[48,20,8,4][S.isle%4]*(S.cls==='gunslinger'?1.9:1)),atk:Math.round(st.atk*1.8),lv:t,cd:2,dead:0,rt:0,hit:0,wt:0,tele:null,teleCd:3.5,teleN:0,charge:null}}
+ return{k:I.foes[ci],n:FOE[I.foes[ci]][0],camp,x:hx+Math.cos(a)*d,y:hy+Math.sin(a)*d*.7,hx,hy,hp:st.hp,mhp:st.hp,atk:Math.round(st.atk*(S.isle%4===0?2.0:1)),lv:Math.min(t,26),cd:1,dead:0,rt:0,fl:0,hit:0,wt:R()*3}}
+function spawnBoss(){const I=ISLES[S.isle%4],t=zoneTier()+7,st=mobStat(Math.min(t,26));return{k:I.boss,n:FOE[I.boss][0],camp:'lair',boss:1,x:PTS.lair[0],y:PTS.lair[1],hx:PTS.lair[0],hy:PTS.lair[1],hp:Math.round(st.hp*[48,20,8,4][S.isle%4]),mhp:Math.round(st.hp*[48,20,8,4][S.isle%4]),atk:Math.round(st.atk*2.3*(S.isle%4===0?1.5:1)),lv:Math.min(t,33),cd:2,dead:0,rt:0,hit:0,wt:0,tele:null,teleCd:3.5,teleN:0,charge:null}}
 function initZone(){const L=ZLAYOUTS[S.isle%4];if(L)for(const k in L)PTS[k]=L[k];const z=buildZone(),mobs=[];for(const c of['A','B','C'])for(let i=0;i<5;i++)mobs.push(spawnMob(c));
  const others=[0,1,2,3].map(i=>({n:pick(NAMES),c:pick(['knight','mage','ranger']),x:300+R()*800,y:600+R()*1200,tx:0,ty:0,w:0}));
  const s=stats();F={z,mobs,boss:null,drops:[],fx:[],others,chest:null,ct:20,
@@ -100,11 +100,12 @@ function step(dt){if(!F||B)return;F.now+=dt;const h=F.h,s=stats(),mx=hmax();F.ba
  else if(F.dest){const dx=F.dest.x-h.x,dy=F.dest.y-h.y,d=Math.hypot(dx,dy);F.manualT=F.now;if(d<10){const a=F.dest.act;F.dest=null;if(a)a()}else{vx=dx/d;vy=dy/d}}
  else if(auto){let tg=null,act=null,lab='';
   // priorities: fight aggro > loot > chest > daily claims/gear > quest
-  if(aggro.length&&!((Q().t==='talk'||Q().t==='portal'||Q().t==='boss'||!!F.boss)&&h.hp>hmax()*.55)){const m=nearest(aggro);tg=m;lab='defending against '+m.n}
+  const _q=Q(),_bypass=aggro.length&&h.hp>hmax()*.55&&(_q.t==='talk'||_q.t==='portal'||_q.t==='boss'||!!F.boss||(_q.t==='kill'&&!aggro.some(m=>m.camp===_q.camp)));
+  if(aggro.length&&!_bypass){const m=nearest(aggro);tg=m;lab='defending against '+m.n}
   else if(F.drops.length&&nearest(F.drops)&&D(nearest(F.drops),h)<220){const d=nearest(F.drops);tg=d;lab='picking up loot'}
   else if(F.chest&&D(F.chest,h)<450){tg=F.chest;lab='grabbing a treasure chest';act=openFieldChest}
   else if(S.keys>0&&h.combatT>1.5&&autoGear()){F.status='🤖 Auto: opening relic chests';return}
-  else if(F.dungT>200&&S.hunt>0&&S.lv>=5&&Q().t!=='boss'){F.dungT=0;F.status='🤖 Auto: entering Boss Hunt';toast('Auto: entering a Boss Hunt run');huntGo();return}
+  else if(F.dungT>200&&S.hunt>0&&S.lv>=5&&S.lv>=zoneTier()+4&&Q().t!=='boss'){F.dungT=0;F.status='🤖 Auto: entering Boss Hunt';toast('Auto: entering a Boss Hunt run');huntGo();return}
   else{const t=questTarget();tg=t;lab=t.label;if(t.kind==='npc')act=()=>talk(t.who);if(t.kind==='portal')act=enterPortal;if(t.kind==='mob')F.tgt=t.m}
   if(tg&&tg.hp!==undefined)F.tgt=tg;
   F.status='🤖 Auto: '+lab;
@@ -127,7 +128,7 @@ function step(dt){if(!F||B)return;F.now+=dt;const h=F.h,s=stats(),mx=hmax();F.ba
   const ox=p.x;p.x+=(tx-p.x)*Math.min(1,dt*4);if(Math.abs(p.x-ox)>.3)p.face=p.x>ox?1:-1;else if(t&&!t.dead&&h.combatT<2)p.face=t.x>p.x?1:-1;else p.face=h.face;p.y+=(ty-p.y)*Math.min(1,dt*4);p.cd-=dt;if(t&&!t.dead&&h.combatT<2&&D(p,t)<90&&p.cd<=0){p.cd=1.1;hitMob(t,s.pa*1.1/Math.max(1,team.length)*(1+i*.2),'','#ffd0ff')}});
  // mobs
  for(const m of F.mobs.concat(F.boss?[F.boss]:[])){m.hit=Math.max(0,m.hit-dt);if(m.dead){if(!m.boss){m.rt-=dt;if(m.rt<=0)Object.assign(m,spawnMob(m.camp))}continue}
-  const d=D(m,h);if(d<(m.boss?170:110))m.aggro=1;const ld=Math.hypot(m.x-m.hx,m.y-m.hy);if(ld>(m.boss?560:260)){m.aggro=0;if(!m.boss||D(m,h)>800)m.hp=m.mhp}
+  const d=D(m,h);if(d<(m.boss?170:110))m.aggro=1;const ld=Math.hypot(m.x-m.hx,m.y-m.hy);if(ld>(m.boss?560:260)){m.aggro=0;if(!m.boss)m.hp=m.mhp}
   if(m.boss&&bossBrain(m,dt)){}else if(m.aggro){const r=m.boss?80:46;if(d>r){const sp=m.boss?55:75;m.x+=(h.x-m.x)/d*sp*(S.isle%4===2?.78:1)*dt;m.y+=(h.y-m.y)/d*sp*(S.isle%4===2?.78:1)*dt}else{m.cd-=dt;if(m.cd<=0){m.cd=m.boss?1.6:1.3;h.combatT=0;
    if(R()<s.t.dg/100)addFx(h.x,h.y-90,'Dodge','#9fff6a');else{const dm=m.atk*(S.cls==='knight'?.8:1);h.hp-=dm;h.pose='hurt';h.pt=.3;addFx(h.x,h.y-90,'-'+fmt(dm),'#ff7a6a');if(h.hp<=0){heroDie();return}}}}}
   else{m.wt-=dt;if(m.wt<=0){m.wt=2+R()*3;m.tx=m.hx+(R()-.5)*200;m.ty=m.hy+(R()-.5)*140}if(m.tx!==undefined){const dx=m.tx-m.x,dy=m.ty-m.y,dd=Math.hypot(dx,dy);if(dd>4){m.x+=dx/dd*30*dt;m.y+=dy/dd*30*dt}}}}
@@ -136,7 +137,7 @@ function step(dt){if(!F||B)return;F.now+=dt;const h=F.h,s=stats(),mx=hmax();F.ba
  // chest spawn
  F.ct-=dt;if(!F.chest&&F.ct<=0){F.chest={x:200+R()*1000,y:500+R()*1300};F.ct=60}
  F.dungT+=dt;
- if(F.ringFx){const g=F.ringFx;g.r+=250*dt;const dh=D(h,g);if(!g.hit&&Math.abs(dh-g.r)<30){g.hit=1;hurtHero(g.atk*1.6)}if(g.r>470)F.ringFx=null}
+ if(F.ringFx){const g=F.ringFx;g.r+=250*dt;const dh=D(h,g);if(!g.hit&&Math.abs(dh-g.r)<30){g.hit=1;hurtHero(g.atk*2.1+hmax()*.14)}if(g.r>470)F.ringFx=null}
  // other players wander
  for(const o of F.others){o.w-=dt;if(o.w<=0){o.w=3+R()*6;const c=pick(['A','B','C','village']);o.tx=PTS[c][0]+(R()-.5)*160;o.ty=PTS[c][1]+(R()-.5)*100}const dx=o.tx-o.x,dy=o.ty-o.y,d=Math.hypot(dx,dy);if(d>5){o.x+=dx/d*110*dt;o.y+=dy/d*110*dt;o.face=dx>0?1:-1}}
  F.fx=F.fx.filter(f=>{f.l+=dt;if(f.proj){const t=f.tx,dx=t.x-f.x,dy=t.y-40-f.y,d=Math.hypot(dx,dy);if(d<16||t.dead){if(!t.dead)hitMob(t,f.d,f.cr?'CRIT ':'');return false}f.x+=dx/d*600*dt;f.y+=dy/d*600*dt;return f.l<2}if(f.spark){f.x+=f.vx*dt;f.y+=f.vy*dt;f.vy+=500*dt;return f.l<.4}return f.l<(f.ring?.4:f.slash?.22:.9)});separate()}
@@ -223,12 +224,12 @@ function startTele(m,kind){const h=F.h;
  else m.tele={kind,t:.9,dur:.9,x:m.x,y:m.y};
  F.tele=m.tele}
 function bossBlast(m){const h=F.h,t=m.tele;F.tele=null;
- if(t.kind==='slam'){F.fx.push({ring:1,x:t.x,y:t.y,l:0});sparks(t.x,t.y,'#ff8a5a',16);if(D(h,t)<=115)hurtHero(m.atk*2.2)}
+ if(t.kind==='slam'){F.fx.push({ring:1,x:t.x,y:t.y,l:0});sparks(t.x,t.y,'#ff8a5a',16);if(D(h,t)<=115)hurtHero(m.atk*3.0+hmax()*.22)}
  else if(t.kind==='ring')F.ringFx={x:m.x,y:m.y,r:30,hit:0,atk:m.atk};
  else if(t.kind==='charge')m.charge={dx:t.dx,dy:t.dy,t:.55,hit:0};
  else if(t.kind==='adds'){if(F.mobs.filter(x=>!x.dead).length<24)for(let i=0;i<2;i++){const a=spawnMob('C');a.x=m.x+(i?70:-70);a.y=m.y+40;a.hx=a.x;a.hy=a.y;a.aggro=1;F.mobs.push(a)}toast(m.n+' calls for aid!')}}
 function bossBrain(m,dt){const h=F.h;
- if(m.charge){const c=m.charge;m.x=Math.max(40,Math.min(ZW-40,m.x+c.dx*620*dt));m.y=Math.max(70,Math.min(ZH-40,m.y+c.dy*620*dt));c.t-=dt;if(!c.hit&&D(m,h)<70){c.hit=1;hurtHero(m.atk*1.8)}if(c.t<=0)m.charge=null;return 1}
+ if(m.charge){const c=m.charge;m.x=Math.max(40,Math.min(ZW-40,m.x+c.dx*620*dt));m.y=Math.max(70,Math.min(ZH-40,m.y+c.dy*620*dt));c.t-=dt;if(!c.hit&&D(m,h)<70){c.hit=1;hurtHero(m.atk*2.3+hmax()*.17)}if(c.t<=0)m.charge=null;return 1}
  if(m.tele){m.tele.t-=dt;if(m.tele.t<=0){bossBlast(m);m.tele=null;m.teleCd=4.5+R()*2.5}return 1}
  if(D(m,h)<430){m.teleCd-=dt;if(m.teleCd<=0){const pair=BOSSATK[S.isle%4];startTele(m,pair[(m.teleN||0)%2]);m.teleN=(m.teleN||0)+1}}
  return 0}
