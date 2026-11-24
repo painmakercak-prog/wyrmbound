@@ -129,3 +129,9 @@ const _stF=step;step=function(dt){_feelT+=dt;
  _pvGold=S.gold;_pvKeys=S.keys;_pvTreats=S.treats};
 // menu button taps (skill cluster excluded: casts have their own sound)
 document.addEventListener('pointerdown',e=>{if(!e.target.closest||!e.target.closest('button')||e.target.closest('.skills'))return;const now=performance.now();if(now-_lastTapSfx<60)return;_lastTapSfx=now;AUD.sfx('tap')},true);
+
+// ---- field-native Boss Hunt + arena leak guard (3D build: the 2D arena chain soft-locked the field) ----
+startFight=function(){B=null};
+huntGo=function(){if(S.hunt<1){toast('No hunts left today');return}if(!F){toast('Enter the field first');return}S.hunt--;F.boss=spawnBoss();F.boss.hunt=1;F.banner=3;toast('Boss Hunt: '+F.boss.n+' stirs in the north lair!');if(AUD.sting)AUD.sting('quest');save();render()};
+const _qtF=questTarget;questTarget=function(){if(F&&F.boss&&F.boss.hunt&&!F.boss.dead)return{x:F.boss.x,y:F.boss.y,kind:'mob',m:F.boss,label:'boss hunt: '+F.boss.n};return _qtF()};
+const _kmH=killMob;killMob=function(m){const wasHunt=!!(m.boss&&m.hunt);_kmH(m);if(wasHunt){S.shards+=30;S.eggs++;toast('Boss hunted! +30 💎 +1 🥚');save()}};
