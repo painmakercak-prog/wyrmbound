@@ -3,11 +3,13 @@
 CLASSES.knight.n='Swordsman';CLASSES.knight.e='⚔️';CLASSES.ranger.n='Archer';CLASSES.mage.n='Sorcerer';
 CLASSES.assassin={n:'Assassin',d:'Twin daggers. Huge crits, lighter armor.',e:'🗡️',atk:1.3,hp:.9};
 CLASSES.scholar={n:'Scholar',d:'Tome magic. Steady ranged damage and strong heals.',e:'📖',atk:1.05,hp:1.1};
-const CLS_ORDER=['knight','ranger','mage','assassin','scholar'];
+CLASSES.gunslinger={n:'Gunslinger',d:'Crossbow deadeye. Longest range, fastest shots, crit build.',e:'🤠',atk:1.2,hp:.95};
+if(IMG.ranger_idle){IMG.gunslinger_idle=IMG.ranger_idle;IMG.gunslinger_attack=IMG.ranger_attack;IMG.gunslinger_hurt=IMG.ranger_hurt}
+const CLS_ORDER=['knight','ranger','mage','assassin','scholar','gunslinger'];
 const MELEE={knight:1,assassin:1};
-range=function(){return MELEE[S.cls]?58:(S.cls==='mage'||S.cls==='scholar')?170:190};
-const SKI={knight:['swordsman_flame_slash','swordsman_whirlwind'],ranger:['archer_power_shot','archer_arrow_rain'],mage:['sorcerer_rune_orb','sorcerer_storm'],assassin:['assassin_shadow_blades','swordsman_whirlwind'],scholar:['sorcerer_rune_orb','scholar_tome_heal']};
-const SKN={knight:['Flame Slash','Whirlwind'],ranger:['Power Shot','Arrow Rain'],mage:['Rune Orb','Storm'],assassin:['Shadow Blades','Whirl'],scholar:['Rune Orb','Tome Bolt']};
+range=function(){return MELEE[S.cls]?58:S.cls==='gunslinger'?205:(S.cls==='mage'||S.cls==='scholar')?170:190};
+const SKI={knight:['swordsman_flame_slash','swordsman_whirlwind'],ranger:['archer_power_shot','archer_arrow_rain'],mage:['sorcerer_rune_orb','sorcerer_storm'],assassin:['assassin_shadow_blades','swordsman_whirlwind'],scholar:['sorcerer_rune_orb','scholar_tome_heal'],gunslinger:['archer_power_shot','archer_arrow_rain']};
+const SKN={knight:['Flame Slash','Whirlwind'],ranger:['Power Shot','Arrow Rain'],mage:['Rune Orb','Storm'],assassin:['Shadow Blades','Whirl'],scholar:['Rune Orb','Tome Bolt'],gunslinger:['Deadeye Shot','Fan the Hammer']};
 classPick=function(){}; // class select is the 3D screen (g3d.js)
 if(S.autoSkill===undefined)S.autoSkill=false; // auto-skill toggle, OFF by default (auto basic attacks always on)
 function toggleAutoSkill(){S.autoSkill=!S.autoSkill;toast(S.autoSkill?'Auto Skill ON':'Auto Skill OFF: tap skills yourself',1);save();hudSkills()}
@@ -81,7 +83,7 @@ function moveH(vx,vy,dt){const h=F.h,sp=h.mount?MSPD:HSPD;h.vx=h.vx||0;h.vy=h.vy
 // through AUD.master, so the existing sound toggle (AUD.toggle / S.mute) mutes everything.
 const FEEL={stopCrit:.06,stopBossHit:.1,stopBossKill:.15,stopGap:.25,kbMob:9,kbBoss:1.5,shakeCrit:.16,shakeSlam:.34,shakeBossDie:.5,burstN:12,sfxVol:.9,
  vol:{hit:.45,crit:.65,hurt:.55,die:.55,bossDie:.9,pickup:.4,chest:.55,equip:.5,skill:.55,tap:.22},
- skillHz:{knight:160,ranger:900,mage:520,assassin:1200,scholar:660}};
+ skillHz:{knight:160,ranger:900,mage:520,assassin:1200,scholar:660,gunslinger:340}};
 let _stopT=0,_feelT=0,_gapUntil=0,_lastHitSfx=0,_lastHurtSfx=0,_lastPickSfx=0,_lastTapSfx=0,_pvHp=null,_pvGold=null,_pvKeys=null,_pvTreats=null;
 function stopFor(sec){if(_stopT>0||_feelT<_gapUntil)return;_stopT=sec;if(window.G3D&&G3D.freeze)G3D.freeze(1)}
 AUD.sfxGain=null;
@@ -134,4 +136,19 @@ document.addEventListener('pointerdown',e=>{if(!e.target.closest||!e.target.clos
 startFight=function(){B=null};
 huntGo=function(){if(S.hunt<1){toast('No hunts left today');return}if(!F){toast('Enter the field first');return}S.hunt--;F.boss=spawnBoss();F.boss.hunt=1;F.banner=3;toast('Boss Hunt: '+F.boss.n+' stirs in the north lair!');if(AUD.sting)AUD.sting('quest');save();render()};
 const _qtF=questTarget;questTarget=function(){if(F&&F.boss&&F.boss.hunt&&!F.boss.dead)return{x:F.boss.x,y:F.boss.y,kind:'mob',m:F.boss,label:'boss hunt: '+F.boss.n};return _qtF()};
+const _kmB=killMob;killMob=function(m){if(m.boss)S.bossKills=(S.bossKills||0)+1;_kmB(m)};
 const _kmH=killMob;killMob=function(m){const wasHunt=!!(m.boss&&m.hunt);_kmH(m);if(wasHunt){S.shards+=30;S.eggs++;toast('Boss hunted! +30 💎 +1 🥚');save()}};
+
+
+// ---- M4: power milestones + first-session goals (7-day login track and 8h offline earnings already ship in game.js) ----
+const PMS=[1000,2500,5000,10000,20000,40000,80000];
+const FSGOALS=[['Reach level 5',()=>S.lv>=5],['Defeat 25 foes',()=>S.kills>=25],['Open 3 relic chests',()=>(S.stat.chest||0)>=3],['Slay any boss',()=>(S.bossKills||0)>=1],['Equip 4 pieces of gear',()=>Object.keys(S.gear).length>=4]];
+let _fsT=0;
+function m4Tick(){if(!F)return;const now=F.now;if(now-_fsT<1)return;_fsT=now;
+ const pw=stats().power;
+ while((S.pms||0)<PMS.length&&pw>=PMS[S.pms]){const i=S.pms;S.pms++;const r=25*(i+1);S.shards+=r;toast(`🏆 Power milestone ${fmt(PMS[i])}! +${r} 💎`);if(AUD.sting)AUD.sting('level');save()}
+ FSGOALS.forEach((g,i)=>{const k='g'+i;if(!S.fs[k]&&g[1]()){S.fs[k]=1;S.shards+=20;toast(`⭐ First steps ${i+1}/5: ${g[0]} +20 💎`);if(AUD.sting)AUD.sting('quest');
+  if(FSGOALS.every((_,j)=>S.fs['g'+j])){S.shards+=100;S.eggs++;toast('🌟 First Steps complete! +100 💎 +1 🥚')}save()}})}
+const _stM4=step;step=function(dt){_stM4(dt);m4Tick()};
+const _tqM4=tQuests;tQuests=function(){const done=FSGOALS.filter((_,i)=>S.fs['g'+i]).length;
+ return `<div class="card"><b>⭐ First Steps (${done}/5)</b>${FSGOALS.map((g,i)=>`<div class="task"><span>${S.fs['g'+i]?'✅':'▫️'} ${g[0]}</span><small>+20 💎</small></div>`).join('')}<div class="task"><span>🏆 Power milestones</span><small>${S.pms||0}/${PMS.length} claimed</small></div></div>`+_tqM4()};

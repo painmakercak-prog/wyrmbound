@@ -94,10 +94,10 @@ const glow=(col,s)=>{const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:glo
 // ---------- characters
 const ROLE={idle:['Idle_Sword','Idle_Weapon','Idle','Frog_Idle','Spider_Idle','Wasp_Flying'],walk:['Walk','Spider_Walk'],run:['Run','Run_Weapon','Running_A','Gallop','Spider_Walk','Frog_Jump','Wasp_Flying','Walk'],atk:['Sword_Slash','Staff_Attack','1H_Melee_Attack_Slice_Diagonal','1H_Melee_Attack_Chop','Attack','Frog_Attack','Spider_Attack','Wasp_Attack','Punch_Right'],shoot:['Gun_Shoot','1H_Ranged_Shoot'],cast:['Spell1','Spellcast_Shoot','Gun_Shoot'],skill:['Spell2','Roll','Kick_Right','Sword_Slash','Spellcast_Shoot','1H_Melee_Attack_Chop'],die:['Death','Death_A','Frog_Death','Spider_Death','Wasp_Death'],hit:['HitRecieve','RecieveHit','Hit_A'],cheer:['Wave','Cheer']};
 // heroes: Quaternius CC0 rigs (see CREDITS.md); weapons borrowed from KayKit packs, attached to the hand bone
-const HEROK={knight:'h_hooded',ranger:'h_adventurer',mage:'h_witch',assassin:'h_adv2',scholar:'h_wizard'},HTINT={assassin:'#6a4a9a'};
-const WEAP={knight:[['WristL','knight','Round_Shield',.62]],ranger:[['WristR','ranger','2H_Crossbow',.7]],mage:[['WristR','mage','2H_Staff',1.45]],assassin:[['WristR','assassin','Knife',.5],['WristL','assassin','Knife_Offhand',.5]],scholar:[]};
+const HEROK={knight:'h_hooded',ranger:'h_adventurer',mage:'h_witch',assassin:'h_adv2',scholar:'h_wizard',gunslinger:'h_adventurer'},HTINT={assassin:'#6a4a9a'};
+const WEAP={knight:[['WristL','knight','Round_Shield',.62]],ranger:[['WristR','ranger','2H_Crossbow',.7]],mage:[['WristR','mage','2H_Staff',1.45]],assassin:[['WristR','assassin','Knife',.5],['WristL','assassin','Knife_Offhand',.5]],scholar:[],gunslinger:[['WristR','ranger','1H_Crossbow',.7]]};
 const WROT={'1H_Sword':[0,0,-Math.PI/2],'Round_Shield':[0,Math.PI/2,0],'2H_Crossbow':[0,0,-Math.PI/2],'2H_Staff':[0,0,-Math.PI/2],'Knife':[0,0,-Math.PI/2],'Knife_Offhand':[0,0,Math.PI/2]};
-const HPAL={knight:{Brown2:'#24407e',LightBrown:'#8a5a32',DarkBrown:'#3a2418',Metal:'#c4cedc',Metal_Dark:'#6a7488',Gold:'#f0c050',White:'#e8ecf4',Brown:'#2a1a12'},ranger:{Green:'#2f6a3a',LightGreen:'#5a9a4a',Brown:'#6a4426',Brown2:'#4a3020',Hair:'#6a3a1a'},assassin:{LightGreen:'#3a2a5a',Green:'#22183a',Brown_02:'#4a3a6a',White:'#d8d0ec',Hair_Brown:'#1a1424'},mage:{Purple:'#5a2a9a'}};
+const HPAL={gunslinger:{Green:'#6a4a26',LightGreen:'#a8845a',Brown:'#4a3020',Brown2:'#2f2015',Hair:'#2a1a10'},knight:{Brown2:'#24407e',LightBrown:'#8a5a32',DarkBrown:'#3a2418',Metal:'#c4cedc',Metal_Dark:'#6a7488',Gold:'#f0c050',White:'#e8ecf4',Brown:'#2a1a12'},ranger:{Green:'#2f6a3a',LightGreen:'#5a9a4a',Brown:'#6a4426',Brown2:'#4a3020',Hair:'#6a3a1a'},assassin:{LightGreen:'#3a2a5a',Green:'#22183a',Brown_02:'#4a3a6a',White:'#d8d0ec',Hair_Brown:'#1a1424'},mage:{Purple:'#5a2a9a'}};
 const SPD={},_v=new THREE.Vector3(),_q=new THREE.Quaternion();
 function outline(o,th){o.traverse(m=>{if(!m.isSkinnedMesh||m.userData.ol)return;const mat=new THREE.MeshBasicMaterial({color:0x1a1020,side:THREE.BackSide});mat.onBeforeCompile=sh=>{sh.vertexShader=sh.vertexShader.replace('#include <begin_vertex>','vec3 transformed=position+normal*'+th.toFixed(4)+';')};mat.customProgramCacheKey=()=>'ol'+th.toFixed(4);
  const ol=new THREE.SkinnedMesh(m.geometry,mat);ol.userData.ol=1;ol.bind(m.skeleton,m.bindMatrix);ol.position.copy(m.position);ol.quaternion.copy(m.quaternion);ol.scale.copy(m.scale);ol.frustumCulled=false;m.parent.add(ol)})}
@@ -127,7 +127,7 @@ function mkDragon(col){const g=new THREE.Group(),M=new THREE.MeshStandardMateria
  const wing=sx=>{const s=new THREE.Shape();s.moveTo(0,0);s.lineTo(.9,.35);s.lineTo(1.1,-.1);s.lineTo(.7,-.25);s.lineTo(.4,-.15);s.lineTo(0,-.2);const m=new THREE.Mesh(new THREE.ShapeGeometry(s),Wm);const p=new THREE.Group();p.add(m);m.rotation.x=-Math.PI/2;p.scale.x=sx;p.position.set(.22*sx,.18,0);g.add(p);return p};
  const wl=wing(1),wr=wing(-1);const o=new THREE.Group();o.add(g);g.scale.setScalar(.9);const sh=new THREE.Mesh(new THREE.CircleGeometry(.45,16),new THREE.MeshBasicMaterial({color:0,transparent:true,opacity:.22,depthWrite:false}));sh.rotation.x=-Math.PI/2;o.add(sh);scene.add(o);return{w:o,g,wl,wr,sh}}
 // ---------- world objects
-let HERO=null,HCLS=null,WOLF=null,NPC={},PORTAL=null,CHEST=null,TRING=null,DRING=null;const MOB=new Map(),OTH=new Map(),PET=[],DROP=new Map(),FX3=[];
+let HERO=null,HCLS=null,WOLF=null,NPC={},PORTAL=null,CHEST=null,TRING=null,DRING=null,TEL3=null,GIM3=null;const MOB=new Map(),OTH=new Map(),PET=[],DROP=new Map(),FX3=[];
 const MOBK=['frog','spider','skel'],MOBH3=[1.3,.75,1.75];
 function heroObj(){const c=S.cls||'knight';if(HCLS!==c){if(HERO)scene.remove(HERO.w);HERO=mkChar(HEROK[c],1.8,HTINT[c],null,c);HCLS=c}return HERO}
 function buildStatic(){WOLF=mkChar('wolf',1.4,'#c8d4ff');WOLF.w.visible=false;
@@ -207,6 +207,18 @@ function draw3(){if(!F||!CX)return;const now=performance.now(),dt=Math.min(.1,(n
  DRING.visible=!!F.dest;if(F.dest){const x=F.dest.x*K,z=F.dest.y*K;DRING.position.set(x,hgt(x,z)+.08,z);DRING.scale.setScalar(.6+((t*2)%1)*.8)}
  // fx from the 2D sim -> 3D
  for(const f of F.fx){if(f.seen)continue;f.seen=1;if(f.slash){const u=f.face;fxSlash(f.x*K,(f.y+30)*K,hgt(f.x*K,(f.y+30)*K),u)}if(f.ring)fxRing(f.x*K,f.y*K,0xffb040,.45,7);if(f.heal)fxRing(h.x*K,h.y*K,0x9fff6a,.7,3)}
+ // boss telegraph markers (ground truth: F.tele / F.ringFx from field.js)
+ if(!TEL3){const mk=geo=>{const m=new THREE.Mesh(geo,new THREE.MeshBasicMaterial({color:0xff3b30,transparent:true,opacity:.3,side:THREE.DoubleSide,depthWrite:false}));m.rotation.x=-Math.PI/2;m.visible=false;scene.add(m);return m};
+  TEL3={r:mk(new THREE.RingGeometry(.88,1,44)),l:mk(new THREE.PlaneGeometry(1,1)),g:mk(new THREE.RingGeometry(.93,1,44))};TEL3.g.material=TEL3.g.material.clone();TEL3.g.material.color.set(0xff6a3d)}
+ const tl=(F.boss&&!F.boss.dead)?F.tele:null,pu=.3+.14*Math.sin(now*.02);
+ if(tl){if(tl.kind==='charge'){TEL3.r.visible=false;TEL3.l.visible=true;const cxp=(tl.x+tl.dx*290)*K,czp=(tl.y+tl.dy*290)*K;TEL3.l.position.set(cxp,hgt(cxp,czp)+.07,czp);TEL3.l.rotation.z=-Math.atan2(tl.dy,tl.dx);TEL3.l.scale.set(580*K,90*K,1);TEL3.l.material.opacity=pu}
+  else{TEL3.l.visible=false;TEL3.r.visible=true;const rr=(tl.kind==='slam'?115:tl.kind==='ring'?95:80)*K;TEL3.r.position.set(tl.x*K,hgt(tl.x*K,tl.y*K)+.07,tl.y*K);TEL3.r.scale.set(rr,rr,1);TEL3.r.material.opacity=pu}}
+ else{TEL3.r.visible=false;TEL3.l.visible=false}
+ // zone gimmick ground markers (springs / lava pools)
+ if(!GIM3){GIM3=[];const mk=col=>{const m=new THREE.Mesh(new THREE.CircleGeometry(1,36),new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:.38,side:THREE.DoubleSide,depthWrite:false}));m.rotation.x=-Math.PI/2;m.visible=false;scene.add(m);return m};
+  for(let i=0;i<2;i++)GIM3.push({m:mk(0x3ec6ff),k:'springs'});for(let i=0;i<4;i++)GIM3.push({m:mk(0xff5a1f),k:'lava'})}
+ {let si=0,li=0;const gim=F.gim||{};for(const e of GIM3){const p=e.k==='springs'?(gim.springs||[])[si++]:(gim.lava||[])[li++];if(p){e.m.visible=true;e.m.position.set(p[0]*K,hgt(p[0]*K,p[1]*K)+.05,p[1]*K);const rr=(e.k==='springs'?95:70)*K;e.m.scale.set(rr,rr,1)}else e.m.visible=false}}
+ if(F.ringFx){TEL3.g.visible=true;const gx=F.ringFx.x*K,gz=F.ringFx.y*K;TEL3.g.position.set(gx,hgt(gx,gz)+.07,gz);const rr=F.ringFx.r*K;TEL3.g.scale.set(rr,rr,1);TEL3.g.material.opacity=.8}else TEL3.g.visible=false;
  for(const f of F.fx)if(f.proj){let m=PROJ.get(f);if(!m){const mage=S.cls==='mage'||S.cls==='scholar';m=new THREE.Group();const core=new THREE.Mesh(new THREE.SphereGeometry(mage?.22:.08,10,8),new THREE.MeshBasicMaterial({color:mage?0xffc080:0xe0f0ff}));m.add(core);m.add(glow(mage?(S.cls==='scholar'?0x6ab0ff:0xff7a2a):0xbfe0ff,mage?1.6:.8));scene.add(m);PROJ.set(f,m)}const x=f.x*K,z=(f.y+40)*K;m.position.set(x,hgt(x,z)+1.1,z)}
  for(const[f,m]of PROJ)if(!F.fx.includes(f)){scene.remove(m);PROJ.delete(f)}
  for(let i=FX3.length-1;i>=0;i--){const e=FX3[i];e.l+=dt;const k=e.l/e.d;if(k>=1){scene.remove(e.m);FX3.splice(i,1);continue}e.m.material.opacity=1-k;if(e.k==='ring')e.m.scale.setScalar(1+k*e.r);if(e.k==='slash')e.m.rotation.z+=dt*6;if(e.k==='beam'){e.m.scale.set(1+k,1,1+k)}}
