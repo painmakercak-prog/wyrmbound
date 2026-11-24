@@ -86,72 +86,72 @@ html[data-theme="boss"] .fsk{transform:scale(1.07);transform-origin:bottom right
 --bp-volcano:0.00% 100.00%;
 --bp-wolf:12.50% 100.00%;
 }
-.ic{display:inline-block;width:1.2em;height:1.2em;vertical-align:-.22em;background-image:var(--ui-icons);background-size:900% 800%;background-repeat:no-repeat}
-.ic-audioOn{background-position:var(--bp-audioOn)}
-.ic-audioOff{background-position:var(--bp-audioOff)}
-.ic-locked{background-position:var(--bp-locked)}
-.ic-unlocked{background-position:var(--bp-unlocked)}
-.ic-checkmark{background-position:var(--bp-checkmark)}
-.ic-cross{background-position:var(--bp-cross)}
-.ic-arrowUp{background-position:var(--bp-arrowUp)}
-.ic-arrowDown{background-position:var(--bp-arrowDown)}
-.ic-arrowLeft{background-position:var(--bp-arrowLeft)}
-.ic-arrowRight{background-position:var(--bp-arrowRight)}
-.ic-diamond{background-position:var(--bp-diamond)}
-.ic-coin{background-position:var(--bp-coin)}
-.ic-star{background-position:var(--bp-star)}
-.ic-trophy{background-position:var(--bp-trophy)}
-.ic-key{background-position:var(--bp-key)}
-.ic-keyLarge{background-position:var(--bp-keyLarge)}
-.ic-plus{background-position:var(--bp-plus)}
-.ic-minus{background-position:var(--bp-minus)}
-.ic-exclamation{background-position:var(--bp-exclamation)}
-.ic-question{background-position:var(--bp-question)}
-.ic-home{background-position:var(--bp-home)}
-.ic-return{background-position:var(--bp-return)}
-.ic-next{background-position:var(--bp-next)}
-.ic-previous{background-position:var(--bp-previous)}
-.ic-pause{background-position:var(--bp-pause)}
-.ic-stop{background-position:var(--bp-stop)}
-.ic-fastForward{background-position:var(--bp-fastForward)}
-.ic-wrench{background-position:var(--bp-wrench)}
-.ic-gear{background-position:var(--bp-gear)}
-.ic-flag{background-position:var(--bp-flag)}
-.ic-target{background-position:var(--bp-target)}
-.ic-save{background-position:var(--bp-save)}
-.ic-amulet{background-position:var(--bp-amulet)}
-.ic-armor{background-position:var(--bp-armor)}
-.ic-basket{background-position:var(--bp-basket)}
-.ic-bat{background-position:var(--bp-bat)}
-.ic-book{background-position:var(--bp-book)}
-.ic-boot{background-position:var(--bp-boot)}
-.ic-bow{background-position:var(--bp-bow)}
-.ic-burst{background-position:var(--bp-burst)}
-.ic-crab{background-position:var(--bp-crab)}
-.ic-dragon{background-position:var(--bp-dragon)}
-.ic-egg{background-position:var(--bp-egg)}
-.ic-flame{background-position:var(--bp-flame)}
-.ic-frog{background-position:var(--bp-frog)}
-.ic-gift{background-position:var(--bp-gift)}
-.ic-glove{background-position:var(--bp-glove)}
-.ic-hands{background-position:var(--bp-hands)}
-.ic-hat{background-position:var(--bp-hat)}
-.ic-heart{background-position:var(--bp-heart)}
-.ic-helmet{background-position:var(--bp-helmet)}
-.ic-meat{background-position:var(--bp-meat)}
-.ic-mushroom{background-position:var(--bp-mushroom)}
-.ic-paw{background-position:var(--bp-paw)}
-.ic-rock{background-position:var(--bp-rock)}
-.ic-sack{background-position:var(--bp-sack)}
-.ic-shield{background-position:var(--bp-shield)}
-.ic-skull{background-position:var(--bp-skull)}
-.ic-sword{background-position:var(--bp-sword)}
-.ic-tent{background-position:var(--bp-tent)}
-.ic-ticket{background-position:var(--bp-ticket)}
-.ic-tower{background-position:var(--bp-tower)}
-.ic-tree{background-position:var(--bp-tree)}
-.ic-volcano{background-position:var(--bp-volcano)}
-.ic-wolf{background-position:var(--bp-wolf)}
+.ic{--bp:0 0;display:inline-block;width:1.2em;height:1.2em;vertical-align:-.22em;background-color:currentColor;-webkit-mask-image:var(--ui-icons);mask-image:var(--ui-icons);-webkit-mask-size:900% 800%;mask-size:900% 800%;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;-webkit-mask-position:var(--bp);mask-position:var(--bp)}
+.ic-audioOn{--bp:var(--bp-audioOn)}
+.ic-audioOff{--bp:var(--bp-audioOff)}
+.ic-locked{--bp:var(--bp-locked)}
+.ic-unlocked{--bp:var(--bp-unlocked)}
+.ic-checkmark{--bp:var(--bp-checkmark)}
+.ic-cross{--bp:var(--bp-cross)}
+.ic-arrowUp{--bp:var(--bp-arrowUp)}
+.ic-arrowDown{--bp:var(--bp-arrowDown)}
+.ic-arrowLeft{--bp:var(--bp-arrowLeft)}
+.ic-arrowRight{--bp:var(--bp-arrowRight)}
+.ic-diamond{--bp:var(--bp-diamond)}
+.ic-coin{--bp:var(--bp-coin)}
+.ic-star{--bp:var(--bp-star)}
+.ic-trophy{--bp:var(--bp-trophy)}
+.ic-key{--bp:var(--bp-key)}
+.ic-keyLarge{--bp:var(--bp-keyLarge)}
+.ic-plus{--bp:var(--bp-plus)}
+.ic-minus{--bp:var(--bp-minus)}
+.ic-exclamation{--bp:var(--bp-exclamation)}
+.ic-question{--bp:var(--bp-question)}
+.ic-home{--bp:var(--bp-home)}
+.ic-return{--bp:var(--bp-return)}
+.ic-next{--bp:var(--bp-next)}
+.ic-previous{--bp:var(--bp-previous)}
+.ic-pause{--bp:var(--bp-pause)}
+.ic-stop{--bp:var(--bp-stop)}
+.ic-fastForward{--bp:var(--bp-fastForward)}
+.ic-wrench{--bp:var(--bp-wrench)}
+.ic-gear{--bp:var(--bp-gear)}
+.ic-flag{--bp:var(--bp-flag)}
+.ic-target{--bp:var(--bp-target)}
+.ic-save{--bp:var(--bp-save)}
+.ic-amulet{--bp:var(--bp-amulet)}
+.ic-armor{--bp:var(--bp-armor)}
+.ic-basket{--bp:var(--bp-basket)}
+.ic-bat{--bp:var(--bp-bat)}
+.ic-book{--bp:var(--bp-book)}
+.ic-boot{--bp:var(--bp-boot)}
+.ic-bow{--bp:var(--bp-bow)}
+.ic-burst{--bp:var(--bp-burst)}
+.ic-crab{--bp:var(--bp-crab)}
+.ic-dragon{--bp:var(--bp-dragon)}
+.ic-egg{--bp:var(--bp-egg)}
+.ic-flame{--bp:var(--bp-flame)}
+.ic-frog{--bp:var(--bp-frog)}
+.ic-gift{--bp:var(--bp-gift)}
+.ic-glove{--bp:var(--bp-glove)}
+.ic-hands{--bp:var(--bp-hands)}
+.ic-hat{--bp:var(--bp-hat)}
+.ic-heart{--bp:var(--bp-heart)}
+.ic-helmet{--bp:var(--bp-helmet)}
+.ic-meat{--bp:var(--bp-meat)}
+.ic-mushroom{--bp:var(--bp-mushroom)}
+.ic-paw{--bp:var(--bp-paw)}
+.ic-rock{--bp:var(--bp-rock)}
+.ic-sack{--bp:var(--bp-sack)}
+.ic-shield{--bp:var(--bp-shield)}
+.ic-skull{--bp:var(--bp-skull)}
+.ic-sword{--bp:var(--bp-sword)}
+.ic-tent{--bp:var(--bp-tent)}
+.ic-ticket{--bp:var(--bp-ticket)}
+.ic-tower{--bp:var(--bp-tower)}
+.ic-tree{--bp:var(--bp-tree)}
+.ic-volcano{--bp:var(--bp-volcano)}
+.ic-wolf{--bp:var(--bp-wolf)}
 .sdot{display:inline-block;width:.6em;height:.6em;border-radius:50%;background:#3ae05a;box-shadow:0 0 0 1.5px #0a173488}
 .sdot.off{background:#dfe6f2}
 
@@ -395,6 +395,11 @@ body.csm #world>*:not(#gl),body.csm nav{visibility:hidden!important}
 #mtb{background-color:#8a6a10}#autob{background-color:#8a6a10!important}
 
 nav button.on{background-color:#101c3a}
+
+#mute{color:#fff;right:12px;top:calc(env(safe-area-inset-top) + 148px)}
+#mtb .ic{position:absolute;inset:0;margin:auto;width:26px;height:26px;color:#13235a;z-index:1;filter:drop-shadow(0 1px 0 #fff8)}
+#chatl{max-height:39px}
+.btn.big{color:#3a2408;text-shadow:0 1px 0 #fff8}
 </style></head><body>
 <div id="ttl"><img class="lgimg" data-ui="brand_logo" alt="Journey of Aethra"><div class="bt"><div class="lb"><i id="ttlb"></i></div><div class="lt" id="ttlt">Loading... 0%</div><button id="ttlg">TAP TO PLAY</button></div><div class="cr">Prototype build · 3D</div></div>
 <div id="cs"><h2>Choose your class</h2><div id="csl"></div><div class="cse"><span id="cse"></span><span id="csn"></span><span id="csd"></span></div><div class="csb"><button id="csnext">Next</button><button id="csgo">Start</button></div></div>
@@ -408,7 +413,7 @@ nav button.on{background-color:#101c3a}
 <div id="chatbox" onclick="tab='lodge';render()"><div id="chatl"><p><i>World</i> Adventurers are out hunting…</p></div></div>
 <div id="tframe"></div><div id="autost"></div><div id="tick2"><span id="ticker"></span></div>
 <div class="fsk"><button id="fs0" class="sk s0" onclick="useSkillF(0)"><img src=""><small>Skill</small></button><button id="fs1" class="sk s1" onclick="useSkillF(1)"><img src=""><small>Skill</small></button><button id="fs2" class="sk s2" onclick="useSkillF(2)"><img data-ui="skills_scholar_tome_heal"><small>Mend</small></button><button id="fs3" class="sk s3 lock"><img data-ui="skills_sorcerer_storm"><small>Lv 15 unlock</small></button><button id="fs4" class="sk s4 lock"><img data-ui="skills_assassin_shadow_blades"><small>Lv 30 unlock</small></button><button id="atk" onclick="attackBtn()"></button></div>
-<button id="mtb" class="sk mt" onclick="F.h.mount=F.h.mount?0:1;F.manualT=F.now"><img src=""><small>Mount</small></button>
+<button id="mtb" class="sk mt" onclick="F.h.mount=F.h.mount?0:1;F.manualT=F.now"><i class="ic ic-wolf"></i><small>Mount</small></button>
 <button id="autob" class="sk au" onclick="toggleAuto()"><img src="data:image/webp;base64,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"><small>AUTO</small></button><button id="ask" onclick="toggleAutoSkill()">AUTO SKILL OFF</button><button id="mute" onclick="AUD.toggle()"><i class="ic ic-audioOn" id="muteic"></i></button>
 <div id="lvban"><img data-ui="fx_level_up_banner"><b id="lvbt"></b></div><div id="gearpop"><img data-ui="fx_power_up_arrow">NEW GEAR EQUIPPED</div>
 <div id="dlg" onclick="dlgNext()"></div>
@@ -530,7 +535,7 @@ function drawArena(){const I=ISLES[S.isle%4],a=$('arena');a.style.backgroundImag
  <div class="side l"><div class="bar"><i id="phb"></i><span id="pht"></span></div><div id="hero" class="unit">${`<img id="himg" class="ai" src="${IMG[(S.cls||'knight')+'_idle']||''}">`}</div>
  <div class="pets">${pets.map(p=>`<div class="pu st${p.st}">${img(PETS[p.s].k,petE(p))}</div>`).join('')}</div></div>
  <div class="side r"><div class="bar e"><i id="ehb"></i><span id="eht"></span></div><div id="foe" class="unit${B.e.boss?' boss':''}${B.mode==='arena'?' flip':''}">${img(B.e.k,B.e.e)}</div><div class="fn">${B.e.n}</div></div>
- <button id="quest" onclick="questTap()"><b><i class="ic ic-scroll"></i> Quest</b><span>${questText()}</span></button>
+ <button id="quest" onclick="questTap()"><b><i class="ic ic-exclamation"></i> Quest</b><span>${questText()}</span></button>
  <div class="skills">${SK.map((k,i)=>`<button id="sk${i}" class="sk" onclick="useSkill(${i},1)"><span>${k.e}</span><small>${k.n}</small></button>`).join('')}
  <button class="sk au${S.auto?' on':''}" onclick="S.auto=!S.auto;drawArena();updBars()"><span>${S.auto?'<i class="ic ic-pause"></i>':'<i class="ic ic-next"></i>'}</span><small>Auto ${S.auto?'ON':'OFF'}</small></button></div>`;updBars()}
 function questText(){const d=dailyList().find(t=>!S.tdone[t.k]&&prog(t)>=t.n);if(d)return'Claim: '+d.n2;return`Clear ${ISLES[S.isle%4].n} ${S.isle+1}-${S.stage}`}
@@ -822,7 +827,7 @@ function drawMini(){const c=$('mini');if(!c)return;const g=c.getContext('2d'),w=
  const dot=(x,y,col,r)=>{g.fillStyle=col;g.beginPath();g.arc(x*sx,y*sy,r||2.5,0,7);g.fill()};for(const m of F.mobs)if(!m.dead)dot(m.x,m.y,'#e2382a',1.6);if(F.boss)dot(F.boss.x,F.boss.y,'#ff0',4);
  for(const k in NPCS)dot(...PTS[k],'#ffd54a',3);if(S.q>=7)dot(...PTS.portal,'#3ac8ff',4);for(const o of F.others)dot(o.x,o.y,'#9fe0ff',1.8);
  const t=questTarget();g.strokeStyle='#fff';g.lineWidth=1;g.setLineDash([2,2]);g.beginPath();g.moveTo(F.h.x*sx,F.h.y*sy);g.lineTo(t.x*sx,t.y*sy);g.stroke();g.setLineDash([]);dot(F.h.x,F.h.y,'#4cff4a',3.5)}
-let hudK='';function drawHud(){const q=Q(),qs=$('qtr'),st=$('autost');const k=S.q+'|'+(S.qk||0)+'|'+S.isle;if(k!==hudK){hudK=k;qs.innerHTML=`<b><i class="ic ic-scroll"></i> Main · ${q.title}</b><span>${q.t==='kill'?`Defeat (${S.qk||0}/${q.n})`:q.t==='talk'?'Speak with '+NPCS[q.who].n:q.t==='boss'?'Boss lair, north':'Step into the Waygate'}</span>`}
+let hudK='';function drawHud(){const q=Q(),qs=$('qtr'),st=$('autost');const k=S.q+'|'+(S.qk||0)+'|'+S.isle;if(k!==hudK){hudK=k;qs.innerHTML=`<b><i class="ic ic-exclamation"></i> Main · ${q.title}</b><span>${q.t==='kill'?`Defeat (${S.qk||0}/${q.n})`:q.t==='talk'?'Speak with '+NPCS[q.who].n:q.t==='boss'?'Boss lair, north':'Step into the Waygate'}</span>`}
  st.textContent=F.status;st.className=F.status.startsWith('Auto')?'on':'';const ab=$('autob');ab.classList.toggle('on',!!S.auto);ab.querySelector('small').textContent=S.auto?'AUTO ON':'AUTO OFF';
  SK.forEach((s,i)=>{const b=$('fs'+i);if(b)b.style.setProperty('--cd',F.h.sk[i]/s.cd)});
  const tf=$('tframe'),m=F.tgt;if(m&&!m.dead){tf.style.display='block';tf.innerHTML=`<b>Lv${m.lv} ${m.n}</b><div class="bar e"><i style="width:${m.hp/m.mhp*100}%"></i><span>${fmt(Math.max(0,m.hp))}</span></div>`}else tf.style.display='none';
@@ -1055,7 +1060,7 @@ const MODES={};function registerMode(id,def){MODES[id]=def}let MODE=null;
 function enterMode(id){const m=MODES[id];if(!m)return;if(m.soon){toast(m.n+' is coming in the next update',1);return}MODE=m;if(!m.field)B={mode:'side:'+id};m.enter&&m.enter();if(window.G3D)G3D.setScene(m.scene||'field')}
 function exitMode(){if(MODE&&MODE.exit)MODE.exit();MODE=null;B=null;if(window.G3D)G3D.setScene('field')}
 registerMode('hunt',{n:'Hunting Stage',soon:1,scene:'hunt'});registerMode('trial',{n:'Extra Trials',soon:1});
-function eventsM(){modal(`<h3>Events</h3>${Object.entries(MODES).map(([k,m])=>`<div class="shop"><span class="si"><i class="ic ic-bow"></i></span><div><b>${m.n}</b><small>${m.soon?'Coming soon':'Open'}</small></div><button class="btn b sm" onclick="closeM();enterMode('${k}')">Go</button></div>`).join('')}<button class="btn" onclick="closeM()">Close</button>`)}
+function eventsM(){modal(`<h3>Events</h3>${Object.entries(MODES).map(([k,m])=>`<div class="shop"><span class="si"><i class="ic ic-${({hunt:'bow',trial:'skull',tower:'tower'})[k]||'flag'}"></i></span><div><b>${m.n}</b><small>${m.soon?'Coming soon':'Open'}</small></div><button class="btn b sm" onclick="closeM();enterMode('${k}')">Go</button></div>`).join('')}<button class="btn" onclick="closeM()">Close</button>`)}
 // ---- audio: WebAudio gain crossfade (works on iOS; unlocked by the first tap)
 const AUD={ctx:null,tr:{},cur:'title_theme',mute:!!S.mute,urls:{},
  init(urls){this.urls=urls},
@@ -1068,6 +1073,7 @@ const AUD={ctx:null,tr:{},cur:'title_theme',mute:!!S.mute,urls:{},
  sting(k){if(!this.ctx||!this.urls[k])return;const a=new Audio(this.urls[k]),g=this.ctx.createGain();g.gain.value=.55*.7;this.ctx.createMediaElementSource(a).connect(g);g.connect(this.master);a.play().catch(()=>{})},
  toggle(){this.mute=!this.mute;S.mute=this.mute;save();if(this.master)this.master.gain.value=this.mute?0:1;muteHud()}};
 function muteHud(){const i=$('muteic');if(i)i.className='ic '+(AUD.mute?'ic-audioOff':'ic-audioOn')}
+muteHud();
 function creditsM(){modal(`<h3>Credits</h3><div class="card" style="max-height:52dvh;overflow:auto">${(window.CREDITS_HTML||'')}</div><button class="btn" onclick="closeM()">Close</button>`)}
 setInterval(powerTick,100);
 const _rd=render;render=function(){_rd();if(PWS!==null){const e=$('pw');if(e)e.textContent=Math.round(PWS).toLocaleString()}vipHud()};
