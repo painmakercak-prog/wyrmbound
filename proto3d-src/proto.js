@@ -79,10 +79,11 @@ function moveH(vx,vy,dt){const h=F.h,sp=h.mount?MSPD:HSPD;h.vx=h.vx||0;h.vy=h.vy
 // ===== FEEL PASS: tuning + synthesized SFX + hit feel. Every number lives in FEEL. =====
 // All SFX are synthesized live with WebAudio (original, no audio files, no packs) and route
 // through AUD.master, so the existing sound toggle (AUD.toggle / S.mute) mutes everything.
-const FEEL={stopCrit:.06,stopBossHit:.1,stopKill:.1,kbMob:9,kbBoss:1.5,shakeCrit:.16,shakeSlam:.34,shakeBossDie:.5,burstN:12,sfxVol:.9,
+const FEEL={stopCrit:.06,stopBossHit:.1,stopBossKill:.15,stopGap:.25,kbMob:9,kbBoss:1.5,shakeCrit:.16,shakeSlam:.34,shakeBossDie:.5,burstN:12,sfxVol:.9,
  vol:{hit:.45,crit:.65,hurt:.55,die:.55,bossDie:.9,pickup:.4,chest:.55,equip:.5,skill:.55,tap:.22},
  skillHz:{knight:160,ranger:900,mage:520,assassin:1200,scholar:660}};
-let _stopT=0,_lastHitSfx=0,_lastPickSfx=0,_lastTapSfx=0,_pvHp=null,_pvGold=null,_pvKeys=null,_pvTreats=null;
+let _stopT=0,_feelT=0,_gapUntil=0,_lastHitSfx=0,_lastHurtSfx=0,_lastPickSfx=0,_lastTapSfx=0,_pvHp=null,_pvGold=null,_pvKeys=null,_pvTreats=null;
+function stopFor(sec){if(_stopT>0||_feelT<_gapUntil)return;_stopT=sec;if(window.G3D&&G3D.freeze)G3D.freeze(1)}
 AUD.sfxGain=null;
 AUD.sfx=function(n){if(!this.ctx||this.mute)return;const C=this.ctx,t=C.currentTime;
  if(!this.sfxGain){this.sfxGain=C.createGain();this.sfxGain.gain.value=FEEL.sfxVol;this.sfxGain.connect(this.master)}
@@ -101,13 +102,16 @@ AUD.sfx=function(n){if(!this.ctx||this.mute)return;const C=this.ctx,t=C.currentT
   case 'tap':tone(1250,1250,.03,'sine',V.tap);break;
   default:{const hz=FEEL.skillHz[S.cls]||600;nz(.14,V.skill,2600);tone(hz,hz*.5,.16,'sawtooth',V.skill*.55);tone(hz*1.5,hz*1.5,.07,'sine',V.skill*.4,.02)}}};
 // hit / crit: sound, hit-stop, knockback (bosses barely move)
-const _hmF=hitMob;hitMob=function(m,d,tag,c){const crit=tag==='CRIT ';_hmF(m,d,tag,c);const now=performance.now();
- if(crit){_stopT=Math.max(_stopT,FEEL.stopCrit);if(window.G3D&&G3D.shake)G3D.shake(FEEL.shakeCrit);if(now-_lastHitSfx>50){_lastHitSfx=now;AUD.sfx('crit')}}
+const _hmF=hitMob;hitMob=function(m,d,tag,c){const crit=tag==='CRIT ',skill=tag==='SK',pet=c==='#ffd0ff';_hmF(m,d,tag,c);const now=performance.now();
+ if(crit){if(window.G3D&&G3D.shake)G3D.shake(FEEL.shakeCrit);if(now-_lastHitSfx>50){_lastHitSfx=now;AUD.sfx('crit')}}
  else if(now-_lastHitSfx>55){_lastHitSfx=now;AUD.sfx('hit')}
- if(m.boss)_stopT=Math.max(_stopT,FEEL.stopBossHit);
- if(F&&F.h){const dx=m.x-F.h.x,dy=m.y-F.h.y,dd=Math.hypot(dx,dy)||1,kb=m.boss?FEEL.kbBoss:FEEL.kbMob;m.x=Math.max(30,Math.min(ZW-30,m.x+dx/dd*kb));m.y=Math.max(60,Math.min(ZH-30,m.y+dy/dd*kb))}};
+ if(m.boss){if(skill)stopFor(FEEL.stopBossHit);else if(crit&&!pet)stopFor(FEEL.stopCrit)}
+ else if(crit&&!pet)stopFor(FEEL.stopCrit);
+ if(F&&F.h){let ox=F.h.x,oy=F.h.y,kb=m.boss?FEEL.kbBoss:FEEL.kbMob;
+  if(pet){kb*=.5;let bp=null,bd=1e9;for(const fp of F.pets){const dd=D(fp,m);if(dd<bd){bd=dd;bp=fp}}if(bp){ox=bp.x;oy=bp.y}}
+  const dx=m.x-ox,dy=m.y-oy,dd=Math.hypot(dx,dy)||1;m.x=Math.max(30,Math.min(ZW-30,m.x+dx/dd*kb));m.y=Math.max(60,Math.min(ZH-30,m.y+dy/dd*kb))}};
 // deaths: sound, hit-stop, extra burst + ring (the 3D die animation and sink already play in g3d)
-const _kmF=killMob;killMob=function(m){_kmF(m);AUD.sfx(m.boss?'bossDie':'die');_stopT=Math.max(_stopT,FEEL.stopKill);
+const _kmF=killMob;killMob=function(m){_kmF(m);AUD.sfx(m.boss?'bossDie':'die');if(m.boss)stopFor(FEEL.stopBossKill);
  sparks(m.x,m.y-34,'#ffffff',FEEL.burstN);F.fx.push({ring:1,x:m.x,y:m.y});if(m.boss&&window.G3D&&G3D.shake)G3D.shake(FEEL.shakeBossDie)};
 // skill casts: one synthesized voice per class
 const _usF=useSkillF;useSkillF=function(i){const b=F&&F.h?F.h.sk[i]:0;_usF(i);if(F&&F.h&&F.h.sk[i]!==b)AUD.sfx('skill')};
@@ -115,9 +119,10 @@ const _usF=useSkillF;useSkillF=function(i){const b=F&&F.h?F.h.sk[i]:0;_usF(i);if
 const _ocF=openChest;openChest=function(){const r=_ocF();if(r)AUD.sfx('chest');return r};
 const _eqF=equip;equip=function(){_eqF();AUD.sfx('equip')};
 // hit-stop clock + hurt/pickup detection (watches hp and currency deltas each frame)
-const _stF=step;step=function(dt){if(_stopT>0){_stopT-=dt;_stF(0)}else _stF(dt);
+const _stF=step;step=function(dt){_feelT+=dt;
+ if(_stopT>0){_stopT-=dt;if(_stopT<=0){_stopT=0;_gapUntil=_feelT+FEEL.stopGap;if(window.G3D&&G3D.freeze)G3D.freeze(0)}_stF(0)}else _stF(dt);
  if(!F)return;const h=F.h,now=performance.now();
- if(_pvHp!==null&&h.hp<_pvHp-.5&&h.dead<=0){AUD.sfx('hurt');if(_pvHp-h.hp>hmax()*.09&&window.G3D&&G3D.shake)G3D.shake(FEEL.shakeSlam)}
+ if(_pvHp!==null&&h.hp<_pvHp-.5&&h.dead<=0){if(now-_lastHurtSfx>150){_lastHurtSfx=now;AUD.sfx('hurt')}if(_pvHp-h.hp>hmax()*.09&&window.G3D&&G3D.shake)G3D.shake(FEEL.shakeSlam)}
  _pvHp=h.hp;
  if(_pvGold===null){_pvGold=S.gold;_pvKeys=S.keys;_pvTreats=S.treats}
  else if((S.gold>_pvGold||S.keys>_pvKeys||S.treats>_pvTreats)&&now-_lastPickSfx>70){_lastPickSfx=now;AUD.sfx('pickup')}
