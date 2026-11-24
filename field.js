@@ -4,6 +4,9 @@ const THEME=[{g:'#6cbf4a',g2:'#5aa83c',p:'#d9c27a',t:'#2f8a3a',t2:'#47b04a',r:'#
  {g:'#dfeaf5',g2:'#c8d9ec',p:'#f7fbff',t:'#3a6a8a',t2:'#5f93b5',r:'#9aa8b8'},{g:'#6a3a2e',g2:'#57301f',p:'#d07a3a',t:'#3a2a26',t2:'#ff6a2a',r:'#4a3a36'}];
 const NPCS={elder:{n:'Elder Oswin',k:'npc_elder'},smith:{n:'Mara the Smith',k:'npc_smith'}};
 const PTS={village:[700,1800],elder:[630,1790],smith:[790,1770],A:[380,1400],B:[1020,1120],C:[430,720],lair:[700,330],portal:[1120,250]};
+const ZLAYOUTS=[{A:[380,1400],B:[1020,1120],C:[430,720],lair:[700,330]},{A:[1150,1500],B:[300,1050],C:[1080,620],lair:[320,300]},{A:[280,880],B:[1120,1480],C:[560,430],lair:[1120,320]},{A:[640,1520],B:[280,620],C:[1140,1020],lair:[660,290]}];
+const GIM=[{springs:[[520,1640],[1020,1120]]},{storm:1},{ice:1},{lava:[[420,1000],[900,700],[620,450],[1050,1350]]}];
+const GIMTXT=['🌸 Healing springs restore your HP','🌪️ Storm squalls: your attack range is cut','❄️ Deep ice: everything moves slower','🌋 Lava pools burn anyone standing in them'];
 function QUESTS(){const I=ISLES[S.isle%4],F=I.foes.map(k=>FOE[k][0]),bn=FOE[I.boss][0];return[
  {t:'talk',who:'elder',title:'A Restless Wild',lines:[`Ah, a wyrm-bonded traveler! ${I.n} has gone wild lately.`,`${F[0]}s swarm the old stones to the west. Thin them out for us?`]},
  {t:'kill',camp:'A',n:6,title:`Thin the ${F[0]}s`},
@@ -29,14 +32,14 @@ function buildZone(){const th=THEME[S.isle%4],c=document.createElement('canvas')
 const IC={};function im(k){if(!IMG[k])return null;if(!IC[k]){IC[k]=new Image();IC[k].src=IMG[k]}return IC[k].complete?IC[k]:null}
 function mobStat(t){return{hp:Math.round(60*Math.pow(1.17,t-1)),atk:Math.round(6*Math.pow(1.17,t-1))}}
 function zoneTier(){return S.isle*10+1}
-function spawnMob(camp){const I=ISLES[S.isle%4],ci={A:0,B:1,C:2}[camp],t=zoneTier()+ci*2,st=mobStat(t),[hx,hy]=PTS[camp],a=R()*7,d=R()*110;
+function spawnMob(camp){const I=ISLES[S.isle%4],ci={A:0,B:1,C:2}[camp],t=zoneTier()+ci*2,st=mobStat(Math.min(t,26)),[hx,hy]=PTS[camp],a=R()*7,d=R()*110;
  return{k:I.foes[ci],n:FOE[I.foes[ci]][0],camp,x:hx+Math.cos(a)*d,y:hy+Math.sin(a)*d*.7,hx,hy,hp:st.hp,mhp:st.hp,atk:st.atk,lv:t,cd:1,dead:0,rt:0,fl:0,hit:0,wt:R()*3}}
-function spawnBoss(){const I=ISLES[S.isle%4],t=zoneTier()+7,st=mobStat(t);return{k:I.boss,n:FOE[I.boss][0],camp:'lair',boss:1,x:PTS.lair[0],y:PTS.lair[1],hx:PTS.lair[0],hy:PTS.lair[1],hp:st.hp*10,mhp:st.hp*10,atk:Math.round(st.atk*1.8),lv:t,cd:2,dead:0,rt:0,hit:0,wt:0}}
-function initZone(){const z=buildZone(),mobs=[];for(const c of['A','B','C'])for(let i=0;i<5;i++)mobs.push(spawnMob(c));
+function spawnBoss(){const I=ISLES[S.isle%4],t=zoneTier()+7,st=mobStat(t);return{k:I.boss,n:FOE[I.boss][0],camp:'lair',boss:1,x:PTS.lair[0],y:PTS.lair[1],hx:PTS.lair[0],hy:PTS.lair[1],hp:Math.round(st.hp*[48,20,8,4][S.isle%4]*(S.cls==='gunslinger'?1.9:1)),mhp:Math.round(st.hp*[48,20,8,4][S.isle%4]*(S.cls==='gunslinger'?1.9:1)),atk:Math.round(st.atk*1.8),lv:t,cd:2,dead:0,rt:0,hit:0,wt:0,tele:null,teleCd:3.5,teleN:0,charge:null}}
+function initZone(){const L=ZLAYOUTS[S.isle%4];if(L)for(const k in L)PTS[k]=L[k];const z=buildZone(),mobs=[];for(const c of['A','B','C'])for(let i=0;i<5;i++)mobs.push(spawnMob(c));
  const others=[0,1,2,3].map(i=>({n:pick(NAMES),c:pick(['knight','mage','ranger']),x:300+R()*800,y:600+R()*1200,tx:0,ty:0,w:0}));
  const s=stats();F={z,mobs,boss:null,drops:[],fx:[],others,chest:null,ct:20,
   h:{x:PTS.village[0],y:PTS.village[1]-60,hp:s.hp+s.ph,face:1,cd:0,sk:[0,0,0],dead:0,mount:0,combatT:9,pose:'idle',pt:0,walk:0},
-  pets:[],dest:null,joy:null,manualT:-99,dlg:null,status:'',tgt:null,bossFails:0,trainT:0,dungT:0,now:0,banner:3,lvT:0};
+  pets:[],dest:null,joy:null,manualT:-99,dlg:null,status:'',tgt:null,bossFails:0,trainT:0,dungT:0,now:0,banner:3,lvT:0,tele:null,ringFx:null,gim:GIM[S.isle%4]};setTimeout(()=>toast(GIMTXT[S.isle%4]),700);
  if(S.q===undefined)S.q=0;if(S.q>=6&&S.q<7)F.boss=spawnBoss();
  const nm=$('znm');if(nm)nm.textContent=ISLES[S.isle%4].n}
 // ---- helpers
@@ -44,7 +47,7 @@ const D=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
 function Q(){return QUESTS()[S.q]||QUESTS()[0]}
 function qProg(){return S.qk||0}
 function hmax(){const s=stats();return s.hp+s.ph}
-function range(){return S.cls==='knight'?58:S.cls==='mage'?170:190}
+function range(){const r=S.cls==='knight'?58:S.cls==='mage'?170:190;return S.isle%4===1?Math.round(r*.65):r}
 function isAuto(){return S.auto&&F.now-F.manualT>4}
 function addFx(x,y,t,c,big){F.fx.push({x,y,t,c,big,l:0})}
 function questTarget(){const q=Q();if(q.t==='talk')return{x:PTS[q.who][0]+40,y:PTS[q.who][1]+20,kind:'npc',who:q.who,label:'walking to '+NPCS[q.who].n};
@@ -68,7 +71,7 @@ function hitMob(m,d,tag,c){if(m.dead)return;m.hp-=d;m.hit=.15;m.aggro=1;addFx(m.
 function killMob(m){m.dead=1;m.dieT=F.now;sparks(m.x,m.y-30,'#ffe066',14);m.rt=m.boss?0:5+R()*2;const t=m.lv;S.kills++;S.stat.kills++;const g=Math.round(6*Math.pow(1.12,t)*(m.boss?8:1)),x=Math.round(8*Math.pow(1.1,t)*(m.boss?6:1));
  gainXp(x);addFx(m.x,m.y-30,'+'+fmt(x)+' EXP','#9fff6a');F.drops.push({x:m.x,y:m.y,k:'gold',v:g,a:0});if(R()<(m.boss?1:.22))F.drops.push({x:m.x+20,y:m.y+8,k:'key',v:m.boss?3:1,a:0});if(R()<.05)F.drops.push({x:m.x-20,y:m.y,k:'treat',v:1,a:0});
  const q=Q();if(q.t==='kill'&&m.camp===q.camp){S.qk=(S.qk||0)+1;if(S.qk>=q.n)questDone()}
- if(m.boss){F.boss=null;F.bossFails=0;if(q.t==='boss')questDone()}
+ if(m.boss){F.boss=null;F.bossFails=0;F.tele=null;F.ringFx=null;if(q.t==='boss')questDone()}
  if(F.tgt===m)F.tgt=null}
 function heroDie(){F.h.dead=3;F.h.mount=0;toast('Knocked out! Reviving at the village…');const q=Q();if(q.t==='boss'){F.bossFails++;if(F.bossFails>=2)F.trainT=45;if(F.boss){F.boss.hp=F.boss.mhp;F.boss.x=F.boss.hx;F.boss.y=F.boss.hy}}}
 function useSkillF(i){const h=F.h;if(h.dead||h.sk[i]>0)return;const s=stats(),m=F.tgt&&!F.tgt.dead?F.tgt:null;
@@ -85,6 +88,9 @@ function step(dt){if(!F||B)return;F.now+=dt;const h=F.h,s=stats(),mx=hmax();F.ba
  for(let i=0;i<3;i++)h.sk[i]=Math.max(0,h.sk[i]-dt);h.cd-=dt;h.pt-=dt;if(h.pt<=0)h.pose='idle';h.combatT+=dt;
  if(h.dead>0){h.dead-=dt;F.status='💤 Reviving at the village…';if(h.dead<=0){h.x=PTS.village[0];h.y=PTS.village[1]-60;h.hp=mx;F.tgt=null;F.dest=null}return}
  h.hp=Math.min(mx,h.hp+(h.combatT>3?mx*.08:s.rg)*dt);if(h.hp>mx)h.hp=mx;
+ if(F.gim&&F.gim.springs)for(const sp of F.gim.springs)if(Math.hypot(h.x-sp[0],h.y-sp[1])<95)h.hp=Math.min(mx,h.hp+mx*.06*dt);
+ if(F.gim&&F.gim.lava){for(const lp of F.gim.lava)if(Math.hypot(h.x-lp[0],h.y-lp[1])<70){h.hp-=mx*.025*dt;if(h.hp<=0){heroDie();return}}
+  for(const m of F.mobs.concat(F.boss?[F.boss]:[])){if(m.dead)continue;for(const lp of F.gim.lava)if(Math.hypot(m.x-lp[0],m.y-lp[1])<70){m.hp-=m.mhp*.05*dt;if(m.hp<=0)killMob(m);break}}}
  if(F.trainT>0)F.trainT-=dt;
  // dialogue
  if(F.dlg){F.dlg.t+=dt;F.status='💬 Talking to '+NPCS[F.dlg.who].n;if(isAuto()&&F.dlg.t>2.4)dlgNext();moveH(0,0,dt);return}
@@ -94,7 +100,7 @@ function step(dt){if(!F||B)return;F.now+=dt;const h=F.h,s=stats(),mx=hmax();F.ba
  else if(F.dest){const dx=F.dest.x-h.x,dy=F.dest.y-h.y,d=Math.hypot(dx,dy);F.manualT=F.now;if(d<10){const a=F.dest.act;F.dest=null;if(a)a()}else{vx=dx/d;vy=dy/d}}
  else if(auto){let tg=null,act=null,lab='';
   // priorities: fight aggro > loot > chest > daily claims/gear > quest
-  if(aggro.length&&!((Q().t==='talk'||Q().t==='portal')&&h.hp>hmax()*.55)){const m=nearest(aggro);tg=m;lab='defending against '+m.n}
+  if(aggro.length&&!((Q().t==='talk'||Q().t==='portal'||Q().t==='boss'||!!F.boss)&&h.hp>hmax()*.55)){const m=nearest(aggro);tg=m;lab='defending against '+m.n}
   else if(F.drops.length&&nearest(F.drops)&&D(nearest(F.drops),h)<220){const d=nearest(F.drops);tg=d;lab='picking up loot'}
   else if(F.chest&&D(F.chest,h)<450){tg=F.chest;lab='grabbing a treasure chest';act=openFieldChest}
   else if(S.keys>0&&h.combatT>1.5&&autoGear()){F.status='🤖 Auto: opening relic chests';return}
@@ -108,11 +114,12 @@ function step(dt){if(!F||B)return;F.now+=dt;const h=F.h,s=stats(),mx=hmax();F.ba
  if(F.joy||F.dest){if(F.status.startsWith('🤖'))F.status='🕹️ Manual'}
  if(F.joy||F.dest)F.status=S.auto?'🕹️ Manual. Auto resumes 4s after you stop':'🕹️ Manual control';
  if((F.joy||F.dest)&&aggro.length)h.mount=0;
+ if(auto&&!F.joy&&!F.dest){const dv=dodgeVec();if(dv){vx=dv[0];vy=dv[1]}}
  moveH(vx,vy,dt);
  // hero attack
  const t=F.tgt;if(t&&!t.dead&&D(t,h)<range()+6){h.combatT=0;h.mount=0;if(t.x!==h.x)h.face=t.x>h.x?1:-1;
   if(h.cd<=0){h.cd=.9/(1+s.t.as/100);let d=s.atk,cr=R()<s.cc;if(cr)d*=s.cm;if(t.boss)d*=1+s.t.bd/100;
-   if(range()>100)F.fx.push({x:h.x,y:h.y-40,tx:t,proj:1,l:0,c:S.cls==='mage'?'#ff8a2a':'#cfe8ff',d,cr});else{hitMob(t,d,cr?'CRIT ':'');F.fx.push({slash:1,x:t.x,y:t.y-30,face:h.face,l:0})}h.pose='attack';h.pt=.25;h.hp=Math.min(mx,h.hp+d*s.t.ls/100)}
+   if(range()>100)F.fx.push({x:h.x,y:h.y-40,tx:t,proj:1,l:0,c:S.cls==='mage'?'#ff8a2a':S.cls==='gunslinger'?'#ffd54a':'#cfe8ff',d,cr});else{hitMob(t,d,cr?'CRIT ':'');F.fx.push({slash:1,x:t.x,y:t.y-30,face:h.face,l:0})}h.pose='attack';h.pt=.25;h.hp=Math.min(mx,h.hp+d*s.t.ls/100)}
   if(auto||S.auto)for(let i=0;i<3;i++)if(h.sk[i]<=0&&(i<2||h.hp<mx*.5))useSkillF(i)}
  // pets
  const team=S.team.map(id=>S.pets.find(p=>p.id===id)).filter(Boolean);while(F.pets.length<team.length)F.pets.push({x:h.x,y:h.y,cd:1});F.pets.length=team.length;
@@ -120,8 +127,8 @@ function step(dt){if(!F||B)return;F.now+=dt;const h=F.h,s=stats(),mx=hmax();F.ba
   const ox=p.x;p.x+=(tx-p.x)*Math.min(1,dt*4);if(Math.abs(p.x-ox)>.3)p.face=p.x>ox?1:-1;else if(t&&!t.dead&&h.combatT<2)p.face=t.x>p.x?1:-1;else p.face=h.face;p.y+=(ty-p.y)*Math.min(1,dt*4);p.cd-=dt;if(t&&!t.dead&&h.combatT<2&&D(p,t)<90&&p.cd<=0){p.cd=1.1;hitMob(t,s.pa*1.1/Math.max(1,team.length)*(1+i*.2),'','#ffd0ff')}});
  // mobs
  for(const m of F.mobs.concat(F.boss?[F.boss]:[])){m.hit=Math.max(0,m.hit-dt);if(m.dead){if(!m.boss){m.rt-=dt;if(m.rt<=0)Object.assign(m,spawnMob(m.camp))}continue}
-  const d=D(m,h);if(d<(m.boss?170:110))m.aggro=1;if(Math.hypot(m.x-m.hx,m.y-m.hy)>(m.boss?300:260)){m.aggro=0;m.hp=m.mhp}
-  if(m.aggro){const r=m.boss?80:46;if(d>r){const sp=m.boss?55:75;m.x+=(h.x-m.x)/d*sp*dt;m.y+=(h.y-m.y)/d*sp*dt}else{m.cd-=dt;if(m.cd<=0){m.cd=m.boss?1.6:1.3;h.combatT=0;
+  const d=D(m,h);if(d<(m.boss?170:110))m.aggro=1;const ld=Math.hypot(m.x-m.hx,m.y-m.hy);if(ld>(m.boss?560:260)){m.aggro=0;if(!m.boss||D(m,h)>800)m.hp=m.mhp}
+  if(m.boss&&bossBrain(m,dt)){}else if(m.aggro){const r=m.boss?80:46;if(d>r){const sp=m.boss?55:75;m.x+=(h.x-m.x)/d*sp*(S.isle%4===2?.78:1)*dt;m.y+=(h.y-m.y)/d*sp*(S.isle%4===2?.78:1)*dt}else{m.cd-=dt;if(m.cd<=0){m.cd=m.boss?1.6:1.3;h.combatT=0;
    if(R()<s.t.dg/100)addFx(h.x,h.y-90,'Dodge','#9fff6a');else{const dm=m.atk*(S.cls==='knight'?.8:1);h.hp-=dm;h.pose='hurt';h.pt=.3;addFx(h.x,h.y-90,'-'+fmt(dm),'#ff7a6a');if(h.hp<=0){heroDie();return}}}}}
   else{m.wt-=dt;if(m.wt<=0){m.wt=2+R()*3;m.tx=m.hx+(R()-.5)*200;m.ty=m.hy+(R()-.5)*140}if(m.tx!==undefined){const dx=m.tx-m.x,dy=m.ty-m.y,dd=Math.hypot(dx,dy);if(dd>4){m.x+=dx/dd*30*dt;m.y+=dy/dd*30*dt}}}}
  // drops: auto-pickup magnet
@@ -129,10 +136,11 @@ function step(dt){if(!F||B)return;F.now+=dt;const h=F.h,s=stats(),mx=hmax();F.ba
  // chest spawn
  F.ct-=dt;if(!F.chest&&F.ct<=0){F.chest={x:200+R()*1000,y:500+R()*1300};F.ct=60}
  F.dungT+=dt;
+ if(F.ringFx){const g=F.ringFx;g.r+=250*dt;const dh=D(h,g);if(!g.hit&&Math.abs(dh-g.r)<30){g.hit=1;hurtHero(g.atk*1.6)}if(g.r>470)F.ringFx=null}
  // other players wander
  for(const o of F.others){o.w-=dt;if(o.w<=0){o.w=3+R()*6;const c=pick(['A','B','C','village']);o.tx=PTS[c][0]+(R()-.5)*160;o.ty=PTS[c][1]+(R()-.5)*100}const dx=o.tx-o.x,dy=o.ty-o.y,d=Math.hypot(dx,dy);if(d>5){o.x+=dx/d*110*dt;o.y+=dy/d*110*dt;o.face=dx>0?1:-1}}
  F.fx=F.fx.filter(f=>{f.l+=dt;if(f.proj){const t=f.tx,dx=t.x-f.x,dy=t.y-40-f.y,d=Math.hypot(dx,dy);if(d<16||t.dead){if(!t.dead)hitMob(t,f.d,f.cr?'CRIT ':'');return false}f.x+=dx/d*600*dt;f.y+=dy/d*600*dt;return f.l<2}if(f.spark){f.x+=f.vx*dt;f.y+=f.vy*dt;f.vy+=500*dt;return f.l<.4}return f.l<(f.ring?.4:f.slash?.22:.9)});separate()}
-function moveH(vx,vy,dt){const h=F.h,sp=h.mount?270:150;h.x=Math.max(30,Math.min(ZW-30,h.x+vx*sp*dt));h.y=Math.max(60,Math.min(ZH-30,h.y+vy*sp*dt));if(vx)h.face=vx>0?1:-1;h.walk=vx||vy?h.walk+dt:0}
+function moveH(vx,vy,dt){const h=F.h,sp=(h.mount?270:150)*(S.isle%4===2?.78:1);h.x=Math.max(30,Math.min(ZW-30,h.x+vx*sp*dt));h.y=Math.max(60,Math.min(ZH-30,h.y+vy*sp*dt));if(vx)h.face=vx>0?1:-1;h.walk=vx||vy?h.walk+dt:0}
 function openFieldChest(){if(!F.chest)return;const k=rint(1,2),g=Math.round(30*Math.pow(1.12,zoneTier()));S.keys+=k;S.gold+=g;addFx(F.chest.x,F.chest.y-40,`+${k} 🗝️ +${fmt(g)} gold`,'#ffd54a');F.chest=null;save();render()}
 // ---- draw
 let CV,CX,CW,CH,DPR;
@@ -143,7 +151,7 @@ function spr(k,x,y,hgt,flip,alpha){const i=im(k);if(!i)return;const w=i.width*hg
 function shadow(x,y,r){CX.fillStyle='#0004';CX.beginPath();CX.ellipse(x,y,r,r*.35,0,0,7);CX.fill()}
 function tag(x,y,t,c){CX.font='bold 11px Arial';CX.textAlign='center';CX.lineWidth=3;CX.strokeStyle='#000a';CX.strokeText(t,x,y);CX.fillStyle=c||'#fff';CX.fillText(t,x,y)}
 function bar(x,y,w,p,c){CX.fillStyle='#0a1734';CX.fillRect(x-w/2-1,y-1,w+2,7);CX.fillStyle=c;CX.fillRect(x-w/2,y,w*Math.max(0,p),5)}
-function draw(){if(!F||!CX)return;const[cx,cy]=camXY(),th=THEME[S.isle%4],t=F.now,h=F.h;CX.setTransform(DPR,0,0,DPR,0,0);CX.drawImage(F.z.bg,cx,cy,CW,CH,0,0,CW,CH);CX.translate(-cx,-cy);
+function draw(){if(!F||!CX)return;const[cx,cy]=camXY(),th=THEME[S.isle%4],t=F.now,h=F.h;CX.setTransform(DPR,0,0,DPR,0,0);CX.drawImage(F.z.bg,cx,cy,CW,CH,0,0,CW,CH);CX.translate(-cx,-cy);drawTele();drawGim();
  const L=[];const vis=(x,y)=>x>cx-120&&x<cx+CW+120&&y>cy-40&&y<cy+CH+200;
  for(const d of F.z.deco)if(vis(d[0],d[1]))L.push([d[1],()=>{const[x,y,k,s]=d;if(k==='t'){shadow(x,y,26*s);CX.fillStyle='#5a3a1a';CX.fillRect(x-5*s,y-26*s,10*s,26*s);CX.fillStyle=th.t;CX.beginPath();CX.arc(x,y-44*s,28*s,0,7);CX.fill();CX.fillStyle=th.t2;CX.beginPath();CX.arc(x-8*s,y-52*s,16*s,0,7);CX.fill()}
   else if(k==='r'){shadow(x,y,18*s);CX.fillStyle=th.r;CX.beginPath();CX.ellipse(x,y-10*s,20*s,14*s,0,0,7);CX.fill();CX.fillStyle='#fff3';CX.beginPath();CX.ellipse(x-5*s,y-16*s,8*s,5*s,0,0,7);CX.fill()}
@@ -205,3 +213,40 @@ function fieldInit(){tab=null;if(S.auto===undefined)S.auto=true;initZone();resiz
  document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{tab=tab===b.dataset.t?null:b.dataset.t;render()});render();
  let last=performance.now();const loop=n=>{const dt=Math.min(.1,(n-last)/1000);last=n;try{step(dt);draw()}catch(e){console.error(e)}requestAnimationFrame(loop)};requestAnimationFrame(loop);
  setInterval(()=>{if(S.auto&&F&&!B){const d=dailyList().find(t=>!S.tdone[t.k]&&prog(t)>=t.n);if(d){S.tdone[d.k]=1;S.shards+=d.r;toast('Auto-claimed: '+d.n2+' +'+d.r+' 💎',1);save()}if(S.claimed<S.login-1)claimLogin()}},5000)}
+
+// ---- boss telegraphs: every boss owns 2 attacks from the set; >=0.85s warning; autoplay dodges ----
+const BOSSATK=[['slam','adds'],['charge','ring'],['ring','slam'],['charge','slam']];
+function hurtHero(dm){const h=F.h;if(!h||h.dead>0)return;h.combatT=0;if(R()<stats().t.dg/100){addFx(h.x,h.y-90,'Dodge','#9fff6a');return}dm*=S.cls==='knight'?.8:1;h.hp-=dm;h.pose='hurt';h.pt=.3;addFx(h.x,h.y-90,'-'+fmt(dm),'#ff7a6a');if(h.hp<=0)heroDie()}
+function startTele(m,kind){const h=F.h;
+ if(kind==='charge'){const dx=h.x-m.x,dy=h.y-m.y,d=Math.hypot(dx,dy)||1;m.tele={kind,t:.95,dur:.95,x:m.x,y:m.y,dx:dx/d,dy:dy/d}}
+ else if(kind==='slam')m.tele={kind,t:.9,dur:.9,x:h.x,y:h.y};
+ else m.tele={kind,t:.9,dur:.9,x:m.x,y:m.y};
+ F.tele=m.tele}
+function bossBlast(m){const h=F.h,t=m.tele;F.tele=null;
+ if(t.kind==='slam'){F.fx.push({ring:1,x:t.x,y:t.y,l:0});sparks(t.x,t.y,'#ff8a5a',16);if(D(h,t)<=115)hurtHero(m.atk*2.2)}
+ else if(t.kind==='ring')F.ringFx={x:m.x,y:m.y,r:30,hit:0,atk:m.atk};
+ else if(t.kind==='charge')m.charge={dx:t.dx,dy:t.dy,t:.55,hit:0};
+ else if(t.kind==='adds'){if(F.mobs.filter(x=>!x.dead).length<24)for(let i=0;i<2;i++){const a=spawnMob('C');a.x=m.x+(i?70:-70);a.y=m.y+40;a.hx=a.x;a.hy=a.y;a.aggro=1;F.mobs.push(a)}toast(m.n+' calls for aid!')}}
+function bossBrain(m,dt){const h=F.h;
+ if(m.charge){const c=m.charge;m.x=Math.max(40,Math.min(ZW-40,m.x+c.dx*620*dt));m.y=Math.max(70,Math.min(ZH-40,m.y+c.dy*620*dt));c.t-=dt;if(!c.hit&&D(m,h)<70){c.hit=1;hurtHero(m.atk*1.8)}if(c.t<=0)m.charge=null;return 1}
+ if(m.tele){m.tele.t-=dt;if(m.tele.t<=0){bossBlast(m);m.tele=null;m.teleCd=4.5+R()*2.5}return 1}
+ if(D(m,h)<430){m.teleCd-=dt;if(m.teleCd<=0){const pair=BOSSATK[S.isle%4];startTele(m,pair[(m.teleN||0)%2]);m.teleN=(m.teleN||0)+1}}
+ return 0}
+function dodgeVec(){const h=F.h,t=F.boss&&!F.boss.dead?F.tele:null;
+ if(t){if(t.kind==='slam'){const dx=h.x-t.x,dy=h.y-t.y,d=Math.hypot(dx,dy);if(d<140)return d<1?[1,0]:[dx/d,dy/d]}
+  if(t.kind==='charge'){const px=h.x-t.x,py=h.y-t.y,along=px*t.dx+py*t.dy,perp=px*-t.dy+py*t.dx;if(along>-20&&along<580&&Math.abs(perp)<90){const s=perp>=0?1:-1;return[-t.dy*s,t.dx*s]}}}
+ if(F.ringFx){const g=F.ringFx,dx=h.x-g.x,dy=h.y-g.y,d=Math.hypot(dx,dy)||1;if(Math.abs(d-g.r)<56)return d<g.r?[-dx/d,-dy/d]:[dx/d,dy/d]}
+ if(F.gim&&F.gim.lava)for(const lp of F.gim.lava){const dx=h.x-lp[0],dy=h.y-lp[1],d=Math.hypot(dx,dy);if(d<98)return d<1?[1,0]:[dx/d,dy/d]}
+ return null}
+function drawTele(){const t=F.boss&&!F.boss.dead?F.tele:null;CX.save();
+ if(t){const p=1-Math.max(0,t.t)/t.dur;CX.globalAlpha=.22+.18*Math.sin(F.now*20);CX.fillStyle='#ff3b30';
+  if(t.kind==='slam'){CX.beginPath();CX.ellipse(t.x,t.y,115,40,0,0,7);CX.fill();CX.globalAlpha=.85;CX.strokeStyle='#ff3b30';CX.lineWidth=3;CX.beginPath();CX.ellipse(t.x,t.y,115*p,40*p,0,0,7);CX.stroke()}
+  else if(t.kind==='charge'){CX.save();CX.translate(t.x,t.y);CX.rotate(Math.atan2(t.dy,t.dx));CX.fillRect(0,-45,580,90);CX.restore()}
+  else{CX.beginPath();CX.ellipse(t.x,t.y,t.kind==='ring'?95:80,t.kind==='ring'?34:28,0,0,7);CX.fill()}}
+ if(F.ringFx){const g=F.ringFx;CX.globalAlpha=.75;CX.strokeStyle='#ff6a3d';CX.lineWidth=10;CX.beginPath();CX.ellipse(g.x,g.y,g.r,g.r*.36,0,0,7);CX.stroke()}
+ CX.restore()}
+
+function drawGim(){if(!F.gim)return;CX.save();
+ if(F.gim.springs)for(const sp of F.gim.springs){CX.globalAlpha=.32+.1*Math.sin(F.now*3);CX.fillStyle='#3ec6ff';CX.beginPath();CX.ellipse(sp[0],sp[1],95,34,0,0,7);CX.fill();CX.globalAlpha=.8;CX.strokeStyle='#bfefff';CX.lineWidth=2;CX.beginPath();CX.ellipse(sp[0],sp[1],95,34,0,0,7);CX.stroke()}
+ if(F.gim.lava)for(const lp of F.gim.lava){CX.globalAlpha=.85;CX.fillStyle='#3a1408';CX.beginPath();CX.ellipse(lp[0],lp[1],72,26,0,0,7);CX.fill();CX.fillStyle='#ff5a1f';CX.globalAlpha=.5+.25*Math.sin(F.now*7+lp[0]);CX.beginPath();CX.ellipse(lp[0],lp[1],58,20,0,0,7);CX.fill()}
+ CX.restore()}

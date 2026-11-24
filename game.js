@@ -35,6 +35,7 @@ const DEF=()=>({v:1,cls:null,name:'Hero',lv:1,xp:0,gold:300,shards:120,eggs:2,tr
  gear:{},bag:[],pets:[],team:[],auto:true,autoSell:0,tower:1,hunt:3,arena:5,arenaPts:1000,lodge:{lv:1,xp:0,don:0,buffA:0,buffH:0},
  day:'',login:0,claimed:-1,tasks:{},tdone:{},sound:1,t:Date.now(),kills:0,stat:{hatch:0,chest:0,feed:0,arena:0,kills:0}});
 let S;try{S=Object.assign(DEF(),JSON.parse(localStorage.getItem('wyrm1')||'null')||{})}catch(e){S=DEF()}
+if(!S.v||S.v<2){S.v=2;if(S.pms===undefined)S.pms=0;if(!S.fs)S.fs={};if(S.bossKills===undefined)S.bossKills=0}
 const save=()=>{S.t=Date.now();localStorage.setItem('wyrm1',JSON.stringify(S))};
 // ---------- items ----------
 function rollRar(boost){const r=R()*100;const t=[[4,.6+boost*.4],[3,3+boost*2],[2,12+boost*4],[1,32]];for(const[k,p]of t)if(r<p)return k;return 0}
@@ -54,7 +55,7 @@ function stats(){const c=CLASSES[S.cls||'knight'],t=subTot();let a=10+S.lv*4,h=1
  for(const s of SLOTS){const g=S.gear[s];if(g){a+=g.atk;h+=g.hp}}
  a*=c.atk*(1+S.lodge.buffA/100);h*=c.hp*(1+S.lodge.buffH/100);
  let pa=0,ph=0,heal=0;for(const id of S.team){const p=S.pets.find(x=>x.id===id);if(p){const q=petStats(p);pa+=q.atk;ph+=q.hp;heal+=q.heal}}
- pa*=1+t.pd/100;const cc=Math.min(.8,.08+t.cc/100+(S.cls==='ranger'?.15:0)),cm=1.5+t.cd/100;
+ pa*=1+t.pd/100;if(S.cls==='gunslinger')t.as+=18;const cc=Math.min(.8,.08+t.cc/100+(S.cls==='ranger'?.15:S.cls==='gunslinger'?.12:0)),cm=1.5+t.cd/100;
  const rg=t.rg*S.lv*.5+(0)+heal;
  const power=Math.round((a*(1+cc*(cm-1))*(1+t.as/100)+pa)*6+(h+ph)*.6+rg*8);
  return{atk:Math.round(a),hp:Math.round(h),pa:Math.round(pa),ph:Math.round(ph),cc,cm,t,rg,power}}
