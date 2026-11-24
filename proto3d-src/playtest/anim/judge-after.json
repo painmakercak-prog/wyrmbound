@@ -1,0 +1,64 @@
+{
+ "label": "after",
+ "port": 8901,
+ "pageErrors": [],
+ "windups": {
+  "hero:Sword_Slash": {
+   "clip": "Sword_Slash",
+   "dur": 1.292,
+   "impact": 0.45
+  },
+  "hero:Punch_Right": {
+   "clip": "Punch_Right",
+   "dur": 1.042,
+   "impact": 0.708
+  },
+  "hero:Kick_Right": {
+   "clip": "Kick_Right",
+   "dur": 1.167,
+   "impact": 0.2
+  },
+  "hero:Gun_Shoot": {
+   "clip": "Gun_Shoot",
+   "dur": 0.75,
+   "impact": 0.025
+  },
+  "hero:Roll": {
+   "clip": "Roll",
+   "dur": 1.667,
+   "impact": 0.242
+  },
+  "mob0:Frog_Attack": {
+   "clip": "Frog_Attack",
+   "dur": 0.75,
+   "impact": 0.417
+  },
+  "mob1:Spider_Attack": {
+   "clip": "Spider_Attack",
+   "dur": 0.75,
+   "impact": 0.492
+  }
+ },
+ "tpose": {
+  "minCover": 1,
+  "heroBindPoseFrames": 0,
+  "samples": 240,
+  "pass": true
+ },
+ "footslide": {
+  "samples": 199,
+  "median": 0,
+  "p90": 0,
+  "pass": true
+ },
+ "impactSync": {
+  "swings": 3,
+  "offsetsMs": [
+   -264,
+   -462,
+   0
+  ],
+  "noTargetSamples": 540,
+  "pass": false
+ }
+}

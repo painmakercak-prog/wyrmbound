@@ -1,0 +1,41 @@
+{
+ "label": "after",
+ "debugAvailable": true,
+ "paired": 6,
+ "allTicks": [
+  {
+   "offsetMs": -33,
+   "drop": 24
+  },
+  {
+   "offsetMs": -33,
+   "drop": 24
+  },
+  {
+   "offsetMs": -33,
+   "drop": 24
+  },
+  {
+   "offsetMs": -33,
+   "drop": 36
+  },
+  {
+   "offsetMs": -33,
+   "drop": 24
+  },
+  {
+   "offsetMs": -33,
+   "drop": 24
+  }
+ ],
+ "offsetsMs": [
+  -33,
+  -33,
+  -33,
+  -33,
+  -33,
+  -33
+ ],
+ "pass": true,
+ "pageErrors": []
+}

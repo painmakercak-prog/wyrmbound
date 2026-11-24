@@ -1,0 +1,10 @@
+{
+ "heroCost": 27.3,
+ "heroUpperCost": 182,
+ "wolfCost": 28.3,
+ "npcCount": 2,
+ "mobCount": 15,
+ "fullRateUs": 789,
+ "shippedUs": 772.5,
+ "changePct": -2.1
+}

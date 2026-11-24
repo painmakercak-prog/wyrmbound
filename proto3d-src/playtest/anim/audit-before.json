@@ -1,0 +1,400 @@
+{
+ "roles": [
+  "idle",
+  "walk",
+  "run",
+  "atk",
+  "shoot",
+  "cast",
+  "skill",
+  "die",
+  "hit",
+  "cheer"
+ ],
+ "units": {
+  "knight": {
+   "rig": "h_hooded",
+   "clips": [
+    "Death",
+    "Gun_Shoot",
+    "HitRecieve",
+    "Idle",
+    "Idle_Sword",
+    "Interact",
+    "Kick_Right",
+    "Punch_Right",
+    "Roll",
+    "Run",
+    "Sword_Slash",
+    "Walk",
+    "Wave"
+   ],
+   "resolved": {
+    "idle": "Idle_Sword",
+    "walk": "Walk",
+    "run": "Run",
+    "atk": "Sword_Slash",
+    "shoot": "Gun_Shoot",
+    "cast": "Gun_Shoot",
+    "skill": "Roll",
+    "die": "Death",
+    "hit": "HitRecieve",
+    "cheer": "Wave"
+   }
+  },
+  "ranger": {
+   "rig": "h_adventurer",
+   "clips": [
+    "Death",
+    "Gun_Shoot",
+    "HitRecieve",
+    "Idle",
+    "Idle_Sword",
+    "Interact",
+    "Kick_Right",
+    "Punch_Right",
+    "Roll",
+    "Run",
+    "Sword_Slash",
+    "Walk",
+    "Wave"
+   ],
+   "resolved": {
+    "idle": "Idle_Sword",
+    "walk": "Walk",
+    "run": "Run",
+    "atk": "Sword_Slash",
+    "shoot": "Gun_Shoot",
+    "cast": "Gun_Shoot",
+    "skill": "Roll",
+    "die": "Death",
+    "hit": "HitRecieve",
+    "cheer": "Wave"
+   }
+  },
+  "mage": {
+   "rig": "h_witch",
+   "clips": [
+    "Death",
+    "Gun_Shoot",
+    "HitRecieve",
+    "Idle",
+    "Idle_Sword",
+    "Interact",
+    "Kick_Right",
+    "Punch_Right",
+    "Roll",
+    "Run",
+    "Sword_Slash",
+    "Walk",
+    "Wave"
+   ],
+   "resolved": {
+    "idle": "Idle_Sword",
+    "walk": "Walk",
+    "run": "Run",
+    "atk": "Sword_Slash",
+    "shoot": "Gun_Shoot",
+    "cast": "Gun_Shoot",
+    "skill": "Roll",
+    "die": "Death",
+    "hit": "HitRecieve",
+    "cheer": "Wave"
+   }
+  },
+  "assassin": {
+   "rig": "h_adv2",
+   "clips": [
+    "Death",
+    "Gun_Shoot",
+    "HitRecieve",
+    "Idle",
+    "Idle_Sword",
+    "Interact",
+    "Kick_Right",
+    "Punch_Right",
+    "Roll",
+    "Run",
+    "Sword_Slash",
+    "Walk",
+    "Wave"
+   ],
+   "resolved": {
+    "idle": "Idle_Sword",
+    "walk": "Walk",
+    "run": "Run",
+    "atk": "Sword_Slash",
+    "shoot": "Gun_Shoot",
+    "cast": "Gun_Shoot",
+    "skill": "Roll",
+    "die": "Death",
+    "hit": "HitRecieve",
+    "cheer": "Wave"
+   }
+  },
+  "scholar": {
+   "rig": "h_wizard",
+   "clips": [
+    "Death",
+    "Idle",
+    "Idle_Weapon",
+    "RecieveHit",
+    "Roll",
+    "Run",
+    "Run_Weapon",
+    "Spell1",
+    "Spell2",
+    "Staff_Attack",
+    "Walk"
+   ],
+   "resolved": {
+    "idle": "Idle_Weapon",
+    "walk": "Walk",
+    "run": "Run",
+    "atk": "Staff_Attack",
+    "shoot": null,
+    "cast": "Spell1",
+    "skill": "Spell2",
+    "die": "Death",
+    "hit": "RecieveHit",
+    "cheer": null
+   }
+  },
+  "gunslinger": {
+   "rig": "h_adventurer",
+   "clips": [
+    "Death",
+    "Gun_Shoot",
+    "HitRecieve",
+    "Idle",
+    "Idle_Sword",
+    "Interact",
+    "Kick_Right",
+    "Punch_Right",
+    "Roll",
+    "Run",
+    "Sword_Slash",
+    "Walk",
+    "Wave"
+   ],
+   "resolved": {
+    "idle": "Idle_Sword",
+    "walk": "Walk",
+    "run": "Run",
+    "atk": "Sword_Slash",
+    "shoot": "Gun_Shoot",
+    "cast": "Gun_Shoot",
+    "skill": "Roll",
+    "die": "Death",
+    "hit": "HitRecieve",
+    "cheer": "Wave"
+   }
+  },
+  "npc": {
+   "rig": "npc",
+   "clips": [
+    "Cheer",
+    "Idle"
+   ],
+   "resolved": {
+    "idle": "Idle",
+    "walk": null,
+    "run": null,
+    "atk": null,
+    "shoot": null,
+    "cast": null,
+    "skill": null,
+    "die": null,
+    "hit": null,
+    "cheer": "Cheer"
+   }
+  },
+  "wolf": {
+   "rig": "wolf",
+   "clips": [
+    "Attack",
+    "Death",
+    "Gallop",
+    "Idle",
+    "Walk"
+   ],
+   "resolved": {
+    "idle": "Idle",
+    "walk": "Walk",
+    "run": "Gallop",
+    "atk": "Attack",
+    "shoot": null,
+    "cast": null,
+    "skill": null,
+    "die": "Death",
+    "hit": null,
+    "cheer": null
+   }
+  },
+  "frog": {
+   "rig": "frog",
+   "clips": [
+    "Frog_Attack",
+    "Frog_Death",
+    "Frog_Idle",
+    "Frog_Jump"
+   ],
+   "resolved": {
+    "idle": "Frog_Idle",
+    "walk": null,
+    "run": "Frog_Jump",
+    "atk": "Frog_Attack",
+    "shoot": null,
+    "cast": null,
+    "skill": null,
+    "die": "Frog_Death",
+    "hit": null,
+    "cheer": null
+   }
+  },
+  "spider": {
+   "rig": "spider",
+   "clips": [
+    "Spider_Attack",
+    "Spider_Death",
+    "Spider_Idle",
+    "Spider_Walk"
+   ],
+   "resolved": {
+    "idle": "Spider_Idle",
+    "walk": "Spider_Walk",
+    "run": "Spider_Walk",
+    "atk": "Spider_Attack",
+    "shoot": null,
+    "cast": null,
+    "skill": null,
+    "die": "Spider_Death",
+    "hit": null,
+    "cheer": null
+   }
+  },
+  "skel": {
+   "rig": "skel",
+   "clips": [
+    "1H_Melee_Attack_Chop",
+    "Death_A",
+    "Hit_A",
+    "Idle",
+    "Running_A"
+   ],
+   "resolved": {
+    "idle": "Idle",
+    "walk": null,
+    "run": "Running_A",
+    "atk": "1H_Melee_Attack_Chop",
+    "shoot": null,
+    "cast": null,
+    "skill": "1H_Melee_Attack_Chop",
+    "die": "Death_A",
+    "hit": "Hit_A",
+    "cheer": null
+   }
+  },
+  "boss_skelw": {
+   "rig": "skelw",
+   "clips": [
+    "1H_Melee_Attack_Chop",
+    "Death_A",
+    "Hit_A",
+    "Idle",
+    "Running_A"
+   ],
+   "resolved": {
+    "idle": "Idle",
+    "walk": null,
+    "run": "Running_A",
+    "atk": "1H_Melee_Attack_Chop",
+    "shoot": null,
+    "cast": null,
+    "skill": "1H_Melee_Attack_Chop",
+    "die": "Death_A",
+    "hit": "Hit_A",
+    "cheer": null
+   }
+  }
+ },
+ "missing": [
+  "scholar:shoot",
+  "scholar:cheer",
+  "npc:walk",
+  "npc:run",
+  "npc:atk",
+  "npc:shoot",
+  "npc:cast",
+  "npc:skill",
+  "npc:die",
+  "npc:hit",
+  "wolf:shoot",
+  "wolf:cast",
+  "wolf:skill",
+  "wolf:hit",
+  "wolf:cheer",
+  "frog:walk",
+  "frog:shoot",
+  "frog:cast",
+  "frog:skill",
+  "frog:hit",
+  "frog:cheer",
+  "spider:shoot",
+  "spider:cast",
+  "spider:skill",
+  "spider:hit",
+  "spider:cheer",
+  "skel:walk",
+  "skel:shoot",
+  "skel:cast",
+  "skel:cheer",
+  "boss_skelw:walk",
+  "boss_skelw:shoot",
+  "boss_skelw:cast",
+  "boss_skelw:cheer"
+ ],
+ "unused": {
+  "knight": [
+   "Idle",
+   "Interact",
+   "Kick_Right",
+   "Punch_Right"
+  ],
+  "ranger": [
+   "Idle",
+   "Interact",
+   "Kick_Right",
+   "Punch_Right"
+  ],
+  "mage": [
+   "Idle",
+   "Interact",
+   "Kick_Right",
+   "Punch_Right"
+  ],
+  "assassin": [
+   "Idle",
+   "Interact",
+   "Kick_Right",
+   "Punch_Right"
+  ],
+  "scholar": [
+   "Idle",
+   "Roll",
+   "Run_Weapon"
+  ],
+  "gunslinger": [
+   "Idle",
+   "Interact",
+   "Kick_Right",
+   "Punch_Right"
+  ],
+  "npc": [],
+  "wolf": [],
+  "frog": [],
+  "spider": [],
+  "skel": [],
+  "boss_skelw": []
+ }
+}
