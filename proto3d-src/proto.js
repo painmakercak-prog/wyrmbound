@@ -3,7 +3,7 @@
 CLASSES.knight.n='Swordsman';CLASSES.knight.e='⚔️';CLASSES.ranger.n='Archer';CLASSES.mage.n='Sorcerer';
 CLASSES.assassin={n:'Assassin',d:'Twin daggers. Huge crits, lighter armor.',e:'🗡️',atk:1.3,hp:.9};
 CLASSES.scholar={n:'Scholar',d:'Tome magic. Steady ranged damage and strong heals.',e:'📖',atk:1.05,hp:1.1};
-CLASSES.gunslinger={n:'Gunslinger',d:'Revolver deadeye. Longest range, fastest shots, crit build.',e:'🤠',atk:1.2,hp:.95};
+CLASSES.gunslinger={n:'Gunslinger',d:'Revolver deadeye. Longest range, fastest shots, crit build.',e:'🤠',atk:1.0,hp:.95};
 if(IMG.ranger_idle){IMG.gunslinger_idle=IMG.ranger_idle;IMG.gunslinger_attack=IMG.ranger_attack;IMG.gunslinger_hurt=IMG.ranger_hurt}
 const CLS_ORDER=['knight','ranger','mage','assassin','scholar','gunslinger'];
 const MELEE={knight:1,assassin:1};
@@ -49,7 +49,7 @@ function packsM(){modal(`<h3>Packs</h3><p class="ctr"><small>💎 Starshards onl
 function buyPack(k){const p=PACKS.find(x=>x.k===k);if(!p||S.packs[k])return;if(S.shards<p.c){toast('Not enough 💎 Starshards');return}S.shards-=p.c;S.packs[k]=1;p.f();save();render();packsM();toast(p.n+' claimed!')}
 // ---- side modes registry (architecture for minigames; next milestone = Hunting Stage idle mode)
 const MODES={};function registerMode(id,def){MODES[id]=def}let MODE=null;
-function enterMode(id){const m=MODES[id];if(!m)return;if(m.soon){toast(m.n+' is coming in the next update',1);return}MODE=m;B={mode:'side:'+id};m.enter&&m.enter();if(window.G3D)G3D.setScene(m.scene||'field')}
+function enterMode(id){const m=MODES[id];if(!m)return;if(m.soon){toast(m.n+' is coming in the next update',1);return}MODE=m;if(!m.field)B={mode:'side:'+id};m.enter&&m.enter();if(window.G3D)G3D.setScene(m.scene||'field')}
 function exitMode(){if(MODE&&MODE.exit)MODE.exit();MODE=null;B=null;if(window.G3D)G3D.setScene('field')}
 registerMode('hunt',{n:'Hunting Stage',soon:1,scene:'hunt'});registerMode('trial',{n:'Extra Trials',soon:1});
 function eventsM(){modal(`<h3>Events</h3>${Object.entries(MODES).map(([k,m])=>`<div class="shop"><span class="si">🏹</span><div><b>${m.n}</b><small>${m.soon?'Coming soon':'Open'}</small></div><button class="btn b sm" onclick="closeM();enterMode('${k}')">Go</button></div>`).join('')}<button class="btn" onclick="closeM()">Close</button>`)}
@@ -135,9 +135,21 @@ document.addEventListener('pointerdown',e=>{if(!e.target.closest||!e.target.clos
 // ---- field-native Boss Hunt + arena leak guard (3D build: the 2D arena chain soft-locked the field) ----
 startFight=function(){B=null};
 huntGo=function(){if(S.hunt<1){toast('No hunts left today');return}if(!F){toast('Enter the field first');return}S.hunt--;F.boss=spawnBoss();F.boss.hunt=1;F.banner=3;toast('Boss Hunt: '+F.boss.n+' stirs in the north lair!');if(AUD.sting)AUD.sting('quest');save();render()};
-const _qtF=questTarget;questTarget=function(){if(F&&F.boss&&F.boss.hunt&&!F.boss.dead)return{x:F.boss.x,y:F.boss.y,kind:'mob',m:F.boss,label:'boss hunt: '+F.boss.n};return _qtF()};
+const _qtF=questTarget;questTarget=function(){if(F&&F.boss&&(F.boss.hunt||F.boss.tower)&&!F.boss.dead)return{x:F.boss.x,y:F.boss.y,kind:'mob',m:F.boss,label:'boss hunt: '+F.boss.n};return _qtF()};
 const _kmB=killMob;killMob=function(m){if(m.boss)S.bossKills=(S.bossKills||0)+1;_kmB(m)};
 const _kmH=killMob;killMob=function(m){const wasHunt=!!(m.boss&&m.hunt);_kmH(m);if(wasHunt){S.shards+=30;S.eggs++;toast('Boss hunted! +30 💎 +1 🥚');save()}};
+// ---- Wyrm Tower (endgame): endless floors reusing the zone bosses and their telegraphs.
+// Floor scaling compounds (HP x1.32, atk x1.22 per floor) so every run ends; rewards feed the forge sink.
+const TOWER_NAMES=['Gnarlroot, the Old King','Ossivar the Hollow','Magmor the Molten','Vesskar the Pale'];
+function towerBoss(fl){const b=spawnBoss();b.n=TOWER_NAMES[(fl-1)%4];b.hp=b.mhp=Math.round(6500*Math.pow(1.32,fl-1));b.atk=Math.round(95*Math.pow(1.22,fl-1));b.lv=20+fl;b.tower=fl;b.hunt=0;b.x=PTS.lair[0];b.y=PTS.lair[1];b.hx=b.x;b.hy=b.y;b.tele=null;b.teleCd=3.5;b.charge=null;return b}
+function towerGo(){if(!F){toast('Enter the field first');return}if(S.best<31){toast('Clear all four isles to unlock the Wyrm Tower');return}if(F.tower)return;F.tower={floor:0,next:2};S.wruns=(S.wruns||0)+1;toast('🗼 The Wyrm Tower rises over the lair...');if(AUD.sting)AUD.sting('quest');save()}
+function towerTick(dt){if(!F||!F.tower)return;if(F.h.dead>0)return;if(F.boss)return;F.tower.next-=dt;if(F.tower.next<=0){F.tower.floor++;F.boss=towerBoss(F.tower.floor);F.banner=3;toast('🗼 Floor '+F.tower.floor+': '+F.boss.n);if(AUD.sting)AUD.sting('quest')}}
+const _stTW=step;step=function(dt){_stTW(dt);towerTick(dt)};
+const _kmT=killMob;killMob=function(m){const fl=m.tower||0;_kmT(m);if(fl){S.gold+=300*fl;S.shards+=10*fl;if(fl%5===0)S.eggs++;if(fl>(S.wbest||0))S.wbest=fl;toast('🗼 Floor '+fl+' cleared! +'+(300*fl)+' gold');if(F&&F.tower)F.tower.next=4;save()}};
+const _hdT=heroDie;heroDie=function(){const tw=F&&F.tower?F.tower:null;_hdT();if(tw){F.tower=null;if(F.boss&&F.boss.tower)F.boss=null;F.towerCd=F.now;toast('🗼 The tower claims you at floor '+Math.max(1,tw.floor)+'. Best: '+(S.wbest||0));save()}};
+let _twT=0;function towerAutoTick(){if(!F||!S.auto||F.tower||F.boss||F.h.dead>0)return;if(S.best<31||S.isle<4)return;const now=F.now;if(now-_twT<5)return;_twT=now;if(F.towerCd&&now-F.towerCd<90)return;towerGo()}
+const _stTA=step;step=function(dt){_stTA(dt);towerAutoTick()};
+registerMode('tower',{n:'Wyrm Tower',field:1,enter:()=>{MODE=null;towerGo()}});
 
 
 // ---- M4: power milestones + first-session goals (7-day login track and 8h offline earnings already ship in game.js) ----
@@ -150,5 +162,8 @@ function m4Tick(){if(!F)return;const now=F.now;if(now-_fsT<1)return;_fsT=now;
  FSGOALS.forEach((g,i)=>{const k='g'+i;if(!S.fs[k]&&g[1]()){S.fs[k]=1;S.shards+=20;toast(`⭐ First steps ${i+1}/5: ${g[0]} +20 💎`);if(AUD.sting)AUD.sting('quest');
   if(FSGOALS.every((_,j)=>S.fs['g'+j])){S.shards+=100;S.eggs++;toast('🌟 First Steps complete! +100 💎 +1 🥚')}save()}})}
 const _stM4=step;step=function(dt){_stM4(dt);m4Tick()};
+// Block 2 gold sink: autoplay forges its weakest-upgraded equipped piece whenever it can afford it
+let _fgT=0;function forgeTick(){if(!F||!S.auto)return;const now=F.now;if(now-_fgT<1.5)return;_fgT=now;let bk=null,bu=1e9;for(const k of SLOTS){const it=S.gear[k];if(it&&S.gold>=forgeCost(it)&&(it.up||0)<bu){bu=it.up||0;bk=k}}if(bk)forgeUp(bk,true)}
+const _stFG=step;step=function(dt){_stFG(dt);forgeTick()};
 const _tqM4=tQuests;tQuests=function(){const done=FSGOALS.filter((_,i)=>S.fs['g'+i]).length;
  return `<div class="card"><b>⭐ First Steps (${done}/5)</b>${FSGOALS.map((g,i)=>`<div class="task"><span>${S.fs['g'+i]?'✅':'▫️'} ${g[0]}</span><small>+20 💎</small></div>`).join('')}<div class="task"><span>🏆 Power milestones</span><small>${S.pms||0}/${PMS.length} claimed</small></div></div>`+_tqM4()};
