@@ -83,6 +83,8 @@ const levelAt = {}; let deaths = 0, wasDead = false, goldEarned = 0, goldSpent =
 let lastProgressT = 0, maxDry = 0, prevSig = '';
 let bossFight = null, bossFights = [], firstBossAt = null, prevBoss = false, curBossRef = null;
 let fpsRun = 0, fpsWorstRun = 0, frameMsSum = 0, framesMeasured = 0;
+let bossSeen = 0, minHpPre2 = 1, goldE30 = null, goldS30 = null, deathsPre2 = 0, minHpCtx = '';
+let towerEnteredAt = null, towerFailed = false, inTower = false, nanSeen = false;
 const t0wall = Date.now();
 for (let f = 0; f < totalFrames; f++) {
   vnow = f * DT * 1000;
@@ -93,16 +95,21 @@ for (let f = 0; f < totalFrames; f++) {
   frameMsSum += ms; framesMeasured++;
   const fps = 1000 / Math.max(ms * 4, 0.01);
   if (f % 6 === 0) { const bb = ev('F&&F.boss?F.boss:null');
-    if (bb !== curBossRef) { if (curBossRef && bossFight) { bossFights.push({ boss: bossFight.boss, seconds: +(t - bossFight.start).toFixed(1), result: 'won', tries: deaths - bossFight.deathsAtStart + 1 }); bossFight = null; }
+    if (bb !== curBossRef) { if (bb) bossSeen++; if (curBossRef && bossFight) { bossFights.push({ boss: bossFight.boss, seconds: +(t - bossFight.start).toFixed(1), result: 'won', tries: deaths - bossFight.deathsAtStart + 1 }); bossFight = null; }
       curBossRef = bb; if (bb) bossFight = { start: t, deathsAtStart: deaths, boss: bb.n + (bb.hunt ? ' (hunt)' : ' (quest)') }; } }
   if (fps < TH.fpsMin) { fpsRun++; fpsWorstRun = Math.max(fpsWorstRun, fpsRun); } else fpsRun = 0;
   // sample once per game second
   if (f % 30) continue;
-  const st = ev('({lv:S.lv,gold:S.gold,q:S.q,qk:S.qk||0,chest:S.stat.chest,eggs:S.eggs,dead:F&&F.h?F.h.dead:0,boss:!!(F&&F.boss),bd:F&&F.boss?Math.hypot(F.h.x-F.boss.x,F.h.y-F.boss.y):9999,pw:stats().power})');
+  const st = ev('({lv:S.lv,gold:S.gold,q:S.q,qk:S.qk||0,chest:S.stat.chest,eggs:S.eggs,xp:S.xp,dead:F&&F.h?F.h.dead:0,boss:!!(F&&F.boss),tw:!!(F&&F.tower),wbest:S.wbest||0,wruns:S.wruns||0,bd:F&&F.boss?Math.hypot(F.h.x-F.boss.x,F.h.y-F.boss.y):9999,pw:stats().power,hpr:F&&F.h?(F.h.combatT<3?F.h.hp/Math.max(1,hmax()):1):1})');
+  if (!isFinite(st.gold) || !isFinite(st.xp) || !isFinite(st.pw)) nanSeen = true;
+  if (bossSeen < 2 && st.hpr < minHpPre2) { minHpPre2 = st.hpr; minHpCtx = 't=' + Math.round(t) + 's lv=' + st.lv + ' q=' + st.q + ' boss=' + st.boss + ' hp=' + Math.round(st.hpr * 100) + '%'; }
+  if (t >= 1800 && goldE30 === null) { goldE30 = goldEarned; goldS30 = goldSpent; }
   for (const m of [5, 10, 30]) if (t >= m * 60 && levelAt[m] === undefined) levelAt[m] = st.lv;
   if (prevGold !== null) { const d = st.gold - prevGold; if (d > 0) goldEarned += d; else goldSpent -= d; }
   prevGold = st.gold;
-  if (st.dead > 0 && !wasDead) deaths++;
+  if (st.dead > 0 && !wasDead) { deaths++; if (bossSeen < 2) deathsPre2++; if (inTower) towerFailed = true; }
+  if (st.tw && towerEnteredAt === null) towerEnteredAt = t;
+  inTower = st.tw;
   wasDead = st.dead > 0;
   const sig = st.lv + '|' + st.q + '|' + st.qk + '|' + st.chest + '|' + st.eggs + '|' + Math.floor(st.pw);
   if (sig !== prevSig) { maxDry = Math.max(maxDry, t - lastProgressT); lastProgressT = t; prevSig = sig; }
@@ -113,6 +120,8 @@ for (let f = 0; f < totalFrames; f++) {
 if (bossFight) bossFights.push({ boss: bossFight.boss, seconds: +(minutes * 60 - bossFight.start).toFixed(1), result: 'unfinished', tries: deaths - bossFight.deathsAtStart + 1 });
 maxDry = Math.max(maxDry, minutes * 60 - lastProgressT);
 
+if (goldE30 === null) { goldE30 = goldEarned; goldS30 = goldSpent; }
+const parity = (() => { try { const a = ev("S.cls='knight';S.isle=0;spawnBoss().mhp"); const b = ev("S.cls='gunslinger';S.isle=0;spawnBoss().mhp"); return { knight: a, gunslinger: b, equal: a === b }; } catch (e) { return { error: e.message }; } })();
 const first = bossFights[0];
 const checks = {
   consoleErrors: errors.length <= TH.consoleErrors,
@@ -121,6 +130,12 @@ const checks = {
   bossLength: !!first && first.seconds >= TH.bossFightMinSeconds && first.seconds <= TH.bossFightMaxSeconds,
   firstBossTries: !!first && first.result === 'won' && first.tries <= TH.firstBossMaxTries,
   dryStretch: maxDry <= TH.maxDryStretchMinutes * 60,
+  dangerBeforeBoss2: deathsPre2 >= 1 || minHpPre2 < TH.dangerBeforeBoss2Hp,
+  goldSpentRatio: goldE30 > 0 && goldS30 >= TH.goldSpentRatioMin * goldE30,
+  bossHpParity: !!parity.equal,
+  towerReach: minutes < 170 ? true : (towerEnteredAt !== null && towerEnteredAt <= TH.towerReachMinutes * 60),
+  towerFails: minutes < 170 ? true : towerFailed,
+  finite: !nanSeen,
 };
 const report = {
   label, cls: clsKey, seed: 1337, builtFrom: siteDir, wallSeconds: +((Date.now() - t0wall) / 1000).toFixed(1),
@@ -128,7 +143,7 @@ const report = {
   levelAt: { '5': levelAt[5] ?? null, '10': levelAt[10] ?? null, '30': levelAt[30] ?? null },
   final: ev('({lv:S.lv,isle:S.isle,stage:S.stage,q:S.q,gold:S.gold,power:stats().power})'),
   deaths, bossFights, firstBossAtSeconds: firstBossAt,
-  goldEarned, goldSpent, maxDryStretchSeconds: Math.round(maxDry),
+  goldEarned, goldSpent, goldEarnedBy30: goldE30, goldSpentBy30: goldS30, goldSpentRatioBy30: goldE30 > 0 ? +(goldS30 / goldE30).toFixed(3) : 0, nanSeen, heapMB: +(process.memoryUsage().heapUsed / 1048576).toFixed(1), tower: { enteredAtSeconds: towerEnteredAt, failed: towerFailed, wbest: ev('S.wbest||0'), wruns: ev('S.wruns||0') }, minHpPreBoss2: +minHpPre2.toFixed(3), minHpContext: minHpCtx+' (in-combat samples only, hp/hmax)', deathsPreBoss2: deathsPre2, bossHpByClass: parity, maxDryStretchSeconds: Math.round(maxDry),
   consoleErrors: errors.slice(0, 10), consoleErrorCount: errors.length,
   fps: { model: 'frame CPU ms x4 throttle', avgFrameMs: +(frameMsSum / Math.max(1, framesMeasured)).toFixed(3), worstRunBelow30Seconds: +(fpsWorstRun * DT).toFixed(2) },
   checks, pass: Object.values(checks).every(Boolean),

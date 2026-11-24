@@ -8,7 +8,14 @@
     "bossFightMinSeconds": 45,
     "bossFightMaxSeconds": 120,
     "firstBossMaxTries": 2,
-    "maxDryStretchMinutes": 3
+    "maxDryStretchMinutes": 3,
+    "dangerBeforeBoss2Hp": 0.25,
+    "goldSpentRatioMin": 0.5,
+    "bossHpParity": true,
+    "towerReachMinutes": 180,
+    "towerMustFail": true,
+    "finiteStats": true
   },
-  "fpsModel": "No browser engine exists on the build box, so FPS is modeled: the bot measures real per-frame CPU cost of step()+draw() in Node and applies a 4x penalty as the mid-range-phone CPU throttle. fps = 1000 / (frameMs * 4). The 3D WebGL layer (g3d.js) is not loaded headless; the model gates the game-logic build and is labeled as a model in every report."
+  "fpsModel": "No browser engine exists on the build box, so FPS is modeled: the bot measures real per-frame CPU cost of step()+draw() in Node and applies a 4x penalty as the mid-range-phone CPU throttle. fps = 1000 / (frameMs * 4). The 3D WebGL layer (g3d.js) is not loaded headless; the model gates the game-logic build and is labeled as a model in every report.",
+  "tightened": "2026-11-24 (Kasey, overnight run): added dangerBeforeBoss2Hp (at least 1 death OR hero HP below 25% before the 2nd boss), goldSpentRatioMin (gold spent >= 50% of gold earned by minute 30), bossHpParity (boss HP identical for every class). Additions only; nothing loosened. Block 4 additions: towerReachMinutes (autoplay reaches the Wyrm Tower within 3 simulated hours) and towerMustFail (a tower run eventually ends in a failed floor). Block 5: finiteStats (no NaN/Infinity in gold/xp/power at any sample)."
 }

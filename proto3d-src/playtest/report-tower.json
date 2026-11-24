@@ -1,0 +1,487 @@
+{
+ "label": "tower1",
+ "cls": "knight",
+ "seed": 1337,
+ "builtFrom": "/home/hatch/workspace/journey-of-aethra/build3d/site",
+ "wallSeconds": 85,
+ "booted": true,
+ "minutesSimulated": 200,
+ "levelAt": {
+  "5": 9,
+  "10": 12,
+  "30": 20
+ },
+ "final": {
+  "lv": 191,
+  "isle": 0,
+  "stage": 4,
+  "q": 3,
+  "gold": 9.581088404475163e+21,
+  "power": 165533
+ },
+ "deaths": 58,
+ "bossFights": [
+  {
+   "boss": "Gnarlroot, the Old King (quest)",
+   "seconds": 98.6,
+   "result": "won",
+   "tries": 1
+  },
+  {
+   "boss": "Gnarlroot, the Old King (hunt)",
+   "seconds": 43.6,
+   "result": "won",
+   "tries": 1
+  },
+  {
+   "boss": "Ossivar the Hollow (quest)",
+   "seconds": 151.6,
+   "result": "won",
+   "tries": 2
+  },
+  {
+   "boss": "Ossivar the Hollow (quest)",
+   "seconds": 1180.2,
+   "result": "won",
+   "tries": 24
+  },
+  {
+   "boss": "Magmor the Molten (quest)",
+   "seconds": 36.6,
+   "result": "won",
+   "tries": 1
+  },
+  {
+   "boss": "Gnarlroot, the Old King (quest)",
+   "seconds": 26.8,
+   "result": "won",
+   "tries": 1
+  },
+  {
+   "boss": "Ossivar the Hollow (quest)",
+   "seconds": 6.4,
+   "result": "won",
+   "tries": 1
+  },
+  {
+   "boss": "Magmor the Molten (quest)",
+   "seconds": 6.2,
+   "result": "won",
+   "tries": 1
+  },
+  {
+   "boss": "Vesskar the Pale (quest)",
+   "seconds": 6.2,
+   "result": "won",
+   "tries": 1
+  },
+  {
+   "boss": "Gnarlroot, the Old King (quest)",
+   "seconds": 8.8,
+   "result": "won",
+   "tries": 1
+  },
+  {
+   "boss": "Ossivar the Hollow (quest)",
+   "seconds": 87,
+   "result": "won",
+   "tries": 1
+  },
+  {
+   "boss": "Gnarlroot, the Old King (quest)",
+   "seconds": 26.4,
+   "result": "won",
+   "tries": 1
+  },
+  {
+   "boss": "Ossivar the Hollow (quest)",
+   "seconds": 5.2,
+   "result": "won",
+   "tries": 1
+  },
+  {
+   "boss": "Magmor the Molten (quest)",
+   "seconds": 5,
+   "result": "won",
+   "tries": 1
+  },
+  {
+   "boss": "Vesskar the Pale (quest)",
+   "seconds": 7.8,
+   "result": "won",
+   "tries": 1
+  },
+  {
+   "boss": "Gnarlroot, the Old King (quest)",
+   "seconds": 9.8,
+   "result": "won",
+   "tries": 1
+  },
+  {
+   "boss": "Ossivar the Hollow (quest)",
+   "seconds": 13.4,
+   "result": "won",
+   "tries": 1
+  },
+  {
+   "boss": "Magmor the Molten (quest)",
+   "seconds": 18.2,
+   "result": "won",
+   "tries": 1
+  },
+  {
+   "boss": "Vesskar the Pale (quest)",
+   "seconds": 24,
+   "result": "won",
+   "tries": 1
+  },
+  {
+   "boss": "Gnarlroot, the Old King (quest)",
+   "seconds": 34.2,
+   "result": "won",
+   "tries": 1
+  },
+  {
+   "boss": "Ossivar the Hollow (quest)",
+   "seconds": 17.4,
+   "result": "won",
+   "tries": 1
+  },
+  {
+   "boss": "Gnarlroot, the Old King (quest)",
+   "seconds": 1749.2,
+   "result": "won",
+   "tries": 32
+  },
+  {
+   "boss": "Gnarlroot, the Old King (quest)",
+   "seconds": 2.2,
+   "result": "won",
+   "tries": 1
+  },
+  {
+   "boss": "Ossivar the Hollow (quest)",
+   "seconds": 3.8,
+   "result": "won",
+   "tries": 1
+  },
+  {
+   "boss": "Magmor the Molten (quest)",
+   "seconds": 22.6,
+   "result": "won",
+   "tries": 1
+  },
+  {
+   "boss": "Vesskar the Pale (quest)",
+   "seconds": 5.6,
+   "result": "won",
+   "tries": 1
+  },
+  {
+   "boss": "Gnarlroot, the Old King (quest)",
+   "seconds": 8,
+   "result": "won",
+   "tries": 1
+  },
+  {
+   "boss": "Ossivar the Hollow (quest)",
+   "seconds": 8.6,
+   "result": "won",
+   "tries": 1
+  },
+  {
+   "boss": "Magmor the Molten (quest)",
+   "seconds": 11.8,
+   "result": "won",
+   "tries": 1
+  },
+  {
+   "boss": "Vesskar the Pale (quest)",
+   "seconds": 12.4,
+   "result": "won",
+   "tries": 1
+  },
+  {
+   "boss": "Gnarlroot, the Old King (quest)",
+   "seconds": 15.6,
+   "result": "won",
+   "tries": 1
+  },
+  {
+   "boss": "Ossivar the Hollow (quest)",
+   "seconds": 21.6,
+   "result": "won",
+   "tries": 1
+  },
+  {
+   "boss": "Magmor the Molten (quest)",
+   "seconds": 25.8,
+   "result": "won",
+   "tries": 1
+  },
+  {
+   "boss": "Vesskar the Pale (quest)",
+   "seconds": 34.8,
+   "result": "won",
+   "tries": 1
+  },
+  {
+   "boss": "Gnarlroot, the Old King (quest)",
+   "seconds": 44.2,
+   "result": "won",
+   "tries": 1
+  },
+  {
+   "boss": "Ossivar the Hollow (quest)",
+   "seconds": 16.6,
+   "result": "won",
+   "tries": 1
+  },
+  {
+   "boss": "Ossivar the Hollow (quest)",
+   "seconds": 79.8,
+   "result": "won",
+   "tries": 1
+  },
+  {
+   "boss": "Ossivar the Hollow (quest)",
+   "seconds": 34.6,
+   "result": "won",
+   "tries": 1
+  },
+  {
+   "boss": "Magmor the Molten (quest)",
+   "seconds": 38.8,
+   "result": "won",
+   "tries": 1
+  },
+  {
+   "boss": "Gnarlroot, the Old King (quest)",
+   "seconds": 68.4,
+   "result": "won",
+   "tries": 1
+  },
+  {
+   "boss": "Ossivar the Hollow (quest)",
+   "seconds": 58.8,
+   "result": "won",
+   "tries": 1
+  },
+  {
+   "boss": "Ossivar the Hollow (quest)",
+   "seconds": 30.6,
+   "result": "won",
+   "tries": 1
+  },
+  {
+   "boss": "Magmor the Molten (quest)",
+   "seconds": 40.4,
+   "result": "won",
+   "tries": 1
+  },
+  {
+   "boss": "Gnarlroot, the Old King (quest)",
+   "seconds": 56,
+   "result": "won",
+   "tries": 1
+  },
+  {
+   "boss": "Ossivar the Hollow (quest)",
+   "seconds": 46.8,
+   "result": "won",
+   "tries": 1
+  },
+  {
+   "boss": "Ossivar the Hollow (quest)",
+   "seconds": 36.4,
+   "result": "won",
+   "tries": 1
+  },
+  {
+   "boss": "Magmor the Molten (quest)",
+   "seconds": 32.2,
+   "result": "won",
+   "tries": 1
+  },
+  {
+   "boss": "Gnarlroot, the Old King (quest)",
+   "seconds": 74.4,
+   "result": "won",
+   "tries": 1
+  },
+  {
+   "boss": "Ossivar the Hollow (quest)",
+   "seconds": 111.4,
+   "result": "won",
+   "tries": 1
+  },
+  {
+   "boss": "Ossivar the Hollow (quest)",
+   "seconds": 39.6,
+   "result": "won",
+   "tries": 1
+  },
+  {
+   "boss": "Magmor the Molten (quest)",
+   "seconds": 29.6,
+   "result": "won",
+   "tries": 1
+  },
+  {
+   "boss": "Gnarlroot, the Old King (quest)",
+   "seconds": 58.4,
+   "result": "won",
+   "tries": 1
+  },
+  {
+   "boss": "Ossivar the Hollow (quest)",
+   "seconds": 96.2,
+   "result": "won",
+   "tries": 1
+  },
+  {
+   "boss": "Ossivar the Hollow (quest)",
+   "seconds": 29.4,
+   "result": "won",
+   "tries": 1
+  },
+  {
+   "boss": "Magmor the Molten (quest)",
+   "seconds": 47.2,
+   "result": "won",
+   "tries": 1
+  },
+  {
+   "boss": "Gnarlroot, the Old King (quest)",
+   "seconds": 55.6,
+   "result": "won",
+   "tries": 1
+  },
+  {
+   "boss": "Ossivar the Hollow (quest)",
+   "seconds": 96,
+   "result": "won",
+   "tries": 1
+  },
+  {
+   "boss": "Ossivar the Hollow (quest)",
+   "seconds": 33.8,
+   "result": "won",
+   "tries": 1
+  },
+  {
+   "boss": "Magmor the Molten (quest)",
+   "seconds": 55.2,
+   "result": "won",
+   "tries": 1
+  },
+  {
+   "boss": "Gnarlroot, the Old King (quest)",
+   "seconds": 52.8,
+   "result": "won",
+   "tries": 1
+  },
+  {
+   "boss": "Ossivar the Hollow (quest)",
+   "seconds": 72.2,
+   "result": "won",
+   "tries": 1
+  },
+  {
+   "boss": "Ossivar the Hollow (quest)",
+   "seconds": 46.2,
+   "result": "won",
+   "tries": 1
+  },
+  {
+   "boss": "Magmor the Molten (quest)",
+   "seconds": 33.6,
+   "result": "won",
+   "tries": 1
+  },
+  {
+   "boss": "Gnarlroot, the Old King (quest)",
+   "seconds": 54.4,
+   "result": "won",
+   "tries": 1
+  },
+  {
+   "boss": "Ossivar the Hollow (quest)",
+   "seconds": 86.4,
+   "result": "won",
+   "tries": 1
+  },
+  {
+   "boss": "Ossivar the Hollow (quest)",
+   "seconds": 32,
+   "result": "won",
+   "tries": 1
+  },
+  {
+   "boss": "Magmor the Molten (quest)",
+   "seconds": 42.2,
+   "result": "won",
+   "tries": 1
+  },
+  {
+   "boss": "Gnarlroot, the Old King (quest)",
+   "seconds": 46,
+   "result": "won",
+   "tries": 1
+  },
+  {
+   "boss": "Ossivar the Hollow (quest)",
+   "seconds": 36.4,
+   "result": "won",
+   "tries": 1
+  },
+  {
+   "boss": "Ossivar the Hollow (quest)",
+   "seconds": 29.2,
+   "result": "won",
+   "tries": 1
+  }
+ ],
+ "firstBossAtSeconds": 131,
+ "goldEarned": 8.700560951873558e+21,
+ "goldSpent": 584514,
+ "goldEarnedBy30": 36213,
+ "goldSpentBy30": 35634,
+ "goldSpentRatioBy30": 0.984,
+ "tower": {
+  "enteredAtSeconds": 2221,
+  "failed": true,
+  "wbest": 13,
+  "wruns": 3
+ },
+ "minHpPreBoss2": 0.186,
+ "minHpContext": "t=216s lv=6 q=6 boss=true hp=19% (in-combat samples only, hp/hmax)",
+ "deathsPreBoss2": 0,
+ "bossHpByClass": {
+  "knight": 8640,
+  "gunslinger": 8640,
+  "equal": true
+ },
+ "maxDryStretchSeconds": 96,
+ "consoleErrors": [],
+ "consoleErrorCount": 0,
+ "fps": {
+  "model": "frame CPU ms x4 throttle",
+  "avgFrameMs": 0.232,
+  "worstRunBelow30Seconds": 0.03
+ },
+ "checks": {
+  "consoleErrors": true,
+  "fps": true,
+  "firstBoss": true,
+  "bossLength": true,
+  "firstBossTries": true,
+  "dryStretch": true,
+  "dangerBeforeBoss2": true,
+  "goldSpentRatio": true,
+  "bossHpParity": true,
+  "towerReach": true,
+  "towerFails": true
+ },
+ "pass": true
+}
