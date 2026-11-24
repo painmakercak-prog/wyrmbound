@@ -73,7 +73,7 @@ const _rd=render;render=function(){_rd();if(PWS!==null){const e=$('pw');if(e)e.t
 const HSPD=38,MSPD=62;
 function moveH(vx,vy,dt){const h=F.h,sp=h.mount?MSPD:HSPD;h.vx=h.vx||0;h.vy=h.vy||0;const k=Math.min(1,dt*((vx||vy)?5:8));h.vx+=(vx*sp-h.vx)*k;h.vy+=(vy*sp-h.vy)*k;if(Math.abs(h.vx)+Math.abs(h.vy)<.5&&!vx&&!vy){h.vx=h.vy=0}
  h.x=Math.max(30,Math.min(ZW-30,h.x+h.vx*dt));h.y=Math.max(60,Math.min(ZH-30,h.y+h.vy*dt));if(vx)h.face=vx>0?1:-1;h.walk=vx||vy?h.walk+dt:0}
-{const _us=useSkillF;useSkillF=function(i){const b=F.h.sk[i];_us(i);if(F.h.sk[i]!==b)F.h.skAnim=(F.h.skAnim||0)+1}}
+{const _us=useSkillF;useSkillF=function(i){const b=F.h.sk[i];_us(i);if(F.h.sk[i]!==b){F.h.skAnim=(F.h.skAnim||0)+1;F.h.skIdx=i}}}
 
 // level-up: keep only the banner
 {const _f=addFx;addFx=function(x,y,t,...r){if(typeof t==='string'&&t.startsWith('LEVEL UP'))return;return _f(x,y,t,...r)};const _t=toast;toast=function(t,...r){if(typeof t==='string'&&t.startsWith('Level up!'))return;return _t(t,...r)}}
@@ -104,7 +104,7 @@ AUD.sfx=function(n){if(!this.ctx||this.mute)return;const C=this.ctx,t=C.currentT
   case 'tap':tone(1250,1250,.03,'sine',V.tap);break;
   default:{const hz=FEEL.skillHz[S.cls]||600;nz(.14,V.skill,2600);tone(hz,hz*.5,.16,'sawtooth',V.skill*.55);tone(hz*1.5,hz*1.5,.07,'sine',V.skill*.4,.02)}}};
 // hit / crit: sound, hit-stop, knockback (bosses barely move)
-const _hmF=hitMob;hitMob=function(m,d,tag,c){const crit=tag==='CRIT ',skill=tag==='SK',pet=c==='#ffd0ff';_hmF(m,d,tag,c);const now=performance.now();
+const _hmF=hitMob;hitMob=function(m,d,tag,c){const crit=tag==='CRIT ',skill=tag==='SK',pet=c==='#ffd0ff';_hmF(m,d,tag,c);m.vh={c:crit?1:0,s:skill?1:0};const now=performance.now();
  if(crit){if(window.G3D&&G3D.shake)G3D.shake(FEEL.shakeCrit);if(now-_lastHitSfx>50){_lastHitSfx=now;AUD.sfx('crit')}}
  else if(now-_lastHitSfx>55){_lastHitSfx=now;AUD.sfx('hit')}
  if(m.boss){if(skill)stopFor(FEEL.stopBossHit);else if(crit&&!pet)stopFor(FEEL.stopCrit)}
