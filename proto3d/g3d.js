@@ -14,13 +14,13 @@ const b64buf=s=>fetch('data:application/octet-stream;base64,'+s).then(r=>r.array
 const MOD={};
 const loader=new GLTFLoader();loader.setMeshoptDecoder(MeshoptDecoder);
 // ---------- renderer
-const gl=$('gl');const R3=new THREE.WebGLRenderer({canvas:gl,antialias:true,powerPreference:'high-performance'});
-R3.setPixelRatio(Math.min(1.5,devicePixelRatio||1));R3.outputColorSpace=THREE.SRGBColorSpace;R3.toneMapping=THREE.ACESFilmicToneMapping;R3.toneMappingExposure=1.05;
-R3.shadowMap.enabled=true;R3.shadowMap.type=THREE.PCFSoftShadowMap;
+const gl=$('gl');const R3=new THREE.WebGLRenderer({canvas:gl,antialias:false,powerPreference:'high-performance'});
+R3.setPixelRatio(1);R3.outputColorSpace=THREE.SRGBColorSpace;R3.toneMapping=THREE.ACESFilmicToneMapping;R3.toneMappingExposure=1.05;
+R3.shadowMap.enabled=true;R3.shadowMap.autoUpdate=false;R3.shadowMap.type=THREE.PCFShadowMap;
 const scene=new THREE.Scene(),FOG=0xbfe2f0;scene.background=new THREE.Color(FOG);scene.fog=new THREE.Fog(FOG,30,80);
 const cam=new THREE.PerspectiveCamera(42,1,.5,140);
 const hemi=new THREE.HemisphereLight(0xe4f2ff,0x5f7f3a,.85);scene.add(hemi);
-const sun=new THREE.DirectionalLight(0xffe6c0,2.2);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);sun.shadow.radius=4;const sc=sun.shadow.camera;sc.left=-20;sc.right=20;sc.top=20;sc.bottom=-20;sc.near=1;sc.far=90;sun.shadow.bias=-.0006;sun.shadow.normalBias=.03;scene.add(sun,sun.target);
+const sun=new THREE.DirectionalLight(0xffe6c0,2.2);sun.castShadow=true;sun.shadow.mapSize.set(512,512);sun.shadow.radius=4;const sc=sun.shadow.camera;sc.left=-20;sc.right=20;sc.top=20;sc.bottom=-20;sc.near=1;sc.far=90;sun.shadow.bias=-.0006;sun.shadow.normalBias=.03;scene.add(sun,sun.target);
 {const es=new THREE.Scene(),sg=new THREE.SphereGeometry(10,32,16),cols=[];const p=sg.attributes.position;for(let i=0;i<p.count;i++){const y=p.getY(i)/10,c=y>0?new THREE.Color(0xbfe0ff).lerp(new THREE.Color(0x6aa8f0),y):new THREE.Color(0x8aa860).lerp(new THREE.Color(0x3a5a2a),-y);cols.push(c.r,c.g,c.b)}sg.setAttribute('color',new THREE.Float32BufferAttribute(cols,3));
  es.add(new THREE.Mesh(sg,new THREE.MeshBasicMaterial({vertexColors:true,side:THREE.BackSide})));const sd=new THREE.Mesh(new THREE.SphereGeometry(1.4,12,8),new THREE.MeshBasicMaterial({color:new THREE.Color(6,5.5,4.5)}));sd.position.set(5,7,5);es.add(sd);
  const pm=new THREE.PMREMGenerator(R3);scene.environment=pm.fromScene(es,.02).texture;scene.environmentIntensity=.55;pm.dispose()}
@@ -176,7 +176,8 @@ const CT=new THREE.Vector3(),LP=new WeakMap();let SHK=0,STOPF=0;let lastT=perfor
 function syncUnit(c,u,dt,isHero){const x=u.x*K,z=u.y*K,y=hgt(x,z);const lp=LP.get(u)||{x,z};const dx=x-lp.x,dz=z-lp.z,mv=Math.hypot(dx,dz)/Math.max(dt,1e-3);LP.set(u,{x,z});
  c.w.position.set(x,y,z);let face=null;if(mv>.3)face=Math.atan2(dx,dz);const t=isHero?F.tgt:null;if(isHero&&t&&!t.dead&&D(t,u)<range()+10)face=Math.atan2(t.x*K-x,t.y*K-z);
  if(face!==null){let d=face-c.w.rotation.y;d=Math.atan2(Math.sin(d),Math.cos(d));c.w.rotation.y+=d*Math.min(1,dt*7)}return mv}
-function draw3(){if(!F||!CX)return;const now=performance.now(),dt=Math.min(.1,(now-lastT)/1000);lastT=now;const mdt=STOPF?0:dt;const t=F.now,h=F.h,q=Q();
+let _shN=0;
+function draw3(){if(!F||!CX)return;const now=performance.now(),dt=Math.min(.1,(now-lastT)/1000);lastT=now;if((_shN++%3)===0)R3.shadowMap.needsUpdate=true;const mdt=STOPF?0:dt;const t=F.now,h=F.h,q=Q();
  // hero
  const H=heroObj();const hm=syncUnit(H,h,dt,1);H.w.visible=!(h.dead>0);H.lock-=dt;
  if(h.mount){WOLF.w.visible=true;WOLF.w.position.copy(H.w.position);WOLF.w.rotation.y=H.w.rotation.y;WOLF.move(hm,dt,3);H.w.position.y+=.95;H.play('idle')}else{WOLF.w.visible=false;
