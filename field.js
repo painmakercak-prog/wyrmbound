@@ -31,7 +31,7 @@ function buildZone(){const th=THEME[S.isle%4],c=document.createElement('canvas')
  return{bg:c,deco:deco.sort((a,b)=>a[1]-b[1])}}
 const IC={};function im(k){if(!IMG[k])return null;if(!IC[k]){IC[k]=new Image();IC[k].src=IMG[k]}return IC[k].complete?IC[k]:null}
 function mobStat(t){return{hp:Math.round(60*Math.pow(1.17,t-1)),atk:Math.round(6*Math.pow(1.17,t-1))}}
-function zoneTier(){return S.isle*10+1}
+function zoneTier(){return Math.min(S.isle*10+1,26)}
 function spawnMob(camp){const I=ISLES[S.isle%4],ci={A:0,B:1,C:2}[camp],t=zoneTier()+ci*2,st=mobStat(Math.min(t,26)),[hx,hy]=PTS[camp],a=R()*7,d=R()*110;
  return{k:I.foes[ci],n:FOE[I.foes[ci]][0],camp,x:hx+Math.cos(a)*d,y:hy+Math.sin(a)*d*.7,hx,hy,hp:st.hp,mhp:st.hp,atk:Math.round(st.atk*(S.isle%4===0?2.0:1)),lv:Math.min(t,26),cd:1,dead:0,rt:0,fl:0,hit:0,wt:R()*3}}
 function spawnBoss(){const I=ISLES[S.isle%4],t=zoneTier()+7,st=mobStat(Math.min(t,26));return{k:I.boss,n:FOE[I.boss][0],camp:'lair',boss:1,x:PTS.lair[0],y:PTS.lair[1],hx:PTS.lair[0],hy:PTS.lair[1],hp:Math.round(st.hp*[48,20,8,4][S.isle%4]),mhp:Math.round(st.hp*[48,20,8,4][S.isle%4]),atk:Math.round(st.atk*2.3*(S.isle%4===0?1.5:1)),lv:Math.min(t,33),cd:2,dead:0,rt:0,hit:0,wt:0,tele:null,teleCd:3.5,teleN:0,charge:null}}
@@ -73,7 +73,7 @@ function killMob(m){m.dead=1;m.dieT=F.now;sparks(m.x,m.y-30,'#ffe066',14);m.rt=m
  const q=Q();if(q.t==='kill'&&m.camp===q.camp){S.qk=(S.qk||0)+1;if(S.qk>=q.n)questDone()}
  if(m.boss){F.boss=null;F.bossFails=0;F.tele=null;F.ringFx=null;if(q.t==='boss')questDone()}
  if(F.tgt===m)F.tgt=null}
-function heroDie(){F.h.dead=3;F.h.mount=0;toast('Knocked out! Reviving at the village…');const q=Q();if(q.t==='boss'){F.bossFails++;if(F.bossFails>=2)F.trainT=45;if(F.boss){F.boss.hp=F.boss.mhp;F.boss.x=F.boss.hx;F.boss.y=F.boss.hy}}}
+function heroDie(){F.h.dead=3;F.h.mount=0;toast('Knocked out! Reviving at the village…');const q=Q();if(q.t==='boss'){F.bossFails++;if(F.bossFails>=2)F.trainT=45}}
 function useSkillF(i){const h=F.h;if(h.dead||h.sk[i]>0)return;const s=stats(),m=F.tgt&&!F.tgt.dead?F.tgt:null;
  if(i<2&&(!m||D(m,h)>range()+40))return;h.sk[i]=SK[i].cd;const mul=S.cls==='mage'?1.6:1;
  if(i===0){for(const o of F.mobs.concat(F.boss?[F.boss]:[]))if(!o.dead&&D(o,m)<90)hitMob(o,s.atk*4*mul*(o.boss?1+s.t.bd/100:1),'SK','#ffb04a');F.fx.push({x:m.x,y:m.y,ring:1,l:0})}
@@ -137,7 +137,7 @@ function step(dt){if(!F||B)return;F.now+=dt;const h=F.h,s=stats(),mx=hmax();F.ba
  // chest spawn
  F.ct-=dt;if(!F.chest&&F.ct<=0){F.chest={x:200+R()*1000,y:500+R()*1300};F.ct=60}
  F.dungT+=dt;
- if(F.ringFx){const g=F.ringFx;g.r+=250*dt;const dh=D(h,g);if(!g.hit&&Math.abs(dh-g.r)<30){g.hit=1;hurtHero(g.atk*2.1+hmax()*.14)}if(g.r>470)F.ringFx=null}
+ if(F.ringFx){const g=F.ringFx;g.r+=250*dt;const dh=D(h,g);if(!g.hit&&Math.abs(dh-g.r)<30){g.hit=1;hurtHero(g.atk*2.1+hmax()*.15)}if(g.r>470)F.ringFx=null}
  // other players wander
  for(const o of F.others){o.w-=dt;if(o.w<=0){o.w=3+R()*6;const c=pick(['A','B','C','village']);o.tx=PTS[c][0]+(R()-.5)*160;o.ty=PTS[c][1]+(R()-.5)*100}const dx=o.tx-o.x,dy=o.ty-o.y,d=Math.hypot(dx,dy);if(d>5){o.x+=dx/d*110*dt;o.y+=dy/d*110*dt;o.face=dx>0?1:-1}}
  F.fx=F.fx.filter(f=>{f.l+=dt;if(f.proj){const t=f.tx,dx=t.x-f.x,dy=t.y-40-f.y,d=Math.hypot(dx,dy);if(d<16||t.dead){if(!t.dead)hitMob(t,f.d,f.cr?'CRIT ':'');return false}f.x+=dx/d*600*dt;f.y+=dy/d*600*dt;return f.l<2}if(f.spark){f.x+=f.vx*dt;f.y+=f.vy*dt;f.vy+=500*dt;return f.l<.4}return f.l<(f.ring?.4:f.slash?.22:.9)});separate()}
@@ -224,12 +224,12 @@ function startTele(m,kind){const h=F.h;
  else m.tele={kind,t:.9,dur:.9,x:m.x,y:m.y};
  F.tele=m.tele}
 function bossBlast(m){const h=F.h,t=m.tele;F.tele=null;
- if(t.kind==='slam'){F.fx.push({ring:1,x:t.x,y:t.y,l:0});sparks(t.x,t.y,'#ff8a5a',16);if(D(h,t)<=115)hurtHero(m.atk*3.0+hmax()*.22)}
+ if(t.kind==='slam'){F.fx.push({ring:1,x:t.x,y:t.y,l:0});sparks(t.x,t.y,'#ff8a5a',16);if(D(h,t)<=115)hurtHero(m.atk*3.0+hmax()*.24)}
  else if(t.kind==='ring')F.ringFx={x:m.x,y:m.y,r:30,hit:0,atk:m.atk};
  else if(t.kind==='charge')m.charge={dx:t.dx,dy:t.dy,t:.55,hit:0};
  else if(t.kind==='adds'){if(F.mobs.filter(x=>!x.dead).length<24)for(let i=0;i<2;i++){const a=spawnMob('C');a.x=m.x+(i?70:-70);a.y=m.y+40;a.hx=a.x;a.hy=a.y;a.aggro=1;F.mobs.push(a)}toast(m.n+' calls for aid!')}}
 function bossBrain(m,dt){const h=F.h;
- if(m.charge){const c=m.charge;m.x=Math.max(40,Math.min(ZW-40,m.x+c.dx*620*dt));m.y=Math.max(70,Math.min(ZH-40,m.y+c.dy*620*dt));c.t-=dt;if(!c.hit&&D(m,h)<70){c.hit=1;hurtHero(m.atk*2.3+hmax()*.17)}if(c.t<=0)m.charge=null;return 1}
+ if(m.charge){const c=m.charge;m.x=Math.max(40,Math.min(ZW-40,m.x+c.dx*620*dt));m.y=Math.max(70,Math.min(ZH-40,m.y+c.dy*620*dt));c.t-=dt;if(!c.hit&&D(m,h)<70){c.hit=1;hurtHero(m.atk*2.3+hmax()*.19)}if(c.t<=0)m.charge=null;return 1}
  if(m.tele){m.tele.t-=dt;if(m.tele.t<=0){bossBlast(m);m.tele=null;m.teleCd=4.5+R()*2.5}return 1}
  if(D(m,h)<430){m.teleCd-=dt;if(m.teleCd<=0){const pair=BOSSATK[S.isle%4];startTele(m,pair[(m.teleN||0)%2]);m.teleN=(m.teleN||0)+1}}
  return 0}

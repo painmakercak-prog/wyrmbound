@@ -56,7 +56,7 @@ function stats(){const c=CLASSES[S.cls||'knight'],t=subTot();let a=10+S.lv*4,h=1
  for(const s of SLOTS){const g=S.gear[s];if(g){const fm=1+.06*(g.up||0);a+=g.atk*fm;h+=g.hp*fm}}
  a*=c.atk*(1+S.lodge.buffA/100);h*=c.hp*(1+S.lodge.buffH/100);
  let pa=0,ph=0,heal=0;for(const id of S.team){const p=S.pets.find(x=>x.id===id);if(p){const q=petStats(p);pa+=q.atk;ph+=q.hp;heal+=q.heal}}
- pa*=1+t.pd/100;if(S.cls==='gunslinger')t.as+=10;const cc=Math.min(.8,.08+t.cc/100+(S.cls==='ranger'?.15:S.cls==='gunslinger'?.06:0)),cm=1.5+t.cd/100;
+ pa*=1+t.pd/100;if(S.cls==='gunslinger'){t.as+=10;t.dg=(t.dg||0)+10};const cc=Math.min(.8,.08+t.cc/100+(S.cls==='ranger'?.15:S.cls==='gunslinger'?.06:0)),cm=1.5+t.cd/100;
  const rg=t.rg*S.lv*.5+(0)+heal;
  const power=Math.round((a*(1+cc*(cm-1))*(1+t.as/100)+pa)*6+(h+ph)*.6+rg*8);
  return{atk:Math.round(a),hp:Math.round(h),pa:Math.round(pa),ph:Math.round(ph),cc,cm,t,rg,power}}
@@ -93,7 +93,7 @@ function win(){B.end=1;const m=B.mode,e=B.e,tier=S.isle*10+S.stage;let g=Math.ro
 function lose(){B.end=1;if(B.mode==='story'){S.wave=1;if(S.stage>1&&S.isle*10+S.stage>=S.best)S.stage=Math.max(1,S.stage-1)}
  if(B.mode==='arena'){S.arenaPts=Math.max(0,S.arenaPts-12);S.stat.arena++}
  toast(B.mode==='story'?'Knocked out. Upgrade gear or pets!':'Defeated.');save();setTimeout(()=>{B=null;startFight('story')},1200)}
-function gainXp(x){S.xp+=x;let n;while(S.xp>=(n=Math.round(60*Math.pow(1.22,S.lv-1)))){S.xp-=n;S.lv++;toast('Level up! Lv '+S.lv)}
+function gainXp(x){S.xp+=x;let n;while(S.xp>=(n=Math.round(60*Math.pow(1.22,Math.min(S.lv-1,24))))){S.xp-=n;S.lv++;toast('Level up! Lv '+S.lv)}
  for(const id of S.team){const p=S.pets.find(q=>q.id===id);if(p&&p.lv<petCap(p)){p.xp+=x*.5;let pn;while(p.lv<petCap(p)&&p.xp>=(pn=40*p.lv)){p.xp-=pn;p.lv++}}}}
 // ---------- fx/ui ----------
 function fx(t,c,onHero){const a=$('arena');if(!a)return;const d=document.createElement('div');d.className='fx '+c;d.textContent=t;d.style.left=(onHero?18:58)+rint(0,16)+'%';d.style.top=(30+rint(0,18))+'%';a.appendChild(d);setTimeout(()=>d.remove(),900)}
@@ -181,7 +181,7 @@ function tHero(s){return`<div class="gear">${SLOTS.map(k=>{const g=S.gear[k];ret
  <div class="row2"><button class="btn b" onclick="autoPull()">${autoRun?'Stop Auto':'Auto: open until upgrade'}</button><button class="btn sm" onclick="statSheet()">Stats</button></div>
  <div class="card"><div class="kv"><span>${CLASSES[S.cls||'knight'].e} ${CLASSES[S.cls||'knight'].n} · ATK ${fmt(s.atk)} · HP ${fmt(s.hp)}</span></div><div class="kv"><span>Pets ATK ${fmt(s.pa)} · HP ${fmt(s.ph)}</span><span>Crit ${(s.cc*100).toFixed(0)}%</span></div></div>
  <div class="tick" id="ticker">World chat is live…</div>`}
-const forgeCost=it=>Math.round(40*(it.lv||1)*Math.pow(1.5,it.up||0));
+const forgeCost=it=>Math.round(30*(it.lv||1)*Math.pow(1.18,it.up||0));
 function forgeUp(k,silent){const it=S.gear[k];if(!it)return false;const c=forgeCost(it);if(S.gold<c){if(!silent)toast('Need '+fmt(c)+' gold to forge');return false}S.gold-=c;it.up=(it.up||0)+1;if(!silent){toast(it.name+' forged to +'+it.up);gearInfo(k)}save();return true}
 function gearInfo(k){const g=S.gear[k];if(!g){toast('Open relic chests to find '+SLN[k].toLowerCase()+'s');return}modal(`<h3>${SLN[k]}</h3>${cardH(g,undefined,'Equipped')}<button class="btn y" onclick="forgeUp('${k}')">Forge +1 (${fmt(forgeCost(g))} gold)</button> <button class="btn" onclick="closeM()">Close</button>`) }
 function statSheet(){const s=stats(),t=s.t;modal(`<h3>Stats</h3>${Object.keys(SUB).map(k=>`<div class="srw"><span>${SUB[k].n}</span><b>${t[k].toFixed(1)}${SUB[k].p?'%':''}</b></div>`).join('')}<div class="srw"><span>Power</span><b>${fmt(s.power)}</b></div><button class="btn" onclick="closeM()">Close</button>`)}
