@@ -1,9 +1,9 @@
 # MORNING.md — Overnight run, 2026-11-23 night → 2026-11-24
 
 Live build: https://painmakercak-prog.github.io/wyrmbound/proto3d/
-Status at wrap-up: **PENDING FINAL PUSH** (see "Push state" — filled in at the end of the night)
-Shipping build: v31. All 12 bot thresholds pass on both graded classes, including
-two full 6-hour soaks.
+Status at wrap-up: **DONE — build v31 is live and verified** (title screen confirmed
+after hard refresh, 2026-11-24 ~01:47 EST). All 12 bot thresholds pass on both
+graded classes, including two full 6-hour soaks.
 
 Everything below was verified by the playtest bots against the exact files that ship.
 One honest exception, flagged where it matters: this box has no GPU, so the real-browser
@@ -220,7 +220,10 @@ grant, new fields (pms, fs, bossKills, wbest, wruns) defaulted. Nothing was wipe
 - v23 (revolver): main a04832f, gh-pages b698022 + 0d4663f — live-verified.
 - v27 (overnight blocks 2–4 + perf): main ca4f569 + 4a0bbe9 + 7f7d145,
   gh-pages 0b4ae2e — live title screen verified after hard refresh.
-- v31 (Block 5 complete, shipping build): local commits through the tower-scaling
-  commit. **PUSH PENDING — filled in at wrap-up.**
-- report-before.json: missed the v27 upload wave (file-grant issue); goes up with
-  the final wave.
+- v31 (Block 5 complete, shipping build): pushed 2026-11-24 — main 89c16e3 (root:
+  field.js, game.js, MORNING.md) + a5cc73c (proto3d-src/proto.js) + 022d4f4
+  (playtest: bot.mjs, realbot.mjs, report-before.json, soak5/soak6 reports);
+  gh-pages 27af1ac (proto3d/index.html, g3d.js, sw.js). Live title screen verified
+  after hard refresh.
+- report-before.json: missed the v27 upload wave (file-grant issue); uploaded in
+  the final wave above.
