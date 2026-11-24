@@ -6,7 +6,7 @@ const NPCS={elder:{n:'Elder Oswin',k:'npc_elder'},smith:{n:'Mara the Smith',k:'n
 const PTS={village:[700,1800],elder:[630,1790],smith:[790,1770],A:[380,1400],B:[1020,1120],C:[430,720],lair:[700,330],portal:[1120,250]};
 const ZLAYOUTS=[{A:[380,1400],B:[1020,1120],C:[430,720],lair:[700,330]},{A:[1150,1500],B:[300,1050],C:[1080,620],lair:[320,300]},{A:[280,880],B:[1120,1480],C:[560,430],lair:[1120,320]},{A:[640,1520],B:[280,620],C:[1140,1020],lair:[660,290]}];
 const GIM=[{springs:[[520,1640],[1020,1120]]},{storm:1},{ice:1},{lava:[[420,1000],[900,700],[620,450],[1050,1350]]}];
-const GIMTXT=['🌸 Healing springs restore your HP','🌪️ Storm squalls: your attack range is cut','❄️ Deep ice: everything moves slower','🌋 Lava pools burn anyone standing in them'];
+const GIMTXT=['<i class="ic ic-heart"></i> Healing springs restore your HP','<i class="ic ic-burst"></i> Storm squalls: your attack range is cut','<i class="ic ic-diamond"></i> Deep ice: everything moves slower','<i class="ic ic-volcano"></i> Lava pools burn anyone standing in them'];
 function QUESTS(){const I=ISLES[S.isle%4],F=I.foes.map(k=>FOE[k][0]),bn=FOE[I.boss][0];return[
  {t:'talk',who:'elder',title:'A Restless Wild',lines:[`Ah, a wyrm-bonded traveler! ${I.n} has gone wild lately.`,`${F[0]}s swarm the old stones to the west. Thin them out for us?`]},
  {t:'kill',camp:'A',n:6,title:`Thin the ${F[0]}s`},
@@ -58,7 +58,7 @@ function questTarget(){const q=Q();if(q.t==='talk')return{x:PTS[q.who][0]+40,y:P
 function nearest(a){let b=null,bd=1e9;for(const m of a){const d=D(m,F.h);if(d<bd){bd=d;b=m}}return b}
 // ---- quest flow
 function questDone(){const q=Q();const g=Math.round(40*Math.pow(1.12,zoneTier()+S.q)),x=Math.round(30*Math.pow(1.1,zoneTier()+S.q));S.gold+=g;gainXp(x);
- let m=`Quest complete! +${fmt(g)} gold +${fmt(x)} EXP`;if(q.gift){S.keys+=3;m+=' +3 🗝️'}if(q.t==='boss'){S.shards+=25;S.eggs++;S.keys+=2;m+=' +25 💎 +1 🥚'}
+ let m=`Quest complete! +${fmt(g)} gold +${fmt(x)} EXP`;if(q.gift){S.keys+=3;m+=' +3 <i class="ic ic-key"></i>'}if(q.t==='boss'){S.shards+=25;S.eggs++;S.keys+=2;m+=' +25 <i class="ic ic-diamond"></i> +1 <i class="ic ic-egg"></i>'}
  toast(m);S.q++;S.qk=0;S.stage=Math.min(10,S.q+1);save();render()}
 function talk(who){const q=Q();if(q.t!=='talk'||q.who!==who){F.dlg={who,lines:[pick(['Safe travels, friend.','The wilds grow stronger the further you go.','Feed your dragon. A happy dragon bites harder.'])],i:0,t:0,end:null};return}
  F.dlg={who,lines:q.lines,i:0,t:0,end:questDone}}
@@ -86,14 +86,14 @@ function autoGear(){if(S.keys<1)return false;S.keys--;S.stat.chest++;const it=mk
 // ---- main update
 function step(dt){if(!F||B)return;F.now+=dt;const h=F.h,s=stats(),mx=hmax();F.banner=Math.max(0,F.banner-dt);
  for(let i=0;i<3;i++)h.sk[i]=Math.max(0,h.sk[i]-dt);h.cd-=dt;h.pt-=dt;if(h.pt<=0)h.pose='idle';h.combatT+=dt;
- if(h.dead>0){h.dead-=dt;F.status='💤 Reviving at the village…';if(h.dead<=0){h.x=PTS.village[0];h.y=PTS.village[1]-60;h.hp=mx;F.tgt=null;F.dest=null}return}
+ if(h.dead>0){h.dead-=dt;F.status='Reviving at the village…';if(h.dead<=0){h.x=PTS.village[0];h.y=PTS.village[1]-60;h.hp=mx;F.tgt=null;F.dest=null}return}
  h.hp=Math.min(mx,h.hp+(h.combatT>3?mx*.08:s.rg)*dt);if(h.hp>mx)h.hp=mx;
  if(F.gim&&F.gim.springs)for(const sp of F.gim.springs)if(Math.hypot(h.x-sp[0],h.y-sp[1])<95)h.hp=Math.min(mx,h.hp+mx*.06*dt);
  if(F.gim&&F.gim.lava){for(const lp of F.gim.lava)if(Math.hypot(h.x-lp[0],h.y-lp[1])<70){h.hp-=mx*.025*dt;if(h.hp<=0){heroDie();return}}
   for(const m of F.mobs.concat(F.boss?[F.boss]:[])){if(m.dead)continue;for(const lp of F.gim.lava)if(Math.hypot(m.x-lp[0],m.y-lp[1])<70){m.hp-=m.mhp*.05*dt;if(m.hp<=0)killMob(m);break}}}
  if(F.trainT>0)F.trainT-=dt;
  // dialogue
- if(F.dlg){F.dlg.t+=dt;F.status='💬 Talking to '+NPCS[F.dlg.who].n;if(isAuto()&&F.dlg.t>2.4)dlgNext();moveH(0,0,dt);return}
+ if(F.dlg){F.dlg.t+=dt;F.status='Talking to '+NPCS[F.dlg.who].n;if(isAuto()&&F.dlg.t>2.4)dlgNext();moveH(0,0,dt);return}
  // decide movement
  let vx=0,vy=0,auto=isAuto();const aggro=F.mobs.concat(F.boss?[F.boss]:[]).filter(m=>!m.dead&&m.aggro&&D(m,h)<260);
  if(F.joy){vx=F.joy.dx;vy=F.joy.dy;F.manualT=F.now;F.tgt=aggro.length?nearest(aggro):null}
@@ -104,16 +104,16 @@ function step(dt){if(!F||B)return;F.now+=dt;const h=F.h,s=stats(),mx=hmax();F.ba
   if(aggro.length&&!_bypass){const m=nearest(aggro);tg=m;lab='defending against '+m.n}
   else if(F.drops.length&&nearest(F.drops)&&D(nearest(F.drops),h)<220){const d=nearest(F.drops);tg=d;lab='picking up loot'}
   else if(F.chest&&D(F.chest,h)<450){tg=F.chest;lab='grabbing a treasure chest';act=openFieldChest}
-  else if(S.keys>0&&h.combatT>1.5&&autoGear()){F.status='🤖 Auto: opening relic chests';return}
-  else if(F.dungT>200&&S.hunt>0&&S.lv>=5&&S.lv>=zoneTier()+4&&Q().t!=='boss'){F.dungT=0;F.status='🤖 Auto: entering Boss Hunt';toast('Auto: entering a Boss Hunt run');huntGo();return}
+  else if(S.keys>0&&h.combatT>1.5&&autoGear()){F.status='Auto: opening relic chests';return}
+  else if(F.dungT>200&&S.hunt>0&&S.lv>=5&&S.lv>=zoneTier()+4&&Q().t!=='boss'){F.dungT=0;F.status='Auto: entering Boss Hunt';toast('Auto: entering a Boss Hunt run');huntGo();return}
   else{const t=questTarget();tg=t;lab=t.label;if(t.kind==='npc')act=()=>talk(t.who);if(t.kind==='portal')act=enterPortal;if(t.kind==='mob')F.tgt=t.m}
   if(tg&&tg.hp!==undefined)F.tgt=tg;
-  F.status='🤖 Auto: '+lab;
+  F.status='Auto: '+lab;
   const stop=F.tgt&&tg===F.tgt?range()*.85:act?40:8,dx=tg.x-h.x,dy=tg.y-h.y,d=Math.hypot(dx,dy);
   if(d>stop){vx=dx/d;vy=dy/d;h.mount=d>380&&!aggro.length?1:0}else{h.mount=0;if(act)act()}}
- else{F.status=S.auto?`🕹️ Manual. Auto resumes in ${Math.max(0,Math.ceil(4-(F.now-F.manualT)))}s`:'🕹️ Manual control. Tap Auto to let your hero play.';if(!F.tgt&&aggro.length)F.tgt=nearest(aggro)}
- if(F.joy||F.dest){if(F.status.startsWith('🤖'))F.status='🕹️ Manual'}
- if(F.joy||F.dest)F.status=S.auto?'🕹️ Manual. Auto resumes 4s after you stop':'🕹️ Manual control';
+ else{F.status=S.auto?`Manual. Auto resumes in ${Math.max(0,Math.ceil(4-(F.now-F.manualT)))}s`:'Manual control. Tap Auto to let your hero play.';if(!F.tgt&&aggro.length)F.tgt=nearest(aggro)}
+ if(F.joy||F.dest){if(F.status.startsWith('Auto'))F.status='Manual'}
+ if(F.joy||F.dest)F.status=S.auto?'Manual. Auto resumes 4s after you stop':'Manual control';
  if((F.joy||F.dest)&&aggro.length)h.mount=0;
  if(auto&&!F.joy&&!F.dest){const dv=dodgeVec();if(dv){vx=dv[0];vy=dv[1]}}
  moveH(vx,vy,dt);
@@ -183,8 +183,8 @@ function drawMini(){const c=$('mini');if(!c)return;const g=c.getContext('2d'),w=
  const dot=(x,y,col,r)=>{g.fillStyle=col;g.beginPath();g.arc(x*sx,y*sy,r||2.5,0,7);g.fill()};for(const m of F.mobs)if(!m.dead)dot(m.x,m.y,'#e2382a',1.6);if(F.boss)dot(F.boss.x,F.boss.y,'#ff0',4);
  for(const k in NPCS)dot(...PTS[k],'#ffd54a',3);if(S.q>=7)dot(...PTS.portal,'#3ac8ff',4);for(const o of F.others)dot(o.x,o.y,'#9fe0ff',1.8);
  const t=questTarget();g.strokeStyle='#fff';g.lineWidth=1;g.setLineDash([2,2]);g.beginPath();g.moveTo(F.h.x*sx,F.h.y*sy);g.lineTo(t.x*sx,t.y*sy);g.stroke();g.setLineDash([]);dot(F.h.x,F.h.y,'#4cff4a',3.5)}
-let hudK='';function drawHud(){const q=Q(),qs=$('qtr'),st=$('autost');const k=S.q+'|'+(S.qk||0)+'|'+S.isle;if(k!==hudK){hudK=k;qs.innerHTML=`<b>📜 Main · ${q.title}</b><span>${q.t==='kill'?`Defeat (${S.qk||0}/${q.n})`:q.t==='talk'?'Speak with '+NPCS[q.who].n:q.t==='boss'?'Boss lair, north':'Step into the Waygate'}</span>`}
- st.textContent=F.status;st.className=F.status.startsWith('🤖')?'on':'';const ab=$('autob');ab.classList.toggle('on',!!S.auto);ab.querySelector('small').textContent=S.auto?'AUTO ON':'AUTO OFF';
+let hudK='';function drawHud(){const q=Q(),qs=$('qtr'),st=$('autost');const k=S.q+'|'+(S.qk||0)+'|'+S.isle;if(k!==hudK){hudK=k;qs.innerHTML=`<b><i class="ic ic-scroll"></i> Main · ${q.title}</b><span>${q.t==='kill'?`Defeat (${S.qk||0}/${q.n})`:q.t==='talk'?'Speak with '+NPCS[q.who].n:q.t==='boss'?'Boss lair, north':'Step into the Waygate'}</span>`}
+ st.textContent=F.status;st.className=F.status.startsWith('Auto')?'on':'';const ab=$('autob');ab.classList.toggle('on',!!S.auto);ab.querySelector('small').textContent=S.auto?'AUTO ON':'AUTO OFF';
  SK.forEach((s,i)=>{const b=$('fs'+i);if(b)b.style.setProperty('--cd',F.h.sk[i]/s.cd)});
  const tf=$('tframe'),m=F.tgt;if(m&&!m.dead){tf.style.display='block';tf.innerHTML=`<b>Lv${m.lv} ${m.n}</b><div class="bar e"><i style="width:${m.hp/m.mhp*100}%"></i><span>${fmt(Math.max(0,m.hp))}</span></div>`}else tf.style.display='none';
  $('mtb').classList.toggle('on',!!F.h.mount);const av=$('avi'),ak=IMG[(S.cls||'knight')+'_idle'];if(av&&av.src!==ak)av.src=ak;drawDlg()}
@@ -208,12 +208,12 @@ const _drawArena=drawArena;drawArena=function(){_drawArena();const qb=$('quest')
 render=function(){const s=stats();$('gold').textContent=fmt(S.gold);$('shards').textContent=fmt(S.shards);$('lvl').textContent='Lv '+S.lv;$('pw').textContent=fmt(s.power);
  $('xpb').style.width=Math.min(100,S.xp/Math.round(60*Math.pow(1.22,S.lv-1))*100)+'%';$('xpt').textContent=Math.floor(Math.min(100,S.xp/Math.round(60*Math.pow(1.22,S.lv-1))*100))+'%';
  document.querySelectorAll('nav button').forEach(b=>{b.classList.toggle('on',b.dataset.t===tab);b.classList.toggle('dot',dot(b.dataset.t))});
- const P=$('panel');if(!tab){P.style.display='none';return}P.style.display='block';P.innerHTML=`<div class="phd"><b>${{hero:'Hero & Gear',pets:'Dragons',nest:'Nest',quests:'Quests & Modes',lodge:'Lodge',shop:'Shop'}[tab]}</b><button onclick="tab=null;render()">✕</button></div>`+({hero:tHero,pets:tPets,nest:tNest,quests:tQuests,lodge:tLodge,shop:tShop})[tab](s)};
+ const P=$('panel');if(!tab){P.style.display='none';return}P.style.display='block';P.innerHTML=`<div class="phd"><b>${{hero:'Hero & Gear',pets:'Dragons',nest:'Nest',quests:'Quests & Modes',lodge:'Lodge',shop:'Shop'}[tab]}</b><button onclick="tab=null;render()"><i class="ic ic-cross"></i></button></div>`+({hero:tHero,pets:tPets,nest:tNest,quests:tQuests,lodge:tLodge,shop:tShop})[tab](s)};
 const _lv=gainXp;gainXp=function(x){const l=S.lv;_lv(x);if(S.lv>l&&F){F.h.hp=hmax();addFx(F.h.x,F.h.y-120,'LEVEL UP! Lv '+S.lv,'#ffe066',1)}};
 function fieldInit(){tab=null;if(S.auto===undefined)S.auto=true;initZone();resize();initInput();addEventListener('resize',resize);
  document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{tab=tab===b.dataset.t?null:b.dataset.t;render()});render();
  let last=performance.now();const loop=n=>{const dt=Math.min(.1,(n-last)/1000);last=n;try{step(dt);draw()}catch(e){console.error(e)}requestAnimationFrame(loop)};requestAnimationFrame(loop);
- setInterval(()=>{if(S.auto&&F&&!B){const d=dailyList().find(t=>!S.tdone[t.k]&&prog(t)>=t.n);if(d){S.tdone[d.k]=1;S.shards+=d.r;toast('Auto-claimed: '+d.n2+' +'+d.r+' 💎',1);save()}if(S.claimed<S.login-1)claimLogin()}},5000)}
+ setInterval(()=>{if(S.auto&&F&&!B){const d=dailyList().find(t=>!S.tdone[t.k]&&prog(t)>=t.n);if(d){S.tdone[d.k]=1;S.shards+=d.r;toast('Auto-claimed: '+d.n2+' +'+d.r+' <i class="ic ic-diamond"></i>',1);save()}if(S.claimed<S.login-1)claimLogin()}},5000)}
 
 // ---- boss telegraphs: every boss owns 2 attacks from the set; >=0.85s warning; autoplay dodges ----
 const BOSSATK=[['slam','adds'],['charge','ring'],['ring','slam'],['charge','slam']];
