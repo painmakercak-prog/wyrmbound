@@ -94,7 +94,7 @@ function step(dt){if(!F||B)return;F.now+=dt;const h=F.h,s=stats(),mx=hmax();F.ba
  else if(F.dest){const dx=F.dest.x-h.x,dy=F.dest.y-h.y,d=Math.hypot(dx,dy);F.manualT=F.now;if(d<10){const a=F.dest.act;F.dest=null;if(a)a()}else{vx=dx/d;vy=dy/d}}
  else if(auto){let tg=null,act=null,lab='';
   // priorities: fight aggro > loot > chest > daily claims/gear > quest
-  if(aggro.length){const m=nearest(aggro);tg=m;lab='defending against '+m.n}
+  if(aggro.length&&!((Q().t==='talk'||Q().t==='portal')&&h.hp>hmax()*.55)){const m=nearest(aggro);tg=m;lab='defending against '+m.n}
   else if(F.drops.length&&nearest(F.drops)&&D(nearest(F.drops),h)<220){const d=nearest(F.drops);tg=d;lab='picking up loot'}
   else if(F.chest&&D(F.chest,h)<450){tg=F.chest;lab='grabbing a treasure chest';act=openFieldChest}
   else if(S.keys>0&&h.combatT>1.5&&autoGear()){F.status='🤖 Auto: opening relic chests';return}
