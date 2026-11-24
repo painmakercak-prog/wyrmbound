@@ -1,0 +1,14 @@
+{
+  "note": "Pass thresholds for the Journey of Aethra playtest bot. Committed before any gameplay changes (2026-11-23). NEVER loosen these; a milestone that cannot meet them gets reverted, not re-thresholded.",
+  "checks": {
+    "consoleErrors": 0,
+    "fpsMin": 30,
+    "fpsBelowMinMaxSeconds": 1,
+    "firstBossWithinMinutes": 10,
+    "bossFightMinSeconds": 45,
+    "bossFightMaxSeconds": 120,
+    "firstBossMaxTries": 2,
+    "maxDryStretchMinutes": 3
+  },
+  "fpsModel": "No browser engine exists on the build box, so FPS is modeled: the bot measures real per-frame CPU cost of step()+draw() in Node and applies a 4x penalty as the mid-range-phone CPU throttle. fps = 1000 / (frameMs * 4). The 3D WebGL layer (g3d.js) is not loaded headless; the model gates the game-logic build and is labeled as a model in every report."
+}

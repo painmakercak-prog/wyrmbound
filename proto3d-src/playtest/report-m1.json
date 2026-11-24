@@ -1,0 +1,75 @@
+{
+ "label": "m1",
+ "cls": "knight",
+ "seed": 1337,
+ "builtFrom": "/home/hatch/workspace/journey-of-aethra/build3d/site",
+ "wallSeconds": 7.2,
+ "booted": true,
+ "minutesSimulated": 32,
+ "levelAt": {
+  "5": 11,
+  "10": 14,
+  "30": 26
+ },
+ "final": {
+  "lv": 26,
+  "isle": 2,
+  "stage": 5,
+  "q": 4,
+  "gold": 77023,
+  "power": 17333
+ },
+ "deaths": 0,
+ "bossFights": [
+  {
+   "boss": "Gnarlroot, the Old King",
+   "seconds": 165,
+   "result": "won",
+   "tries": 1
+  },
+  {
+   "boss": "Gnarlroot, the Old King",
+   "seconds": 23,
+   "result": "won",
+   "tries": 1
+  },
+  {
+   "boss": "Gnarlroot, the Old King",
+   "seconds": 26,
+   "result": "won",
+   "tries": 1
+  },
+  {
+   "boss": "Ossivar the Hollow",
+   "seconds": 31,
+   "result": "won",
+   "tries": 1
+  },
+  {
+   "boss": "Ossivar the Hollow",
+   "seconds": 31,
+   "result": "won",
+   "tries": 1
+  }
+ ],
+ "firstBossAtSeconds": 217,
+ "goldEarned": 76642,
+ "goldSpent": 0,
+ "maxDryStretchSeconds": 177,
+ "consoleErrors": [],
+ "consoleErrorCount": 0,
+ "fps": {
+  "model": "frame CPU ms x4 throttle",
+  "avgFrameMs": 0.124,
+  "worstRunBelow30Seconds": 0.03
+ },
+ "checks": {
+  "consoleErrors": true,
+  "fps": true,
+  "firstBoss": true,
+  "bossLength": false,
+  "firstBossTries": true,
+  "dryStretch": true
+ },
+ "pass": false
+}

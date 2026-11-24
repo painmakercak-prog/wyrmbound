@@ -1,0 +1,44 @@
+{
+ "label": "baseline",
+ "cls": "knight",
+ "seed": 1337,
+ "builtFrom": "/home/hatch/workspace/journey-of-aethra/build3d/site",
+ "wallSeconds": 4,
+ "booted": true,
+ "minutesSimulated": 32,
+ "levelAt": {
+  "5": 9,
+  "10": 9,
+  "30": 9
+ },
+ "final": {
+  "lv": 9,
+  "isle": 0,
+  "stage": 3,
+  "q": 2,
+  "gold": 2594,
+  "power": 7017
+ },
+ "deaths": 0,
+ "bossFights": [],
+ "firstBossAtSeconds": null,
+ "goldEarned": 2294,
+ "goldSpent": 0,
+ "maxDryStretchSeconds": 1716,
+ "consoleErrors": [],
+ "consoleErrorCount": 0,
+ "fps": {
+  "model": "frame CPU ms x4 throttle",
+  "avgFrameMs": 0.068,
+  "worstRunBelow30Seconds": 0.03
+ },
+ "checks": {
+  "consoleErrors": true,
+  "fps": true,
+  "firstBoss": false,
+  "bossLength": false,
+  "firstBossTries": false,
+  "dryStretch": false
+ },
+ "pass": false
+}
