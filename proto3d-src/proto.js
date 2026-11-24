@@ -141,13 +141,13 @@ const _kmH=killMob;killMob=function(m){const wasHunt=!!(m.boss&&m.hunt);_kmH(m);
 // ---- Wyrm Tower (endgame): endless floors reusing the zone bosses and their telegraphs.
 // Floor scaling compounds (HP x1.32, atk x1.22 per floor) so every run ends; rewards feed the forge sink.
 const TOWER_NAMES=['Gnarlroot, the Old King','Ossivar the Hollow','Magmor the Molten','Vesskar the Pale'];
-function towerBoss(fl){const b=spawnBoss();b.n=TOWER_NAMES[(fl-1)%4];b.hp=b.mhp=Math.round(6500*Math.pow(1.32,fl-1));b.atk=Math.round(95*Math.pow(1.22,fl-1));b.lv=20+fl;b.tower=fl;b.hunt=0;b.x=PTS.lair[0];b.y=PTS.lair[1];b.hx=b.x;b.hy=b.y;b.tele=null;b.teleCd=3.5;b.charge=null;return b}
+function towerBoss(fl){const b=spawnBoss();b.n=TOWER_NAMES[(fl-1)%4];b.hp=b.mhp=Math.round(6500*Math.pow(1.28,fl-1));b.atk=Math.round(95*Math.pow(1.24,fl-1));b.lv=20+fl;b.tower=fl;b.hunt=0;b.x=PTS.lair[0];b.y=PTS.lair[1];b.hx=b.x;b.hy=b.y;b.tele=null;b.teleCd=3.5;b.charge=null;return b}
 function towerGo(){if(!F){toast('Enter the field first');return}if(S.best<31){toast('Clear all four isles to unlock the Wyrm Tower');return}if(F.tower)return;F.tower={floor:0,next:2};S.wruns=(S.wruns||0)+1;toast('🗼 The Wyrm Tower rises over the lair...');if(AUD.sting)AUD.sting('quest');save()}
 function towerTick(dt){if(!F||!F.tower)return;if(F.h.dead>0)return;if(F.boss)return;F.tower.next-=dt;if(F.tower.next<=0){F.tower.floor++;F.boss=towerBoss(F.tower.floor);F.banner=3;toast('🗼 Floor '+F.tower.floor+': '+F.boss.n);if(AUD.sting)AUD.sting('quest')}}
 const _stTW=step;step=function(dt){_stTW(dt);towerTick(dt)};
 const _kmT=killMob;killMob=function(m){const fl=m.tower||0;_kmT(m);if(fl){S.gold+=300*fl;S.shards+=10*fl;if(fl%5===0)S.eggs++;if(fl>(S.wbest||0))S.wbest=fl;toast('🗼 Floor '+fl+' cleared! +'+(300*fl)+' gold');if(F&&F.tower)F.tower.next=4;save()}};
-const _hdT=heroDie;heroDie=function(){const tw=F&&F.tower?F.tower:null;_hdT();if(tw){F.tower=null;if(F.boss&&F.boss.tower)F.boss=null;F.towerCd=F.now;toast('🗼 The tower claims you at floor '+Math.max(1,tw.floor)+'. Best: '+(S.wbest||0));save()}};
-let _twT=0;function towerAutoTick(){if(!F||!S.auto||F.tower||F.boss||F.h.dead>0)return;if(S.best<31||S.isle<4)return;const now=F.now;if(now-_twT<5)return;_twT=now;if(F.towerCd&&now-F.towerCd<90)return;towerGo()}
+const _hdT=heroDie;heroDie=function(){const tw=F&&F.tower?F.tower:null;_hdT();if(tw){F.tower=null;if(F.boss&&F.boss.tower)F.boss=null;F.towerCd=performance.now()/1000;toast('🗼 The tower claims you at floor '+Math.max(1,tw.floor)+'. Best: '+(S.wbest||0));save()}};
+let _twT=0;function towerAutoTick(){if(!F||!S.auto||F.tower||F.boss||F.h.dead>0)return;if(S.best<31||S.isle<4)return;const now=performance.now()/1000;if(now-_twT<5)return;_twT=now;if(F.towerCd&&now-F.towerCd<90)return;towerGo()}
 const _stTA=step;step=function(dt){_stTA(dt);towerAutoTick()};
 registerMode('tower',{n:'Wyrm Tower',field:1,enter:()=>{MODE=null;towerGo()}});
 
@@ -163,7 +163,17 @@ function m4Tick(){if(!F)return;const now=F.now;if(now-_fsT<1)return;_fsT=now;
   if(FSGOALS.every((_,j)=>S.fs['g'+j])){S.shards+=100;S.eggs++;toast('🌟 First Steps complete! +100 💎 +1 🥚')}save()}})}
 const _stM4=step;step=function(dt){_stM4(dt);m4Tick()};
 // Block 2 gold sink: autoplay forges its weakest-upgraded equipped piece whenever it can afford it
-let _fgT=0;function forgeTick(){if(!F||!S.auto)return;const now=F.now;if(now-_fgT<1.5)return;_fgT=now;let bk=null,bu=1e9;for(const k of SLOTS){const it=S.gear[k];if(it&&S.gold>=forgeCost(it)&&(it.up||0)<bu){bu=it.up||0;bk=k}}if(bk)forgeUp(bk,true)}
+let _fgT=0;function forgeTick(){if(!F||!S.auto)return;const now=performance.now()/1000;if(now-_fgT<1.5)return;_fgT=now;let bk=null,bu=1e9;for(const k of SLOTS){const it=S.gear[k];if(it&&S.gold>=forgeCost(it)&&(it.up||0)<bu){bu=it.up||0;bk=k}}if(bk)forgeUp(bk,true)}
 const _stFG=step;step=function(dt){_stFG(dt);forgeTick()};
+// Boss wedge watchdog (Block 5 soak fix): if autoplay's active boss takes no damage for 150s
+// (unreachable lair, kiting loop, stale hunt boss), the boss charges the hero. Damage resets it.
+let _bwT=0,_bwHp=-1,_bwBoss=null,_bwStill=0;
+function bossWatchTick(){if(!F||!S.auto||!F.boss||F.h.dead>0){_bwBoss=null;_bwStill=0;return}
+ const now=performance.now()/1000;if(now-_bwT<1)return;const el=now-_bwT;_bwT=now;const b=F.boss;
+ if(b!==_bwBoss){_bwBoss=b;_bwHp=b.hp;_bwStill=0;return}
+ if(b.hp<_bwHp-1){_bwHp=b.hp;_bwStill=0;return}
+ _bwStill+=el;
+ if(_bwStill>=150){b.x=F.h.x+130;b.y=F.h.y;b.tele=null;b.charge=null;_bwStill=0;_bwHp=b.hp;toast('The boss charges you!')}}
+const _stBW=step;step=function(dt){_stBW(dt);bossWatchTick()};
 const _tqM4=tQuests;tQuests=function(){const done=FSGOALS.filter((_,i)=>S.fs['g'+i]).length;
  return `<div class="card"><b>⭐ First Steps (${done}/5)</b>${FSGOALS.map((g,i)=>`<div class="task"><span>${S.fs['g'+i]?'✅':'▫️'} ${g[0]}</span><small>+20 💎</small></div>`).join('')}<div class="task"><span>🏆 Power milestones</span><small>${S.pms||0}/${PMS.length} claimed</small></div></div>`+_tqM4()};
