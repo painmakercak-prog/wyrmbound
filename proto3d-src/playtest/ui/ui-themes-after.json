@@ -1,0 +1,70 @@
+{
+ "label": "after",
+ "themes": {
+  "village": {
+   "contrast": 0,
+   "targets": 0,
+   "overflow": 0,
+   "emoji": 0,
+   "findings": []
+  },
+  "isle0": {
+   "contrast": 0,
+   "targets": 0,
+   "overflow": 0,
+   "emoji": 0,
+   "findings": []
+  },
+  "isle1": {
+   "contrast": 0,
+   "targets": 0,
+   "overflow": 0,
+   "emoji": 0,
+   "findings": []
+  },
+  "isle2": {
+   "contrast": 0,
+   "targets": 0,
+   "overflow": 0,
+   "emoji": 0,
+   "findings": []
+  },
+  "isle3": {
+   "contrast": 0,
+   "targets": 0,
+   "overflow": 0,
+   "emoji": 0,
+   "findings": []
+  },
+  "boss": {
+   "contrast": 0,
+   "targets": 0,
+   "overflow": 0,
+   "emoji": 0,
+   "findings": []
+  },
+  "tower": {
+   "contrast": 0,
+   "targets": 0,
+   "overflow": 0,
+   "emoji": 0,
+   "findings": []
+  }
+ },
+ "shots": [
+  "hud-village",
+  "hud-isle0",
+  "hud-isle1",
+  "hud-isle2",
+  "hud-isle3",
+  "hud-boss",
+  "hud-tower",
+  "panel-village",
+  "panel-isle0",
+  "panel-isle1",
+  "panel-isle2",
+  "panel-isle3",
+  "panel-boss",
+  "panel-tower"
+ ]
+}

@@ -1,0 +1,14 @@
+{
+ "before": {
+  "readyMs": 8233,
+  "frameMedianMs": 866.7,
+  "frameP90Ms": 1516.6
+ },
+ "after": {
+  "readyMs": 6141,
+  "frameMedianMs": 883.2,
+  "frameP90Ms": 1599.9
+ },
+ "readyDeltaPct": -25.4,
+ "frameDeltaPct": 1.9
+}
