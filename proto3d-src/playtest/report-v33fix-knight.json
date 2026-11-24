@@ -1,0 +1,222 @@
+{
+ "label": "v33fix-knight",
+ "cls": "knight",
+ "seed": 1337,
+ "builtFrom": "/home/claude/wb-pages/proto3d",
+ "wallSeconds": 5.7,
+ "booted": true,
+ "minutesSimulated": 32,
+ "levelAt": {
+  "5": 8,
+  "10": 12,
+  "30": 24
+ },
+ "final": {
+  "lv": 24,
+  "isle": 0,
+  "stage": 8,
+  "q": 7,
+  "gold": 931,
+  "power": 26173
+ },
+ "deaths": 8,
+ "bossFights": [
+  {
+   "boss": "Gnarlroot, the Old King (quest)",
+   "seconds": 104.8,
+   "result": "won",
+   "tries": 1
+  },
+  {
+   "boss": "Gnarlroot, the Old King (hunt)",
+   "seconds": 86.2,
+   "result": "won",
+   "tries": 1
+  },
+  {
+   "boss": "Ossivar the Hollow (quest)",
+   "seconds": 135.6,
+   "result": "won",
+   "tries": 2
+  },
+  {
+   "boss": "Ossivar the Hollow (quest)",
+   "seconds": 215.8,
+   "result": "won",
+   "tries": 4
+  },
+  {
+   "boss": "Magmor the Molten (quest)",
+   "seconds": 39.4,
+   "result": "won",
+   "tries": 1
+  },
+  {
+   "boss": "Gnarlroot, the Old King (quest)",
+   "seconds": 32.6,
+   "result": "won",
+   "tries": 1
+  },
+  {
+   "boss": "Ossivar the Hollow (quest)",
+   "seconds": 24.8,
+   "result": "won",
+   "tries": 1
+  },
+  {
+   "boss": "Magmor the Molten (quest)",
+   "seconds": 35.8,
+   "result": "won",
+   "tries": 1
+  },
+  {
+   "boss": "Gnarlroot, the Old King (quest)",
+   "seconds": 14.8,
+   "result": "won",
+   "tries": 1
+  },
+  {
+   "boss": "Ossivar the Hollow (quest)",
+   "seconds": 5.4,
+   "result": "won",
+   "tries": 1
+  },
+  {
+   "boss": "Magmor the Molten (quest)",
+   "seconds": 6.8,
+   "result": "won",
+   "tries": 1
+  },
+  {
+   "boss": "Vesskar the Pale (quest)",
+   "seconds": 8.8,
+   "result": "won",
+   "tries": 1
+  },
+  {
+   "boss": "Gnarlroot, the Old King (quest)",
+   "seconds": 9.8,
+   "result": "won",
+   "tries": 1
+  },
+  {
+   "boss": "Ossivar the Hollow (quest)",
+   "seconds": 11,
+   "result": "won",
+   "tries": 1
+  },
+  {
+   "boss": "Magmor the Molten (quest)",
+   "seconds": 12.8,
+   "result": "won",
+   "tries": 1
+  },
+  {
+   "boss": "Vesskar the Pale (quest)",
+   "seconds": 18.6,
+   "result": "won",
+   "tries": 1
+  },
+  {
+   "boss": "Gnarlroot, the Old King (quest)",
+   "seconds": 22.6,
+   "result": "won",
+   "tries": 1
+  },
+  {
+   "boss": "Ossivar the Hollow (quest)",
+   "seconds": 17.4,
+   "result": "won",
+   "tries": 1
+  },
+  {
+   "boss": "Gnarlroot, the Old King (quest)",
+   "seconds": 120.8,
+   "result": "won",
+   "tries": 2
+  },
+  {
+   "boss": "Gnarlroot, the Old King (quest)",
+   "seconds": 21,
+   "result": "won",
+   "tries": 1
+  },
+  {
+   "boss": "Ossivar the Hollow (quest)",
+   "seconds": 4.8,
+   "result": "won",
+   "tries": 1
+  },
+  {
+   "boss": "Magmor the Molten (quest)",
+   "seconds": 5.4,
+   "result": "won",
+   "tries": 1
+  },
+  {
+   "boss": "Vesskar the Pale (quest)",
+   "seconds": 7.4,
+   "result": "won",
+   "tries": 1
+  },
+  {
+   "boss": "Gnarlroot, the Old King (quest)",
+   "seconds": 13.6,
+   "result": "won",
+   "tries": 1
+  },
+  {
+   "boss": "Ossivar the Hollow (quest)",
+   "seconds": 8.2,
+   "result": "unfinished",
+   "tries": 1
+  }
+ ],
+ "firstBossAtSeconds": 132,
+ "goldEarned": 74724,
+ "goldSpent": 74093,
+ "goldEarnedBy30": 61765,
+ "goldSpentBy30": 62061,
+ "goldSpentRatioBy30": 1.005,
+ "nanSeen": false,
+ "heapMB": 29.8,
+ "tower": {
+  "enteredAtSeconds": 1271,
+  "failed": true,
+  "wbest": 9,
+  "wruns": 3
+ },
+ "minHpPreBoss2": 0.208,
+ "minHpContext": "t=209s lv=6 q=6 boss=true hp=21% (in-combat samples only, hp/hmax)",
+ "deathsPreBoss2": 0,
+ "bossHpByClass": {
+  "knight": 8640,
+  "gunslinger": 8640,
+  "equal": true
+ },
+ "maxDryStretchSeconds": 106,
+ "maxDryStrictSeconds": 107,
+ "dryLootContext": "lv=12 q=6 boss=true tower=false kills=61",
+ "consoleErrors": [],
+ "consoleErrorCount": 0,
+ "fps": {
+  "model": "frame CPU ms x4 throttle",
+  "avgFrameMs": 0.098,
+  "worstRunBelow30Seconds": 0.03
+ },
+ "checks": {
+  "consoleErrors": true,
+  "fps": true,
+  "firstBoss": true,
+  "bossLength": true,
+  "firstBossTries": true,
+  "dryStretch": true,
+  "dangerBeforeBoss2": true,
+  "goldSpentRatio": true,
+  "bossHpParity": true,
+  "towerReach": true,
+  "towerFails": true,
+  "finite": true
+ },
+ "pass": true
+}

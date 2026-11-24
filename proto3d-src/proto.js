@@ -52,7 +52,7 @@ const MODES={};function registerMode(id,def){MODES[id]=def}let MODE=null;
 function enterMode(id){const m=MODES[id];if(!m)return;if(m.soon){toast(m.n+' is coming in the next update',1);return}MODE=m;if(!m.field)B={mode:'side:'+id};m.enter&&m.enter();if(window.G3D)G3D.setScene(m.scene||'field')}
 function exitMode(){if(MODE&&MODE.exit)MODE.exit();MODE=null;B=null;if(window.G3D)G3D.setScene('field')}
 registerMode('hunt',{n:'Hunting Stage',soon:1,scene:'hunt'});registerMode('trial',{n:'Extra Trials',soon:1});
-function eventsM(){modal(`<h3>Events</h3>${Object.entries(MODES).map(([k,m])=>`<div class="shop"><span class="si"><i class="ic ic-bow"></i></span><div><b>${m.n}</b><small>${m.soon?'Coming soon':'Open'}</small></div><button class="btn b sm" onclick="closeM();enterMode('${k}')">Go</button></div>`).join('')}<button class="btn" onclick="closeM()">Close</button>`)}
+function eventsM(){modal(`<h3>Events</h3>${Object.entries(MODES).map(([k,m])=>`<div class="shop"><span class="si"><i class="ic ic-${({hunt:'bow',trial:'skull',tower:'tower'})[k]||'flag'}"></i></span><div><b>${m.n}</b><small>${m.soon?'Coming soon':'Open'}</small></div><button class="btn b sm" onclick="closeM();enterMode('${k}')">Go</button></div>`).join('')}<button class="btn" onclick="closeM()">Close</button>`)}
 // ---- audio: WebAudio gain crossfade (works on iOS; unlocked by the first tap)
 const AUD={ctx:null,tr:{},cur:'title_theme',mute:!!S.mute,urls:{},
  init(urls){this.urls=urls},
@@ -65,6 +65,7 @@ const AUD={ctx:null,tr:{},cur:'title_theme',mute:!!S.mute,urls:{},
  sting(k){if(!this.ctx||!this.urls[k])return;const a=new Audio(this.urls[k]),g=this.ctx.createGain();g.gain.value=.55*.7;this.ctx.createMediaElementSource(a).connect(g);g.connect(this.master);a.play().catch(()=>{})},
  toggle(){this.mute=!this.mute;S.mute=this.mute;save();if(this.master)this.master.gain.value=this.mute?0:1;muteHud()}};
 function muteHud(){const i=$('muteic');if(i)i.className='ic '+(AUD.mute?'ic-audioOff':'ic-audioOn')}
+muteHud();
 function creditsM(){modal(`<h3>Credits</h3><div class="card" style="max-height:52dvh;overflow:auto">${(window.CREDITS_HTML||'')}</div><button class="btn" onclick="closeM()">Close</button>`)}
 setInterval(powerTick,100);
 const _rd=render;render=function(){_rd();if(PWS!==null){const e=$('pw');if(e)e.textContent=Math.round(PWS).toLocaleString()}vipHud()};

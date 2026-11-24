@@ -1,0 +1,186 @@
+{
+ "label": "v33fix-gunslinger",
+ "cls": "gunslinger",
+ "seed": 1337,
+ "builtFrom": "/home/claude/wb-pages/proto3d",
+ "wallSeconds": 5.7,
+ "booted": true,
+ "minutesSimulated": 32,
+ "levelAt": {
+  "5": 9,
+  "10": 15,
+  "30": 24
+ },
+ "final": {
+  "lv": 25,
+  "isle": 0,
+  "stage": 7,
+  "q": 6,
+  "gold": 357,
+  "power": 21081
+ },
+ "deaths": 17,
+ "bossFights": [
+  {
+   "boss": "Gnarlroot, the Old King (quest)",
+   "seconds": 75.2,
+   "result": "won",
+   "tries": 2
+  },
+  {
+   "boss": "Gnarlroot, the Old King (hunt)",
+   "seconds": 30.6,
+   "result": "won",
+   "tries": 1
+  },
+  {
+   "boss": "Ossivar the Hollow (quest)",
+   "seconds": 45.2,
+   "result": "won",
+   "tries": 1
+  },
+  {
+   "boss": "Ossivar the Hollow (quest)",
+   "seconds": 187.2,
+   "result": "won",
+   "tries": 4
+  },
+  {
+   "boss": "Magmor the Molten (quest)",
+   "seconds": 46,
+   "result": "won",
+   "tries": 1
+  },
+  {
+   "boss": "Gnarlroot, the Old King (quest)",
+   "seconds": 28.8,
+   "result": "won",
+   "tries": 1
+  },
+  {
+   "boss": "Ossivar the Hollow (quest)",
+   "seconds": 5,
+   "result": "won",
+   "tries": 1
+  },
+  {
+   "boss": "Magmor the Molten (quest)",
+   "seconds": 6.6,
+   "result": "won",
+   "tries": 1
+  },
+  {
+   "boss": "Vesskar the Pale (quest)",
+   "seconds": 6.4,
+   "result": "won",
+   "tries": 1
+  },
+  {
+   "boss": "Gnarlroot, the Old King (quest)",
+   "seconds": 7,
+   "result": "won",
+   "tries": 1
+  },
+  {
+   "boss": "Ossivar the Hollow (quest)",
+   "seconds": 9.8,
+   "result": "won",
+   "tries": 1
+  },
+  {
+   "boss": "Magmor the Molten (quest)",
+   "seconds": 13.6,
+   "result": "won",
+   "tries": 1
+  },
+  {
+   "boss": "Vesskar the Pale (quest)",
+   "seconds": 0.8,
+   "result": "won",
+   "tries": 1
+  },
+  {
+   "boss": "Gnarlroot, the Old King (quest)",
+   "seconds": 13.2,
+   "result": "won",
+   "tries": 1
+  },
+  {
+   "boss": "Ossivar the Hollow (quest)",
+   "seconds": 3.2,
+   "result": "won",
+   "tries": 1
+  },
+  {
+   "boss": "Magmor the Molten (quest)",
+   "seconds": 5.4,
+   "result": "won",
+   "tries": 1
+  },
+  {
+   "boss": "Vesskar the Pale (quest)",
+   "seconds": 6.2,
+   "result": "won",
+   "tries": 1
+  },
+  {
+   "boss": "Gnarlroot, the Old King (quest)",
+   "seconds": 6.4,
+   "result": "won",
+   "tries": 1
+  },
+  {
+   "boss": "Gnarlroot, the Old King (quest)",
+   "seconds": 533.2,
+   "result": "unfinished",
+   "tries": 12
+  }
+ ],
+ "firstBossAtSeconds": 127,
+ "goldEarned": 78755,
+ "goldSpent": 78698,
+ "goldEarnedBy30": 72281,
+ "goldSpentBy30": 72097,
+ "goldSpentRatioBy30": 0.997,
+ "nanSeen": false,
+ "heapMB": 24.6,
+ "tower": {
+  "enteredAtSeconds": 1058,
+  "failed": true,
+  "wbest": 7,
+  "wruns": 2
+ },
+ "minHpPreBoss2": -0.108,
+ "minHpContext": "t=173s lv=6 q=6 boss=true hp=-11% (in-combat samples only, hp/hmax)",
+ "deathsPreBoss2": 1,
+ "bossHpByClass": {
+  "knight": 8640,
+  "gunslinger": 8640,
+  "equal": true
+ },
+ "maxDryStretchSeconds": 75,
+ "maxDryStrictSeconds": 76,
+ "dryLootContext": "lv=16 q=6 boss=true tower=false kills=80",
+ "consoleErrors": [],
+ "consoleErrorCount": 0,
+ "fps": {
+  "model": "frame CPU ms x4 throttle",
+  "avgFrameMs": 0.097,
+  "worstRunBelow30Seconds": 0.03
+ },
+ "checks": {
+  "consoleErrors": true,
+  "fps": true,
+  "firstBoss": true,
+  "bossLength": true,
+  "firstBossTries": true,
+  "dryStretch": true,
+  "dangerBeforeBoss2": true,
+  "goldSpentRatio": true,
+  "bossHpParity": true,
+  "towerReach": true,
+  "towerFails": true,
+  "finite": true
+ },
+ "pass": true
+}

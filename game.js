@@ -109,7 +109,7 @@ function drawArena(){const I=ISLES[S.isle%4],a=$('arena');a.style.backgroundImag
  <div class="side l"><div class="bar"><i id="phb"></i><span id="pht"></span></div><div id="hero" class="unit">${`<img id="himg" class="ai" src="${IMG[(S.cls||'knight')+'_idle']||''}">`}</div>
  <div class="pets">${pets.map(p=>`<div class="pu st${p.st}">${img(PETS[p.s].k,petE(p))}</div>`).join('')}</div></div>
  <div class="side r"><div class="bar e"><i id="ehb"></i><span id="eht"></span></div><div id="foe" class="unit${B.e.boss?' boss':''}${B.mode==='arena'?' flip':''}">${img(B.e.k,B.e.e)}</div><div class="fn">${B.e.n}</div></div>
- <button id="quest" onclick="questTap()"><b><i class="ic ic-scroll"></i> Quest</b><span>${questText()}</span></button>
+ <button id="quest" onclick="questTap()"><b><i class="ic ic-exclamation"></i> Quest</b><span>${questText()}</span></button>
  <div class="skills">${SK.map((k,i)=>`<button id="sk${i}" class="sk" onclick="useSkill(${i},1)"><span>${k.e}</span><small>${k.n}</small></button>`).join('')}
  <button class="sk au${S.auto?' on':''}" onclick="S.auto=!S.auto;drawArena();updBars()"><span>${S.auto?'<i class="ic ic-pause"></i>':'<i class="ic ic-next"></i>'}</span><small>Auto ${S.auto?'ON':'OFF'}</small></button></div>`;updBars()}
 function questText(){const d=dailyList().find(t=>!S.tdone[t.k]&&prog(t)>=t.n);if(d)return'Claim: '+d.n2;return`Clear ${ISLES[S.isle%4].n} ${S.isle+1}-${S.stage}`}
