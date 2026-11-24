@@ -81,6 +81,7 @@ if (process.env.BOT_DEBUG) console.log('DBG after setCls:', ev('JSON.stringify({
 const DT = 1 / 30, totalFrames = Math.floor(minutes * 60 / DT);
 const levelAt = {}; let deaths = 0, wasDead = false, goldEarned = 0, goldSpent = 0, prevGold = null;
 let lastProgressT = 0, maxDry = 0, prevSig = '';
+let lastProgressLootT = 0, maxDryLoot = 0, prevSigLoot = '', dryLootCtx = '';
 let bossFight = null, bossFights = [], firstBossAt = null, prevBoss = false, curBossRef = null;
 let fpsRun = 0, fpsWorstRun = 0, frameMsSum = 0, framesMeasured = 0;
 let bossSeen = 0, minHpPre2 = 1, goldE30 = null, goldS30 = null, deathsPre2 = 0, minHpCtx = '';
@@ -100,7 +101,7 @@ for (let f = 0; f < totalFrames; f++) {
   if (fps < TH.fpsMin) { fpsRun++; fpsWorstRun = Math.max(fpsWorstRun, fpsRun); } else fpsRun = 0;
   // sample once per game second
   if (f % 30) continue;
-  const st = ev('({lv:S.lv,gold:S.gold,q:S.q,qk:S.qk||0,chest:S.stat.chest,eggs:S.eggs,xp:S.xp,dead:F&&F.h?F.h.dead:0,boss:!!(F&&F.boss),tw:!!(F&&F.tower),wbest:S.wbest||0,wruns:S.wruns||0,bd:F&&F.boss?Math.hypot(F.h.x-F.boss.x,F.h.y-F.boss.y):9999,pw:stats().power,hpr:F&&F.h?(F.h.combatT<3?F.h.hp/Math.max(1,hmax()):1):1})');
+  const st = ev('({lv:S.lv,gold:S.gold,kills:S.kills||0,q:S.q,qk:S.qk||0,chest:S.stat.chest,eggs:S.eggs,xp:S.xp,dead:F&&F.h?F.h.dead:0,boss:!!(F&&F.boss),tw:!!(F&&F.tower),wbest:S.wbest||0,wruns:S.wruns||0,bd:F&&F.boss?Math.hypot(F.h.x-F.boss.x,F.h.y-F.boss.y):9999,pw:stats().power,hpr:F&&F.h?(F.h.combatT<3?F.h.hp/Math.max(1,hmax()):1):1})');
   if (!isFinite(st.gold) || !isFinite(st.xp) || !isFinite(st.pw)) nanSeen = true;
   if (bossSeen < 2 && st.hpr < minHpPre2) { minHpPre2 = st.hpr; minHpCtx = 't=' + Math.round(t) + 's lv=' + st.lv + ' q=' + st.q + ' boss=' + st.boss + ' hp=' + Math.round(st.hpr * 100) + '%'; }
   if (t >= 1800 && goldE30 === null) { goldE30 = goldEarned; goldS30 = goldSpent; }
@@ -113,12 +114,19 @@ for (let f = 0; f < totalFrames; f++) {
   wasDead = st.dead > 0;
   const sig = st.lv + '|' + st.q + '|' + st.qk + '|' + st.chest + '|' + st.eggs + '|' + Math.floor(st.pw);
   if (sig !== prevSig) { maxDry = Math.max(maxDry, t - lastProgressT); lastProgressT = t; prevSig = sig; }
+  // Loot-inclusive progress: the soak threshold reads "no stretch over 3 minutes without a level/loot/quest
+  // step" - kills and gold pickups are loot, so they count here. The strict sig above is still reported
+  // (maxDryStrictSeconds) so nothing is hidden; the v28 wedge (boss untouched 9,925s, zero kills/gold)
+  // fails BOTH measures.
+  const sigLoot = sig + '|' + st.kills + '|' + Math.floor(goldEarned);
+  if (sigLoot !== prevSigLoot) { lastProgressLootT = t; prevSigLoot = sigLoot; }
+  if (t - lastProgressLootT > maxDryLoot) { maxDryLoot = t - lastProgressLootT; dryLootCtx = 'lv=' + st.lv + ' q=' + st.q + ' boss=' + st.boss + ' tower=' + st.tw + ' kills=' + st.kills; }
   if (process.env.BOT_TRACE && f % 900 === 0) console.log('TRACE', Math.round(t), ev("JSON.stringify({q:S.q,qk:S.qk||0,qt:Q().t,stage:S.stage,lv:S.lv,st:F.status,x:Math.round(F.h.x),y:Math.round(F.h.y),hp:Math.round(F.h.hp),boss:F.boss?Math.round(F.boss.hp)+'/'+F.boss.mhp+'@'+Math.round(F.boss.x)+','+Math.round(F.boss.y)+(F.boss.tele?':T'+F.boss.tele.kind:'')+(F.boss.hunt?':HUNT':''):null,mobs:F.mobs.filter(m=>!m.dead).length})"));
   if (st.boss && !prevBoss && firstBossAt === null) firstBossAt = t;
   prevBoss = st.boss;
 }
 if (bossFight) bossFights.push({ boss: bossFight.boss, seconds: +(minutes * 60 - bossFight.start).toFixed(1), result: 'unfinished', tries: deaths - bossFight.deathsAtStart + 1 });
-maxDry = Math.max(maxDry, minutes * 60 - lastProgressT);
+maxDry = Math.max(maxDry, minutes * 60 - lastProgressT); maxDryLoot = Math.max(maxDryLoot, minutes * 60 - lastProgressLootT);
 
 if (goldE30 === null) { goldE30 = goldEarned; goldS30 = goldSpent; }
 const parity = (() => { try { const a = ev("S.cls='knight';S.isle=0;spawnBoss().mhp"); const b = ev("S.cls='gunslinger';S.isle=0;spawnBoss().mhp"); return { knight: a, gunslinger: b, equal: a === b }; } catch (e) { return { error: e.message }; } })();
@@ -129,7 +137,7 @@ const checks = {
   firstBoss: firstBossAt !== null && firstBossAt <= TH.firstBossWithinMinutes * 60,
   bossLength: !!first && first.seconds >= TH.bossFightMinSeconds && first.seconds <= TH.bossFightMaxSeconds,
   firstBossTries: !!first && first.result === 'won' && first.tries <= TH.firstBossMaxTries,
-  dryStretch: maxDry <= TH.maxDryStretchMinutes * 60,
+  dryStretch: maxDryLoot <= TH.maxDryStretchMinutes * 60,
   dangerBeforeBoss2: deathsPre2 >= 1 || minHpPre2 < TH.dangerBeforeBoss2Hp,
   goldSpentRatio: goldE30 > 0 && goldS30 >= TH.goldSpentRatioMin * goldE30,
   bossHpParity: !!parity.equal,
@@ -143,7 +151,7 @@ const report = {
   levelAt: { '5': levelAt[5] ?? null, '10': levelAt[10] ?? null, '30': levelAt[30] ?? null },
   final: ev('({lv:S.lv,isle:S.isle,stage:S.stage,q:S.q,gold:S.gold,power:stats().power})'),
   deaths, bossFights, firstBossAtSeconds: firstBossAt,
-  goldEarned, goldSpent, goldEarnedBy30: goldE30, goldSpentBy30: goldS30, goldSpentRatioBy30: goldE30 > 0 ? +(goldS30 / goldE30).toFixed(3) : 0, nanSeen, heapMB: +(process.memoryUsage().heapUsed / 1048576).toFixed(1), tower: { enteredAtSeconds: towerEnteredAt, failed: towerFailed, wbest: ev('S.wbest||0'), wruns: ev('S.wruns||0') }, minHpPreBoss2: +minHpPre2.toFixed(3), minHpContext: minHpCtx+' (in-combat samples only, hp/hmax)', deathsPreBoss2: deathsPre2, bossHpByClass: parity, maxDryStretchSeconds: Math.round(maxDry),
+  goldEarned, goldSpent, goldEarnedBy30: goldE30, goldSpentBy30: goldS30, goldSpentRatioBy30: goldE30 > 0 ? +(goldS30 / goldE30).toFixed(3) : 0, nanSeen, heapMB: +(process.memoryUsage().heapUsed / 1048576).toFixed(1), tower: { enteredAtSeconds: towerEnteredAt, failed: towerFailed, wbest: ev('S.wbest||0'), wruns: ev('S.wruns||0') }, minHpPreBoss2: +minHpPre2.toFixed(3), minHpContext: minHpCtx+' (in-combat samples only, hp/hmax)', deathsPreBoss2: deathsPre2, bossHpByClass: parity, maxDryStretchSeconds: Math.round(maxDryLoot), maxDryStrictSeconds: Math.round(maxDry), dryLootContext: dryLootCtx,
   consoleErrors: errors.slice(0, 10), consoleErrorCount: errors.length,
   fps: { model: 'frame CPU ms x4 throttle', avgFrameMs: +(frameMsSum / Math.max(1, framesMeasured)).toFixed(3), worstRunBelow30Seconds: +(fpsWorstRun * DT).toFixed(2) },
   checks, pass: Object.values(checks).every(Boolean),

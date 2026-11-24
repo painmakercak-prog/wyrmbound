@@ -51,17 +51,17 @@ await p.evaluate(()=>{window.__markB=window.__frames.length});
 console.log('phase A done (4x throttle frames:',framesA.length,')');
 let teleShot=false;const t0=Date.now();let lastLog=0;
 while(Date.now()-t0<WALLCAP){
-  const gt=await p.evaluate(()=>window.F?F.now:-1).catch(()=>-1);
+  const gt=await p.evaluate(()=>{try{return F.now}catch(e){return -1}}).catch(()=>-1);
   if(gt>=MINS*60)break;
   await p.waitForTimeout(150);
-  const st=await p.evaluate(()=>({boss:!!(window.F&&F.boss),tele:!!(window.F&&(F.tele||F.ringFx))})).catch(()=>({}));
+  const st=await p.evaluate(()=>{try{return{boss:!!F.boss,tele:!!(F.tele||F.ringFx)}}catch(e){return{}}}).catch(()=>({}));
   if(st.boss&&!teleShot&&st.tele){await shot('shot-telegraph.png');teleShot=true;console.log('telegraph shot at game t=',gt.toFixed(0))}
   if(Date.now()-lastLog>120000){lastLog=Date.now();const P=await p.evaluate(()=>window.__P).catch(()=>null);if(P)console.log(`[wall ${((Date.now()-t0)/60000).toFixed(1)}m] game t=${(gt/60).toFixed(1)}m lv`,P.lv,'fights',P.bossFights.length,'goldE/S',P.goldE,P.goldS,'deaths',P.deaths,'minHp',P.minHpPre2.toFixed(2))}
 }
 const P=await p.evaluate(()=>window.__P);
 const framesB=await p.evaluate(m=>window.__frames.slice(m),await p.evaluate(()=>window.__markB));
 function fpsStats(fr){const d=fr.filter(x=>x>0&&x<2000);if(!d.length)return{n:0};const avg=d.reduce((a,x)=>a+x,0)/d.length;const bk=[];let acc=0,n=0;for(const x of d){acc+=x;n++;if(acc>=1000){bk.push(n*1000/acc);acc=0;n=0}}let worst=0,cur=0;for(const f of bk){if(f<30){cur++;worst=Math.max(worst,cur)}else cur=0}return{n:d.length,avgMs:+avg.toFixed(1),avgFps:+(1000/Math.max(avg,.01)).toFixed(1),worstBelow30Sec:worst,buckets:bk.length}}
-out.gameMinutes=+(await p.evaluate(()=>window.F?F.now/60:0)).toFixed(1);
+out.gameMinutes=+(await p.evaluate(()=>{try{return F.now/60}catch(e){return 0}})).toFixed(1);
 out.levelAt=P.levelAt;out.deaths=P.deaths;out.deathsPreBoss2=P.deathsPre2;out.minHpPreBoss2=+P.minHpPre2.toFixed(3);
 out.goldEarned=P.goldE;out.goldSpent=P.goldS;out.goldEarnedBy30=P.goldE30;out.goldSpentBy30=P.goldS30;
 out.goldSpentRatio=P.goldE30>0?+(P.goldS30/P.goldE30).toFixed(3):0;
