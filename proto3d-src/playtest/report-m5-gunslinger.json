@@ -1,0 +1,69 @@
+{
+ "label": "m5-gunslinger",
+ "cls": "gunslinger",
+ "seed": 1337,
+ "builtFrom": "/home/hatch/workspace/journey-of-aethra/build3d/site",
+ "wallSeconds": 7.4,
+ "booted": true,
+ "minutesSimulated": 32,
+ "levelAt": {
+  "5": 11,
+  "10": 16,
+  "30": 27
+ },
+ "final": {
+  "lv": 28,
+  "isle": 2,
+  "stage": 5,
+  "q": 4,
+  "gold": 82478,
+  "power": 16131
+ },
+ "deaths": 0,
+ "bossFights": [
+  {
+   "boss": "Gnarlroot, the Old King (hunt)",
+   "seconds": 33.6,
+   "result": "won",
+   "tries": 1
+  },
+  {
+   "boss": "Gnarlroot, the Old King (quest)",
+   "seconds": 39,
+   "result": "won",
+   "tries": 1
+  },
+  {
+   "boss": "Ossivar the Hollow (hunt)",
+   "seconds": 35,
+   "result": "won",
+   "tries": 1
+  },
+  {
+   "boss": "Ossivar the Hollow (quest)",
+   "seconds": 54,
+   "result": "won",
+   "tries": 1
+  }
+ ],
+ "firstBossAtSeconds": 214,
+ "goldEarned": 82097,
+ "goldSpent": 0,
+ "maxDryStretchSeconds": 235,
+ "consoleErrors": [],
+ "consoleErrorCount": 0,
+ "fps": {
+  "model": "frame CPU ms x4 throttle",
+  "avgFrameMs": 0.127,
+  "worstRunBelow30Seconds": 0.03
+ },
+ "checks": {
+  "consoleErrors": true,
+  "fps": true,
+  "firstBoss": true,
+  "bossLength": false,
+  "firstBossTries": true,
+  "dryStretch": false
+ },
+ "pass": false
+}
