@@ -172,7 +172,7 @@ function initInput3(){const C=$('cv');let st=null;const pt=e=>{const r=C.getBoun
    if(m){F.tgt=m;F.dest={x:m.x-(m.x>F.h.x?range()*.8:-range()*.8),y:m.y}}else if(npc)F.dest={x:PTS[npc][0]+40,y:PTS[npc][1]+20,act:()=>talk(npc)};
    else if(p){const[wx,wy]=p;if(F.chest&&Math.hypot(F.chest.x-wx,F.chest.y-wy)<60)F.dest={x:F.chest.x,y:F.chest.y,act:openFieldChest};else if(S.q>=7&&Math.hypot(PTS.portal[0]-wx,PTS.portal[1]-wy)<80)F.dest={x:PTS.portal[0],y:PTS.portal[1]+30,act:enterPortal};else F.dest={x:wx,y:wy}}}
   F.joy=null;F.manualT=F.now;st=null};C.addEventListener('pointerup',up);C.addEventListener('pointercancel',up)}
-const CT=new THREE.Vector3(),LP=new WeakMap();let lastT=performance.now(),camInit=0;
+const CT=new THREE.Vector3(),LP=new WeakMap();let SHK=0;let lastT=performance.now(),camInit=0;
 function syncUnit(c,u,dt,isHero){const x=u.x*K,z=u.y*K,y=hgt(x,z);const lp=LP.get(u)||{x,z};const dx=x-lp.x,dz=z-lp.z,mv=Math.hypot(dx,dz)/Math.max(dt,1e-3);LP.set(u,{x,z});
  c.w.position.set(x,y,z);let face=null;if(mv>.3)face=Math.atan2(dx,dz);const t=isHero?F.tgt:null;if(isHero&&t&&!t.dead&&D(t,u)<range()+10)face=Math.atan2(t.x*K-x,t.y*K-z);
  if(face!==null){let d=face-c.w.rotation.y;d=Math.atan2(Math.sin(d),Math.cos(d));c.w.rotation.y+=d*Math.min(1,dt*7)}return mv}
@@ -213,7 +213,7 @@ function draw3(){if(!F||!CX)return;const now=performance.now(),dt=Math.min(.1,(n
  // mixers
  H.mx.update(dt);WOLF.mx.update(dt);for(const c of MOB.values())if(c.w.visible)c.mx.update(dt);for(const c of OTH.values())c.mx.update(dt);
  // camera: close 3/4 view, ~53 deg pitch
- const hx=h.x*K,hz=h.y*K,hy=hgt(hx,hz);if(!camInit){CT.set(hx,hy,hz);camInit=1}CT.lerp(V.set(hx,hy,hz),Math.min(1,dt*5));OCC.value.set(CT.x,CT.y,CT.z);cam.position.set(CT.x,CT.y+13.5,CT.z+10.4);cam.lookAt(CT.x,CT.y+.8,CT.z-1);
+ const hx=h.x*K,hz=h.y*K,hy=hgt(hx,hz);if(!camInit){CT.set(hx,hy,hz);camInit=1}CT.lerp(V.set(hx,hy,hz),Math.min(1,dt*5));OCC.value.set(CT.x,CT.y,CT.z);cam.position.set(CT.x,CT.y+13.5,CT.z+10.4);if(SHK>.002){cam.position.x+=(Math.random()-.5)*SHK;cam.position.y+=(Math.random()-.5)*SHK*.6;SHK*=Math.pow(.02,dt)}cam.lookAt(CT.x,CT.y+.8,CT.z-1);
  sun.position.set(CT.x+14,CT.y+30,CT.z+10);sun.target.position.copy(CT);
  R3.render(scene,cam);
  // ---- 2D overlay
@@ -249,7 +249,7 @@ function previewLoop(){if(!PREV)return;const dt=1/60;PREV.root.rotation.y+=dt*.5
  cam.position.set(r.x,r.y+2.6,r.z+10.5);cam.lookAt(r.x,r.y+1.15,r.z);scene.fog.near=300;scene.fog.far=600;sun.position.set(r.x+5,r.y+12,r.z+8);sun.target.position.copy(r);R3.render(scene,cam);requestAnimationFrame(previewLoop)}
 function avatarSnap(){try{R3.render(scene,cam);const c=document.createElement('canvas');c.width=c.height=96;const s=gl.width,h=gl.height;c.getContext('2d').drawImage(gl,s*.3,h*.12,s*.4,s*.4,0,0,96,96);return c.toDataURL('image/webp')}catch(e){return ''}}
 // ---------- public api
-W.G3D={burst(){if(F)fxBeam(F.h.x*K,F.h.y*K),fxRing(F.h.x*K,F.h.y*K,0xffe066,.8,6)},setScene(n){/* side-mode scenes plug in here (next: Hunting Stage) */W.G3D.scene=n},scene:'field'};
+W.G3D={shake(a){SHK=Math.max(SHK,a)},burst(){if(F)fxBeam(F.h.x*K,F.h.y*K),fxRing(F.h.x*K,F.h.y*K,0xffe066,.8,6)},setScene(n){/* side-mode scenes plug in here (next: Hunting Stage) */W.G3D.scene=n},scene:'field'};
 // ---------- boot
 async function boot3(){const P=await loadAll();const ks=Object.keys(P).filter(k=>k.endsWith('.glb'));let i=0;
  for(const k of ks){const buf=await b64buf(P[k]);MOD[k.slice(0,-4)]=await new Promise((res,rej)=>loader.parse(buf,'',res,rej));i++;bar(.92+.06*i/ks.length)}

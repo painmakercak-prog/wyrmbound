@@ -75,3 +75,52 @@ function moveH(vx,vy,dt){const h=F.h,sp=h.mount?MSPD:HSPD;h.vx=h.vx||0;h.vy=h.vy
 
 // level-up: keep only the banner
 {const _f=addFx;addFx=function(x,y,t,...r){if(typeof t==='string'&&t.startsWith('LEVEL UP'))return;return _f(x,y,t,...r)};const _t=toast;toast=function(t,...r){if(typeof t==='string'&&t.startsWith('Level up!'))return;return _t(t,...r)}}
+
+// ===== FEEL PASS: tuning + synthesized SFX + hit feel. Every number lives in FEEL. =====
+// All SFX are synthesized live with WebAudio (original, no audio files, no packs) and route
+// through AUD.master, so the existing sound toggle (AUD.toggle / S.mute) mutes everything.
+const FEEL={stopCrit:.06,stopBossHit:.1,stopKill:.1,kbMob:9,kbBoss:1.5,shakeCrit:.16,shakeSlam:.34,shakeBossDie:.5,burstN:12,sfxVol:.9,
+ vol:{hit:.45,crit:.65,hurt:.55,die:.55,bossDie:.9,pickup:.4,chest:.55,equip:.5,skill:.55,tap:.22},
+ skillHz:{knight:160,ranger:900,mage:520,assassin:1200,scholar:660}};
+let _stopT=0,_lastHitSfx=0,_lastPickSfx=0,_lastTapSfx=0,_pvHp=null,_pvGold=null,_pvKeys=null,_pvTreats=null;
+AUD.sfxGain=null;
+AUD.sfx=function(n){if(!this.ctx||this.mute)return;const C=this.ctx,t=C.currentTime;
+ if(!this.sfxGain){this.sfxGain=C.createGain();this.sfxGain.gain.value=FEEL.sfxVol;this.sfxGain.connect(this.master)}
+ const out=this.sfxGain,V=FEEL.vol;
+ const tone=(f0,f1,d,type,v,when=0)=>{const o=C.createOscillator(),g=C.createGain();o.type=type;o.frequency.setValueAtTime(f0,t+when);o.frequency.exponentialRampToValueAtTime(Math.max(30,f1),t+when+d);g.gain.setValueAtTime(v,t+when);g.gain.exponentialRampToValueAtTime(.001,t+when+d);o.connect(g);g.connect(out);o.start(t+when);o.stop(t+when+d+.02)};
+ const nz=(d,v,fc,when=0)=>{const len=Math.max(1,(C.sampleRate*d)|0),buf=C.createBuffer(1,len,C.sampleRate),ch=buf.getChannelData(0);for(let i=0;i<len;i++)ch[i]=Math.random()*2-1;const s=C.createBufferSource();s.buffer=buf;const f=C.createBiquadFilter();f.type='lowpass';f.frequency.value=fc;const g=C.createGain();g.gain.setValueAtTime(v,t+when);g.gain.exponentialRampToValueAtTime(.001,t+when+d);s.connect(f);f.connect(g);g.connect(out);s.start(t+when)};
+ switch(n){
+  case 'hit':nz(.07,V.hit,1800);tone(190,120,.07,'square',V.hit*.5);break;
+  case 'crit':nz(.1,V.crit,3200);tone(880,240,.14,'sawtooth',V.crit*.6);tone(1560,1560,.07,'sine',V.crit*.5,.01);break;
+  case 'hurt':tone(140,60,.16,'sine',V.hurt);nz(.1,V.hurt*.6,500);break;
+  case 'die':nz(.18,V.die,900);tone(320,55,.25,'triangle',V.die);break;
+  case 'bossDie':tone(200,38,.55,'sine',V.bossDie);nz(.45,V.bossDie*.8,700);tone(90,45,.6,'square',V.bossDie*.5,.03);break;
+  case 'pickup':tone(920,920,.06,'sine',V.pickup);tone(1380,1380,.09,'sine',V.pickup,.05);break;
+  case 'chest':nz(.05,V.chest,2400);tone(520,780,.09,'triangle',V.chest,.04);tone(780,1180,.12,'triangle',V.chest,.1);break;
+  case 'equip':tone(620,620,.05,'square',V.equip*.7);tone(930,930,.08,'square',V.equip*.7,.045);break;
+  case 'tap':tone(1250,1250,.03,'sine',V.tap);break;
+  default:{const hz=FEEL.skillHz[S.cls]||600;nz(.14,V.skill,2600);tone(hz,hz*.5,.16,'sawtooth',V.skill*.55);tone(hz*1.5,hz*1.5,.07,'sine',V.skill*.4,.02)}}};
+// hit / crit: sound, hit-stop, knockback (bosses barely move)
+const _hmF=hitMob;hitMob=function(m,d,tag,c){const crit=tag==='CRIT ';_hmF(m,d,tag,c);const now=performance.now();
+ if(crit){_stopT=Math.max(_stopT,FEEL.stopCrit);if(window.G3D&&G3D.shake)G3D.shake(FEEL.shakeCrit);if(now-_lastHitSfx>50){_lastHitSfx=now;AUD.sfx('crit')}}
+ else if(now-_lastHitSfx>55){_lastHitSfx=now;AUD.sfx('hit')}
+ if(m.boss)_stopT=Math.max(_stopT,FEEL.stopBossHit);
+ if(F&&F.h){const dx=m.x-F.h.x,dy=m.y-F.h.y,dd=Math.hypot(dx,dy)||1,kb=m.boss?FEEL.kbBoss:FEEL.kbMob;m.x=Math.max(30,Math.min(ZW-30,m.x+dx/dd*kb));m.y=Math.max(60,Math.min(ZH-30,m.y+dy/dd*kb))}};
+// deaths: sound, hit-stop, extra burst + ring (the 3D die animation and sink already play in g3d)
+const _kmF=killMob;killMob=function(m){_kmF(m);AUD.sfx(m.boss?'bossDie':'die');_stopT=Math.max(_stopT,FEEL.stopKill);
+ sparks(m.x,m.y-34,'#ffffff',FEEL.burstN);F.fx.push({ring:1,x:m.x,y:m.y});if(m.boss&&window.G3D&&G3D.shake)G3D.shake(FEEL.shakeBossDie)};
+// skill casts: one synthesized voice per class
+const _usF=useSkillF;useSkillF=function(i){const b=F&&F.h?F.h.sk[i]:0;_usF(i);if(F&&F.h&&F.h.sk[i]!==b)AUD.sfx('skill')};
+// chest + equip
+const _ocF=openChest;openChest=function(){const r=_ocF();if(r)AUD.sfx('chest');return r};
+const _eqF=equip;equip=function(){_eqF();AUD.sfx('equip')};
+// hit-stop clock + hurt/pickup detection (watches hp and currency deltas each frame)
+const _stF=step;step=function(dt){if(_stopT>0){_stopT-=dt;_stF(0)}else _stF(dt);
+ if(!F)return;const h=F.h,now=performance.now();
+ if(_pvHp!==null&&h.hp<_pvHp-.5&&h.dead<=0){AUD.sfx('hurt');if(_pvHp-h.hp>hmax()*.09&&window.G3D&&G3D.shake)G3D.shake(FEEL.shakeSlam)}
+ _pvHp=h.hp;
+ if(_pvGold===null){_pvGold=S.gold;_pvKeys=S.keys;_pvTreats=S.treats}
+ else if((S.gold>_pvGold||S.keys>_pvKeys||S.treats>_pvTreats)&&now-_lastPickSfx>70){_lastPickSfx=now;AUD.sfx('pickup')}
+ _pvGold=S.gold;_pvKeys=S.keys;_pvTreats=S.treats};
+// menu button taps (skill cluster excluded: casts have their own sound)
+document.addEventListener('pointerdown',e=>{if(!e.target.closest||!e.target.closest('button')||e.target.closest('.skills'))return;const now=performance.now();if(now-_lastTapSfx<60)return;_lastTapSfx=now;AUD.sfx('tap')},true);
