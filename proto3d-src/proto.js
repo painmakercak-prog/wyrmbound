@@ -3,7 +3,7 @@
 CLASSES.knight.n='Swordsman';CLASSES.knight.e='⚔️';CLASSES.ranger.n='Archer';CLASSES.mage.n='Sorcerer';
 CLASSES.assassin={n:'Assassin',d:'Twin daggers. Huge crits, lighter armor.',e:'🗡️',atk:1.3,hp:.9};
 CLASSES.scholar={n:'Scholar',d:'Tome magic. Steady ranged damage and strong heals.',e:'📖',atk:1.05,hp:1.1};
-CLASSES.gunslinger={n:'Gunslinger',d:'Crossbow deadeye. Longest range, fastest shots, crit build.',e:'🤠',atk:1.2,hp:.95};
+CLASSES.gunslinger={n:'Gunslinger',d:'Revolver deadeye. Longest range, fastest shots, crit build.',e:'🤠',atk:1.2,hp:.95};
 if(IMG.ranger_idle){IMG.gunslinger_idle=IMG.ranger_idle;IMG.gunslinger_attack=IMG.ranger_attack;IMG.gunslinger_hurt=IMG.ranger_hurt}
 const CLS_ORDER=['knight','ranger','mage','assassin','scholar','gunslinger'];
 const MELEE={knight:1,assassin:1};
