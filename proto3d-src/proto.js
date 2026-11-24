@@ -1,9 +1,9 @@
 // ===== Journey of Aethra 3D prototype: game-side overrides (loaded after game.js/field.js/gfx3.js) =====
 // Classes (DT2-style roster; logic shares the original 3 archetypes)
-CLASSES.knight.n='Swordsman';CLASSES.knight.e='⚔️';CLASSES.ranger.n='Archer';CLASSES.mage.n='Sorcerer';
-CLASSES.assassin={n:'Assassin',d:'Twin daggers. Huge crits, lighter armor.',e:'🗡️',atk:1.3,hp:.9};
-CLASSES.scholar={n:'Scholar',d:'Tome magic. Steady ranged damage and strong heals.',e:'📖',atk:1.05,hp:1.1};
-CLASSES.gunslinger={n:'Gunslinger',d:'Revolver deadeye. Longest range, fastest shots, crit build.',e:'🤠',atk:1.0,hp:.95};
+CLASSES.knight.n='Swordsman';CLASSES.knight.e='<i class="ic ic-sword"></i>';CLASSES.ranger.n='Archer';CLASSES.mage.n='Sorcerer';
+CLASSES.assassin={n:'Assassin',d:'Twin daggers. Huge crits, lighter armor.',e:'<i class="ic ic-sword"></i>',atk:1.3,hp:.9};
+CLASSES.scholar={n:'Scholar',d:'Tome magic. Steady ranged damage and strong heals.',e:'<i class="ic ic-book"></i>',atk:1.05,hp:1.1};
+CLASSES.gunslinger={n:'Gunslinger',d:'Revolver deadeye. Longest range, fastest shots, crit build.',e:'<i class="ic ic-hat"></i>',atk:1.0,hp:.95};
 if(IMG.ranger_idle){IMG.gunslinger_idle=IMG.ranger_idle;IMG.gunslinger_attack=IMG.ranger_attack;IMG.gunslinger_hurt=IMG.ranger_hurt}
 const CLS_ORDER=['knight','ranger','mage','assassin','scholar','gunslinger'];
 const MELEE={knight:1,assassin:1};
@@ -36,23 +36,23 @@ const SYSL=n=>pick([`${n} reached Power ${fmt(rint(8,90)*1000)}!`,`${n} hatched 
 function chatRender(){const c=$('chatl');if(!c)return;c.innerHTML=chatLog.slice(-3).map(m=>m[2]?`<p><i class="sys">System</i> ${m[1]}</p>`:`<p><i>World</i> <b>${m[0]}:</b> ${m[1]}</p>`).join('')}
 const _ct=chatTick;chatTick=function(){_ct();if(R()<.12){chatLog.push(['',SYSL(pick(NAMES)),1])}chatRender()};// SIMULATED
 function guildM(){modal(`<h3>Guild</h3><p class="ctr"><b>Emberwing</b> · Lv 4 · 18/30 members<br><small>SIMULATED in this prototype</small></p>${NAMES.slice(0,6).map((n,i)=>`<div class="srw"><span>${n}${i?'':' (Leader)'}</span><b>Power ${fmt(42000-i*5100)}</b></div>`).join('')}<button class="btn g" onclick="closeM()">Close</button>`)}
-function friendsM(){modal(`<h3>Friends</h3><p class="ctr"><small>SIMULATED in this prototype</small></p>${NAMES.slice(6,11).map((n,i)=>`<div class="srw"><span>${i<2?'🟢':'⚪'} ${n}</span><b>${i<2?'Online':'Offline'}</b></div>`).join('')}<button class="btn g" onclick="closeM()">Close</button>`)}
-// ---- monetization UI: premium currency (Starshards 💎, earned in game) ONLY. No real money anywhere.
+function friendsM(){modal(`<h3>Friends</h3><p class="ctr"><small>SIMULATED in this prototype</small></p>${NAMES.slice(6,11).map((n,i)=>`<div class="srw"><span>${i<2?'<i class="sdot"></i>':'<i class="sdot off"></i>'} ${n}</span><b>${i<2?'Online':'Offline'}</b></div>`).join('')}<button class="btn g" onclick="closeM()">Close</button>`)}
+// ---- monetization UI: premium currency (Starshards <i class="ic ic-diamond"></i>, earned in game) ONLY. No real money anywhere.
 if(S.vip===undefined)S.vip=0;if(!S.packs)S.packs={};
 const VIPC=[300,800,2000];
-function vipM(){const n=S.vip,c=VIPC[n];modal(`<h3>VIP ${n}</h3><p class="ctr">VIP perks: +10% gold and +1 relic key per quest per level.<br><small>Paid with 💎 Starshards earned in game. No real money.</small></p>
- ${c?`<button class="btn y big" onclick="buyVip()">Upgrade to VIP ${n+1} · 💎${c}</button>`:'<p class="ctr"><b>Max VIP reached</b></p>'}<button class="btn" onclick="closeM()">Close</button>`)}
-function buyVip(){const c=VIPC[S.vip];if(!c)return;if(S.shards<c){toast('Not enough 💎 Starshards. Earn more from quests and bosses.');return}S.shards-=c;S.vip++;save();render();vipHud();closeM();toast('VIP '+S.vip+' unlocked!')}
+function vipM(){const n=S.vip,c=VIPC[n];modal(`<h3>VIP ${n}</h3><p class="ctr">VIP perks: +10% gold and +1 relic key per quest per level.<br><small>Paid with <i class="ic ic-diamond"></i> Starshards earned in game. No real money.</small></p>
+ ${c?`<button class="btn y big" onclick="buyVip()">Upgrade to VIP ${n+1} · <i class="ic ic-diamond"></i>${c}</button>`:'<p class="ctr"><b>Max VIP reached</b></p>'}<button class="btn" onclick="closeM()">Close</button>`)}
+function buyVip(){const c=VIPC[S.vip];if(!c)return;if(S.shards<c){toast('Not enough <i class="ic ic-diamond"></i> Starshards. Earn more from quests and bosses.');return}S.shards-=c;S.vip++;save();render();vipHud();closeM();toast('VIP '+S.vip+' unlocked!')}
 function vipHud(){const e=$('vipl');if(e)e.textContent='VIP '+S.vip}
-const PACKS=[{k:'starter',n:'Starter Pack',d:'10 🗝️ keys · 5 🍖 treats · 1 🥚 egg',c:120,f:()=>{S.keys+=10;S.treats+=5;S.eggs++}},{k:'tamer',n:'Tamer Pack',d:'3 🥚 eggs · 20 🍖 treats',c:400,f:()=>{S.eggs+=3;S.treats+=20}},{k:'forge',n:'Forge Pack',d:'30 🗝️ relic keys',c:250,f:()=>{S.keys+=30}}];
-function packsM(){modal(`<h3>Packs</h3><p class="ctr"><small>💎 Starshards only (earned in game). No real money.</small></p>${PACKS.map(p=>`<div class="shop"><span class="si">🎁</span><div><b>${p.n}</b><small>${p.d}</small></div><button class="btn g sm" ${S.packs[p.k]?'disabled':''} onclick="buyPack('${p.k}')">${S.packs[p.k]?'Owned':'💎'+p.c}</button></div>`).join('')}<button class="btn" onclick="closeM()">Close</button>`)}
-function buyPack(k){const p=PACKS.find(x=>x.k===k);if(!p||S.packs[k])return;if(S.shards<p.c){toast('Not enough 💎 Starshards');return}S.shards-=p.c;S.packs[k]=1;p.f();save();render();packsM();toast(p.n+' claimed!')}
+const PACKS=[{k:'starter',n:'Starter Pack',d:'10 <i class="ic ic-key"></i> keys · 5 <i class="ic ic-meat"></i> treats · 1 <i class="ic ic-egg"></i> egg',c:120,f:()=>{S.keys+=10;S.treats+=5;S.eggs++}},{k:'tamer',n:'Tamer Pack',d:'3 <i class="ic ic-egg"></i> eggs · 20 <i class="ic ic-meat"></i> treats',c:400,f:()=>{S.eggs+=3;S.treats+=20}},{k:'forge',n:'Forge Pack',d:'30 <i class="ic ic-key"></i> relic keys',c:250,f:()=>{S.keys+=30}}];
+function packsM(){modal(`<h3>Packs</h3><p class="ctr"><small><i class="ic ic-diamond"></i> Starshards only (earned in game). No real money.</small></p>${PACKS.map(p=>`<div class="shop"><span class="si"><i class="ic ic-gift"></i></span><div><b>${p.n}</b><small>${p.d}</small></div><button class="btn g sm" ${S.packs[p.k]?'disabled':''} onclick="buyPack('${p.k}')">${S.packs[p.k]?'Owned':'<i class="ic ic-diamond"></i>'+p.c}</button></div>`).join('')}<button class="btn" onclick="closeM()">Close</button>`)}
+function buyPack(k){const p=PACKS.find(x=>x.k===k);if(!p||S.packs[k])return;if(S.shards<p.c){toast('Not enough <i class="ic ic-diamond"></i> Starshards');return}S.shards-=p.c;S.packs[k]=1;p.f();save();render();packsM();toast(p.n+' claimed!')}
 // ---- side modes registry (architecture for minigames; next milestone = Hunting Stage idle mode)
 const MODES={};function registerMode(id,def){MODES[id]=def}let MODE=null;
 function enterMode(id){const m=MODES[id];if(!m)return;if(m.soon){toast(m.n+' is coming in the next update',1);return}MODE=m;if(!m.field)B={mode:'side:'+id};m.enter&&m.enter();if(window.G3D)G3D.setScene(m.scene||'field')}
 function exitMode(){if(MODE&&MODE.exit)MODE.exit();MODE=null;B=null;if(window.G3D)G3D.setScene('field')}
 registerMode('hunt',{n:'Hunting Stage',soon:1,scene:'hunt'});registerMode('trial',{n:'Extra Trials',soon:1});
-function eventsM(){modal(`<h3>Events</h3>${Object.entries(MODES).map(([k,m])=>`<div class="shop"><span class="si">🏹</span><div><b>${m.n}</b><small>${m.soon?'Coming soon':'Open'}</small></div><button class="btn b sm" onclick="closeM();enterMode('${k}')">Go</button></div>`).join('')}<button class="btn" onclick="closeM()">Close</button>`)}
+function eventsM(){modal(`<h3>Events</h3>${Object.entries(MODES).map(([k,m])=>`<div class="shop"><span class="si"><i class="ic ic-bow"></i></span><div><b>${m.n}</b><small>${m.soon?'Coming soon':'Open'}</small></div><button class="btn b sm" onclick="closeM();enterMode('${k}')">Go</button></div>`).join('')}<button class="btn" onclick="closeM()">Close</button>`)}
 // ---- audio: WebAudio gain crossfade (works on iOS; unlocked by the first tap)
 const AUD={ctx:null,tr:{},cur:'title_theme',mute:!!S.mute,urls:{},
  init(urls){this.urls=urls},
@@ -64,7 +64,7 @@ const AUD={ctx:null,tr:{},cur:'title_theme',mute:!!S.mute,urls:{},
   for(const[k,t]of Object.entries(this.tr)){const tg=k===this.cur?.55:0;t.v+=(tg-t.v)*.12;if(Math.abs(tg-t.v)<.005)t.v=tg;t.g.gain.value=t.v;if(t.v===0&&!t.a.paused&&k!==this.cur)t.a.pause();else if(t.v>0&&t.a.paused)t.a.play().catch(()=>{})}},
  sting(k){if(!this.ctx||!this.urls[k])return;const a=new Audio(this.urls[k]),g=this.ctx.createGain();g.gain.value=.55*.7;this.ctx.createMediaElementSource(a).connect(g);g.connect(this.master);a.play().catch(()=>{})},
  toggle(){this.mute=!this.mute;S.mute=this.mute;save();if(this.master)this.master.gain.value=this.mute?0:1;muteHud()}};
-function muteHud(){const b=$('mute');if(b)b.textContent=AUD.mute?'🔇':'🔊'}
+function muteHud(){const i=$('muteic');if(i)i.className='ic '+(AUD.mute?'ic-audioOff':'ic-audioOn')}
 function creditsM(){modal(`<h3>Credits</h3><div class="card" style="max-height:52dvh;overflow:auto">${(window.CREDITS_HTML||'')}</div><button class="btn" onclick="closeM()">Close</button>`)}
 setInterval(powerTick,100);
 const _rd=render;render=function(){_rd();if(PWS!==null){const e=$('pw');if(e)e.textContent=Math.round(PWS).toLocaleString()}vipHud()};
@@ -137,16 +137,16 @@ startFight=function(){B=null};
 huntGo=function(){if(S.hunt<1){toast('No hunts left today');return}if(!F){toast('Enter the field first');return}S.hunt--;F.boss=spawnBoss();F.boss.hunt=1;F.banner=3;toast('Boss Hunt: '+F.boss.n+' stirs in the north lair!');if(AUD.sting)AUD.sting('quest');save();render()};
 const _qtF=questTarget;questTarget=function(){if(F&&F.boss&&(F.boss.hunt||F.boss.tower)&&!F.boss.dead)return{x:F.boss.x,y:F.boss.y,kind:'mob',m:F.boss,label:'boss hunt: '+F.boss.n};return _qtF()};
 const _kmB=killMob;killMob=function(m){if(m.boss)S.bossKills=(S.bossKills||0)+1;_kmB(m)};
-const _kmH=killMob;killMob=function(m){const wasHunt=!!(m.boss&&m.hunt);_kmH(m);if(wasHunt){S.shards+=30;S.eggs++;toast('Boss hunted! +30 💎 +1 🥚');save()}};
+const _kmH=killMob;killMob=function(m){const wasHunt=!!(m.boss&&m.hunt);_kmH(m);if(wasHunt){S.shards+=30;S.eggs++;toast('Boss hunted! +30 <i class="ic ic-diamond"></i> +1 <i class="ic ic-egg"></i>');save()}};
 // ---- Wyrm Tower (endgame): endless floors reusing the zone bosses and their telegraphs.
 // Floor scaling compounds (HP x1.32, atk x1.22 per floor) so every run ends; rewards feed the forge sink.
 const TOWER_NAMES=['Gnarlroot, the Old King','Ossivar the Hollow','Magmor the Molten','Vesskar the Pale'];
 function towerBoss(fl){const b=spawnBoss();b.n=TOWER_NAMES[(fl-1)%4];b.hp=b.mhp=Math.round(6500*Math.pow(1.28,fl-1));b.atk=Math.round(95*Math.pow(1.24,fl-1));b.lv=20+fl;b.tower=fl;b.hunt=0;b.x=PTS.lair[0];b.y=PTS.lair[1];b.hx=b.x;b.hy=b.y;b.tele=null;b.teleCd=3.5;b.charge=null;return b}
-function towerGo(){if(!F){toast('Enter the field first');return}if(S.best<31){toast('Clear all four isles to unlock the Wyrm Tower');return}if(F.tower)return;F.tower={floor:0,next:2};S.wruns=(S.wruns||0)+1;toast('🗼 The Wyrm Tower rises over the lair...');if(AUD.sting)AUD.sting('quest');save()}
-function towerTick(dt){if(!F||!F.tower)return;if(F.h.dead>0)return;if(F.boss)return;F.tower.next-=dt;if(F.tower.next<=0){F.tower.floor++;F.boss=towerBoss(F.tower.floor);F.banner=3;toast('🗼 Floor '+F.tower.floor+': '+F.boss.n);if(AUD.sting)AUD.sting('quest')}}
+function towerGo(){if(!F){toast('Enter the field first');return}if(S.best<31){toast('Clear all four isles to unlock the Wyrm Tower');return}if(F.tower)return;F.tower={floor:0,next:2};S.wruns=(S.wruns||0)+1;toast('<i class="ic ic-tower"></i> The Wyrm Tower rises over the lair...');if(AUD.sting)AUD.sting('quest');save()}
+function towerTick(dt){if(!F||!F.tower)return;if(F.h.dead>0)return;if(F.boss)return;F.tower.next-=dt;if(F.tower.next<=0){F.tower.floor++;F.boss=towerBoss(F.tower.floor);F.banner=3;toast('<i class="ic ic-tower"></i> Floor '+F.tower.floor+': '+F.boss.n);if(AUD.sting)AUD.sting('quest')}}
 const _stTW=step;step=function(dt){_stTW(dt);towerTick(dt)};
-const _kmT=killMob;killMob=function(m){const fl=m.tower||0;_kmT(m);if(fl){S.gold+=300*fl;S.shards+=10*fl;if(fl%5===0)S.eggs++;if(fl>(S.wbest||0))S.wbest=fl;toast('🗼 Floor '+fl+' cleared! +'+(300*fl)+' gold');if(F&&F.tower)F.tower.next=4;save()}};
-const _hdT=heroDie;heroDie=function(){const tw=F&&F.tower?F.tower:null;_hdT();if(tw){F.tower=null;if(F.boss&&F.boss.tower)F.boss=null;F.towerCd=performance.now()/1000;toast('🗼 The tower claims you at floor '+Math.max(1,tw.floor)+'. Best: '+(S.wbest||0));save()}};
+const _kmT=killMob;killMob=function(m){const fl=m.tower||0;_kmT(m);if(fl){S.gold+=300*fl;S.shards+=10*fl;if(fl%5===0)S.eggs++;if(fl>(S.wbest||0))S.wbest=fl;toast('<i class="ic ic-tower"></i> Floor '+fl+' cleared! +'+(300*fl)+' gold');if(F&&F.tower)F.tower.next=4;save()}};
+const _hdT=heroDie;heroDie=function(){const tw=F&&F.tower?F.tower:null;_hdT();if(tw){F.tower=null;if(F.boss&&F.boss.tower)F.boss=null;F.towerCd=performance.now()/1000;toast('<i class="ic ic-tower"></i> The tower claims you at floor '+Math.max(1,tw.floor)+'. Best: '+(S.wbest||0));save()}};
 let _twT=0;function towerAutoTick(){if(!F||!S.auto||F.tower||F.boss||F.h.dead>0)return;if(S.best<31||S.isle<4)return;const now=performance.now()/1000;if(now-_twT<5)return;_twT=now;if(F.towerCd&&now-F.towerCd<90)return;towerGo()}
 const _stTA=step;step=function(dt){_stTA(dt);towerAutoTick()};
 registerMode('tower',{n:'Wyrm Tower',field:1,enter:()=>{MODE=null;towerGo()}});
@@ -158,9 +158,9 @@ const FSGOALS=[['Reach level 5',()=>S.lv>=5],['Defeat 25 foes',()=>S.kills>=25],
 let _fsT=0;
 function m4Tick(){if(!F)return;const now=F.now;if(now-_fsT<1)return;_fsT=now;
  const pw=stats().power;
- while((S.pms||0)<PMS.length&&pw>=PMS[S.pms]){const i=S.pms;S.pms++;const r=25*(i+1);S.shards+=r;toast(`🏆 Power milestone ${fmt(PMS[i])}! +${r} 💎`);if(AUD.sting)AUD.sting('level');save()}
- FSGOALS.forEach((g,i)=>{const k='g'+i;if(!S.fs[k]&&g[1]()){S.fs[k]=1;S.shards+=20;toast(`⭐ First steps ${i+1}/5: ${g[0]} +20 💎`);if(AUD.sting)AUD.sting('quest');
-  if(FSGOALS.every((_,j)=>S.fs['g'+j])){S.shards+=100;S.eggs++;toast('🌟 First Steps complete! +100 💎 +1 🥚')}save()}})}
+ while((S.pms||0)<PMS.length&&pw>=PMS[S.pms]){const i=S.pms;S.pms++;const r=25*(i+1);S.shards+=r;toast(`<i class="ic ic-trophy"></i> Power milestone ${fmt(PMS[i])}! +${r} <i class="ic ic-diamond"></i>`);if(AUD.sting)AUD.sting('level');save()}
+ FSGOALS.forEach((g,i)=>{const k='g'+i;if(!S.fs[k]&&g[1]()){S.fs[k]=1;S.shards+=20;toast(`<i class="ic ic-star"></i> First steps ${i+1}/5: ${g[0]} +20 <i class="ic ic-diamond"></i>`);if(AUD.sting)AUD.sting('quest');
+  if(FSGOALS.every((_,j)=>S.fs['g'+j])){S.shards+=100;S.eggs++;toast('<i class="ic ic-star"></i> First Steps complete! +100 <i class="ic ic-diamond"></i> +1 <i class="ic ic-egg"></i>')}save()}})}
 const _stM4=step;step=function(dt){_stM4(dt);m4Tick()};
 // Block 2 gold sink: autoplay forges its weakest-upgraded equipped piece whenever it can afford it
 let _fgT=0;function forgeTick(){if(!F||!S.auto)return;const now=performance.now()/1000;if(now-_fgT<1.5)return;_fgT=now;let bk=null,bu=1e9;for(const k of SLOTS){const it=S.gear[k];if(it&&S.gold>=forgeCost(it)&&(it.up||0)<bu){bu=it.up||0;bk=k}}if(bk)forgeUp(bk,true)}
@@ -176,4 +176,16 @@ function bossWatchTick(){if(!F||!S.auto||!F.boss||F.h.dead>0){_bwBoss=null;_bwSt
  if(_bwStill>=150){b.x=F.h.x+130;b.y=F.h.y;b.tele=null;b.charge=null;_bwStill=0;_bwHp=b.hp;toast('The boss charges you!')}}
 const _stBW=step;step=function(dt){_stBW(dt);bossWatchTick()};
 const _tqM4=tQuests;tQuests=function(){const done=FSGOALS.filter((_,i)=>S.fs['g'+i]).length;
- return `<div class="card"><b>⭐ First Steps (${done}/5)</b>${FSGOALS.map((g,i)=>`<div class="task"><span>${S.fs['g'+i]?'✅':'▫️'} ${g[0]}</span><small>+20 💎</small></div>`).join('')}<div class="task"><span>🏆 Power milestones</span><small>${S.pms||0}/${PMS.length} claimed</small></div></div>`+_tqM4()};
+ return `<div class="card"><b><i class="ic ic-star"></i> First Steps (${done}/5)</b>${FSGOALS.map((g,i)=>`<div class="task"><span>${S.fs['g'+i]?'<i class="ic ic-checkmark"></i>':'<span class="sdot off"></span>'} ${g[0]}</span><small>+20 <i class="ic ic-diamond"></i></small></div>`).join('')}<div class="task"><span><i class="ic ic-trophy"></i> Power milestones</span><small>${S.pms||0}/${PMS.length} claimed</small></div></div>`+_tqM4()};
+
+// ===== UI theme system (Step 2): tokens live in head3d.html under html[data-theme] =====
+const THEMES={village:{label:'Village',mood:'calm warm'},isle0:{label:'Bloomvale',mood:'isle'},isle1:{label:'Sunken Ruins',mood:'isle'},isle2:{label:'Frostvein',mood:'isle'},isle3:{label:'Ashcrown',mood:'isle'},boss:{label:'Boss fight',mood:'high alert'},tower:{label:'Wyrm Tower',mood:'dark arcane'}};
+let curTheme='';
+function applyTheme(t){if(t===curTheme||!THEMES[t])return;curTheme=t;document.documentElement.dataset.theme=t}
+function pickTheme(){if(!window.F||!F.h)return 'village';if(F.tower)return 'tower';if(F.boss&&!F.boss.dead)return 'boss';const v=PTS.village,h=F.h;if(Math.hypot(h.x-v[0],h.y-v[1])<320)return 'village';return 'isle'+(S.isle%4)}
+setInterval(()=>{try{applyTheme(pickTheme())}catch(_){}},600);
+// gold flash on level-up and on the new-gear pop
+function goldFlash(){const f=$('flash');if(!f)return;f.classList.remove('on');void f.offsetWidth;f.classList.add('on')}
+if(window.MutationObserver){const _gfObs=new MutationObserver(ms=>{for(const m of ms)if(m.target.classList&&m.target.classList.contains('on'))goldFlash()});['lvban','gearpop'].forEach(id=>{const el=$(id);if(el)_gfObs.observe(el,{attributes:true,attributeFilter:['class']})})}
+// menu tap sound on every button press
+document.addEventListener('pointerdown',e=>{if(e.target.closest&&e.target.closest('button,.btn,.day,.cls')){try{AUD.sfx('tap')}catch(_){}}},true);

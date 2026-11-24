@@ -7,3 +7,4 @@ Music and stingers: original audio, Copyright (c) 2026 Kasey Carroll, generated 
 UI kit, logo and dragon companion: original art made for Journey of Aethra.
 Heroes: Quaternius "Hooded Adventurer", "Adventurer", "Ultimate Modular Men/Women" characters, "Witch" and "Animated Wizard" (quaternius.com via poly.pizza), CC0 1.0. Weapons/shield from KayKit Adventurers (Kay Lousberg), CC0 1.0.
 Gunslinger revolver: Quaternius "Ultimate Guns Pack" (quaternius.com via poly.pizza), CC0 1.0.
+UI skin and icons (v33 UI overhaul): Kenney "UI Pack - Adventure", "UI Pack RPG Extension", "Game Icons" and "Game Icons Expansion" by Kenney (kenney.nl), CC0 1.0. Display font: MedievalSharp by wmk69, SIL Open Font License 1.1. Additional item and creature glyphs in the icon atlas are original art made for Journey of Aethra in the same flat-glyph style.

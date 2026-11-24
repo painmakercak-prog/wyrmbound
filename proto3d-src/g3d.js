@@ -339,7 +339,7 @@ async function boot3(){const P=await loadAll();const ks=Object.keys(P).filter(k=
  $('ttlg').onclick=()=>{AUD.start();t.style.opacity=0;t.style.pointerEvents='none';setTimeout(()=>t.remove(),460);openCS()}}
 function openCS(){const cs=$('cs');cs.classList.add('on');document.body.classList.add('csm');let sel=CLASSES[S.cls]?S.cls:'knight';preview(true);previewLoop();
  const L=$('csl');L.innerHTML=CLS_ORDER.map(k=>`<button data-k="${k}"><span>${CLASSES[k].e}</span><b>${CLASSES[k].n}</b></button>`).join('');
- const pickC=k=>{sel=k;L.querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.k===k));$('cse').textContent=CLASSES[k].e;$('csn').textContent=CLASSES[k].n;$('csd').textContent=CLASSES[k].d;previewCls(k)};
+ const pickC=k=>{sel=k;L.querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.k===k));$('cse').innerHTML=CLASSES[k].e;$('csn').textContent=CLASSES[k].n;$('csd').textContent=CLASSES[k].d;previewCls(k)};
  L.querySelectorAll('button').forEach(b=>b.onclick=()=>pickC(b.dataset.k));pickC(sel);
  $('csnext').onclick=()=>pickC(CLS_ORDER[(CLS_ORDER.indexOf(sel)+1)%CLS_ORDER.length]);
  $('csgo').onclick=()=>{const av=IMG[sel+'_idle']||IMG.knight_idle;S.cls=sel;if(!S.pets.length){const p=mkPet(0);S.pets.push(p);S.team=[p.id]}save();preview(false);scene.fog.near=30;scene.fog.far=80;document.body.classList.remove('csm');cs.classList.remove('on');
