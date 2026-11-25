@@ -78,7 +78,7 @@ export const REGIONS = {
     ],
     places: { start: { x: 900, y: 2630 }, arrive: { x: 900, y: 2440 }, spire: { x: 900, y: 2380 }, marr: { x: 760, y: 2590 }, sparks: { x: 1050, y: 2600 }, okafor: { x: 1000, y: 2700 }, geode: { x: 1160, y: 2100 }, roots: { x: 900, y: 470 }, arena: { x: 900, y: 360 } },
     npcs: ['marr', 'sparks', 'okafor'],
-    boss: { type: 'thornmother', at: 'arena', quest: 'boss' }
+    boss: { type: 'thornmother', at: 'arena', quest: 'boss' }, music: 'verge'
   },
   dunes: {
     name: 'Ribline Dunes', hub: 'Driftborn Camp', lvl: '13 to 22', w: 2000, h: 2800, bg: '#7a4a26', ground: 'sand', path: 'sandpath', motes: [0xffd9a0, 0xffe8c8, 0x5ff2d0],
@@ -91,7 +91,7 @@ export const REGIONS = {
     places: { start: { x: 1000, y: 2560 }, arrive: { x: 1000, y: 2480 }, spire: { x: 1000, y: 2420 }, kestrel: { x: 885, y: 2545 }, corvin: { x: 940, y: 1250 }, hush: { x: 300, y: 860 }, wreck: { x: 1520, y: 1800 }, dig: { x: 1210, y: 1060 }, canyon: { x: 330, y: 930 }, hollow: { x: 1000, y: 560 }, arena: { x: 1000, y: 420 } },
     npcs: ['kestrel', 'corvin', 'hush'],
     silent: { x: 300, y: 900, r: 250 },
-    boss: { type: 'marrowking', at: 'arena', quest: 'ii_boss' }
+    boss: { type: 'marrowking', at: 'arena', quest: 'ii_boss' }, music: 'dunes'
   }
 };
 

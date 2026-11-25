@@ -1,7 +1,7 @@
-import { CALLINGS, ENEMIES, REGIONS, NPCS, ECHOES, QUESTS, SLOTS, RARITY, CODEX, BOUNTIES } from './data.js';
-import { buildArt, ANCHORS } from './art.js';
-import { heroStats, echoStats, xpNeed, makeGear, rollRarity, gearValue, save } from './state.js';
-import { sfx, duck } from './audio.js';
+import { CALLINGS, ENEMIES, REGIONS, NPCS, ECHOES, QUESTS, SLOTS, RARITY, CODEX, BOUNTIES } from './data.js?v=2.1';
+import { buildArt, ANCHORS } from './art.js?v=2.1';
+import { heroStats, echoStats, xpNeed, makeGear, rollRarity, gearValue, save } from './state.js?v=2.1';
+import { sfx, duck, playTrack } from './audio.js?v=2.1';
 
 const dist = (a, b, c, d) => Math.hypot(c - a, d - b);
 const rnd = (a, b) => a + Math.random() * (b - a);
@@ -36,6 +36,7 @@ export class WorldScene extends Phaser.Scene {
     for (const [k, c] of Object.entries(this.art)) if (!this.textures.exists(k)) this.textures.addCanvas(k, c);
     this.cameras.main.setBackgroundColor(this.R.bg);
     this.boss = null; this.silentOn = false; document.body.classList.remove('silent'); duck(false);
+    this.musicHold = 0; playTrack(this.R.music || 'theme');
     this.paused = false;
     this.now = 0;
     this.fx = this.add.layer(); this.fx.setDepth(5e5);
@@ -300,6 +301,7 @@ export class WorldScene extends Phaser.Scene {
     this.updateMarkers();
     this.frameBoss(dt);
     this.fadeProps(dt);
+    this.updateMusic();
     this.ui.tick(dt);
   }
 
@@ -545,7 +547,7 @@ export class WorldScene extends Phaser.Scene {
     if (q && (q.kind === 'hunt' || q.kind === 'boss') && q.enemy === e.type) { st.qp++; this.ui.quest(); if (st.qp >= q.count) this.time.delayedCall(450, () => this.completeQuest()); }
     if (!q && st.bounty) { const b = this.bounty(); if (b && b.enemy === e.type) { st.bounty.prog++; this.ui.quest(); if (st.bounty.prog >= b.count) this.completeBounty(b); } }
     if (e.D.boss) {
-      this.boss = null; this.ui.bossBar(null); st.bossKills++; this.bossCd = this.now + 240; this.cameras.main.shake(700, .008); this.cameras.main.flash(300, 255, 200, 240);
+      this.boss = null; this.ui.bossBar(null); st.bossKills++; this.bossCd = this.now + 240; this.musicHold = this.now + 4; this.cameras.main.shake(700, .008); this.cameras.main.flash(300, 255, 200, 240);
     } else {
       const sp = e.sp; this.time.delayedCall(rnd(4500, 7000), () => { if (sp && !sp.boss) this.spawnEnemy(sp); });
     }
@@ -929,6 +931,12 @@ export class WorldScene extends Phaser.Scene {
   }
 
   // ---------- quests ----------
+  updateMusic() {
+    const b = this.boss && !this.boss.dead ? this.boss : null;
+    if (b && (b.aggro || dist(this.hero.x, this.hero.y, b.x, b.y) < 520)) { this.musicHold = this.now + 6; playTrack('boss'); }
+    else if (this.now > this.musicHold) playTrack(this.R.music || 'theme');
+  }
+
   updateMarkers() {
     const q = this.quest();
     for (const id in this.npcs) { const n = this.npcs[id]; const on = !!(q && q.kind === 'talk' && q.npc === id); n.mark.setVisible(on); n.mark.setText('!'); }

@@ -1,4 +1,13 @@
-let ctx = null, master = null, musicGain = null, on = { sound: true, music: true }, musicNodes = null;
+let ctx = null, master = null, musicGain = null, on = { sound: true, music: true };
+const MUSIC_LEVEL = .75, XF = 2.5;
+const TRACKS = {
+  theme: { src: 'music/theme.mp3', loop: [37.384, 116.796] },
+  verge: { src: 'music/verge.mp3', loop: [23.452, 129.033] },
+  dunes: { src: 'music/dunes.mp3', loop: [7.059, 67.361] },
+  boss: { src: 'music/boss.mp3', loop: [17.183, 103.747] }
+};
+const bytes = {}, decoded = {}, lead = {};
+let want = null, cur = null, timer = null;
 
 export function audioInit(settings) {
   on = settings;
@@ -7,30 +16,68 @@ export function audioInit(settings) {
     ctx = new (window.AudioContext || window.webkitAudioContext)();
     master = ctx.createGain(); master.gain.value = .5; master.connect(ctx.destination);
     musicGain = ctx.createGain(); musicGain.gain.value = 0; musicGain.connect(master);
-    startMusic();
     setMusic(on.music);
+    if (want) { const w = want; want = null; playTrack(w); }
   } catch (e) { ctx = null; }
 }
 export function audioResume() { if (ctx && ctx.state === 'suspended') ctx.resume(); }
+export function audioSuspend() { if (ctx && ctx.state === 'running') ctx.suspend(); }
 let ducked = false;
-export function duck(v) { ducked = v; if (musicGain) musicGain.gain.setTargetAtTime(on.music && !v ? .16 : 0, ctx.currentTime, .8); }
-export function setMusic(v) { on.music = v; if (musicGain) musicGain.gain.setTargetAtTime(v && !ducked ? .16 : 0, ctx.currentTime, .6); }
+const level = () => (on.music && !ducked ? MUSIC_LEVEL : 0);
+export function duck(v) { ducked = v; if (musicGain) musicGain.gain.setTargetAtTime(level(), ctx.currentTime, .8); }
+export function setMusic(v) { on.music = v; if (musicGain) musicGain.gain.setTargetAtTime(level(), ctx.currentTime, .6); }
 
-function startMusic() {
-  const notes = [146.83, 174.61, 220, 261.63, 196, 220];
-  const filt = ctx.createBiquadFilter(); filt.type = 'lowpass'; filt.frequency.value = 900; filt.Q.value = 2; filt.connect(musicGain);
-  const lfo = ctx.createOscillator(), lg = ctx.createGain(); lfo.frequency.value = .05; lg.gain.value = 500; lfo.connect(lg); lg.connect(filt.frequency); lfo.start();
-  const pads = [0, 1, 2].map(i => { const o = ctx.createOscillator(), g = ctx.createGain(); o.type = i === 2 ? 'triangle' : 'sawtooth'; o.detune.value = (i - 1) * 7; g.gain.value = i === 2 ? .5 : .18; o.connect(g); g.connect(filt); o.start(); return o; });
-  let step = 0;
-  const tick = () => {
-    if (!ctx) return;
-    const f = notes[step % notes.length]; const t = ctx.currentTime;
-    pads[0].frequency.setTargetAtTime(f, t, 1.2); pads[1].frequency.setTargetAtTime(f * 1.5, t, 1.2); pads[2].frequency.setTargetAtTime(f / 2, t, 1.2);
-    if (on.music && step % 2 === 0) bell([f * 2, f * 3, f * 4][step % 3], .05, 2.4, musicGain);
-    step++; setTimeout(tick, 4200);
-  };
-  tick();
-  musicNodes = pads;
+function fetchBytes(name) {
+  if (!bytes[name]) bytes[name] = fetch(TRACKS[name].src).then(r => { if (!r.ok) throw new Error(r.status); return r.arrayBuffer(); }).catch(e => { delete bytes[name]; throw e; });
+  return bytes[name];
+}
+export function musicState() { return { want, cur: cur && cur.name, t0: cur && cur.t0, off: cur && cur.off, now: ctx && ctx.currentTime, gain: musicGain && musicGain.gain.value, decoded: Object.keys(decoded) }; }
+export function prefetchTrack(name) { if (TRACKS[name]) fetchBytes(name).catch(() => {}); }
+function decode(name) {
+  if (!decoded[name]) decoded[name] = fetchBytes(name).then(ab => new Promise((res, rej) => ctx.decodeAudioData(ab.slice(0), res, rej))).then(buf => {
+    const d = buf.getChannelData(0); let i = 0; const n = Math.min(d.length, 8192);
+    while (i < n && Math.abs(d[i]) < 1e-4) i++;
+    lead[name] = i < n ? i / buf.sampleRate : 0;
+    return buf;
+  }).catch(e => { delete decoded[name]; throw e; });
+  return decoded[name];
+}
+function evict(keep) { for (const k of Object.keys(decoded)) if (!keep.includes(k)) delete decoded[k]; }
+function curve(up) { const n = 32, c = new Float32Array(n); for (let i = 0; i < n; i++) { const x = i / (n - 1); c[i] = up ? Math.sin(x * Math.PI / 2) : Math.cos(x * Math.PI / 2); } return c; }
+function voice(buf, name, when, offset, fade) {
+  const src = ctx.createBufferSource(), g = ctx.createGain();
+  src.buffer = buf; src.connect(g); g.connect(musicGain);
+  if (fade) { g.gain.setValueAtTime(0, when); g.gain.setValueCurveAtTime(curve(true), when, fade); } else g.gain.value = 1;
+  src.start(when, offset + lead[name]);
+  return { src, g };
+}
+function release(v, when, fade) {
+  try { v.g.gain.cancelScheduledValues(when); v.g.gain.setValueAtTime(1, when); v.g.gain.setValueCurveAtTime(curve(false), when, fade); v.src.stop(when + fade + .05); } catch (e) { try { v.src.stop(); } catch (e2) {} }
+}
+function tick() {
+  if (!cur || !ctx) return;
+  const T = TRACKS[cur.name], [S, E] = T.loop, t = ctx.currentTime;
+  const boundary = cur.t0 + (E - cur.off);
+  if (boundary - t < 1.5) {
+    const nv = voice(cur.buf, cur.name, boundary, S, XF);
+    release(cur.v, boundary, XF);
+    cur = { name: cur.name, buf: cur.buf, v: nv, t0: boundary, off: S };
+  }
+}
+export function playTrack(name) {
+  if (!TRACKS[name]) return;
+  if (!ctx) { want = name; return; }
+  if (want === name) return;
+  want = name;
+  decode(name).then(buf => {
+    if (want !== name || (cur && cur.name === name)) return;
+    const t = ctx.currentTime + .05;
+    if (cur) release(cur.v, t, 1.6);
+    const prev = cur ? cur.name : null;
+    cur = { name, buf, v: voice(buf, name, t, 0, prev ? 2 : .4), t0: t, off: 0 };
+    evict([name, prev]);
+    if (!timer) timer = setInterval(tick, 250);
+  }).catch(() => { if (want === name) want = null; });
 }
 
 function bell(f, vol, dur, dest = master) {

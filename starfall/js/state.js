@@ -1,4 +1,4 @@
-import { CALLINGS, ECHOES, SLOTS, RARITY, GEAR_NAMES, QUESTS } from './data.js';
+import { CALLINGS, ECHOES, SLOTS, RARITY, GEAR_NAMES, QUESTS } from './data.js?v=2.1';
 
 const KEY = 'starfall.save.v1';
 
