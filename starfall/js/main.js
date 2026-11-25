@@ -1,8 +1,8 @@
-import { CALLINGS, LOCKED_CALLINGS, ART } from './data.js';
-import { fresh, load, save, offlineRewards } from './state.js';
-import { UI } from './ui.js';
-import { WorldScene } from './world.js';
-import { audioInit, audioResume, sfx } from './audio.js';
+import { CALLINGS, LOCKED_CALLINGS, ART } from './data.js?v=2.1';
+import { fresh, load, save, offlineRewards } from './state.js?v=2.1';
+import { UI } from './ui.js?v=2.1';
+import { WorldScene } from './world.js?v=2.1';
+import { audioInit, audioResume, audioSuspend, sfx, playTrack, prefetchTrack } from './audio.js?v=2.1';
 
 const $ = s => document.querySelector(s);
 let game = null, ui = null, st = null;
@@ -38,10 +38,10 @@ function stars() {
 function titleScreen() {
   const t = $('#title');
   const saved = load();
-  t.innerHTML = `<div class="home"><div><div class="logo">WYRMBOUND</div><div class="sub">STARFALL</div></div><div><div class="tag2">Bond an Echo. Hunt the bones of fallen stars.</div><button class="btn go">${saved ? 'Continue' : 'Begin'}</button></div></div><div class="foot">Build 2 · Act II: The Singing Dark</div>`;
+  t.innerHTML = `<div class="home"><div><div class="logo">WYRMBOUND</div><div class="sub">STARFALL</div></div><div><div class="tag2">Bond an Echo. Hunt the bones of fallen stars.</div><button class="btn go">${saved ? 'Continue' : 'Begin'}</button></div></div><div class="foot">Build 2.1 · Act II: The Singing Dark · now with music</div>`;
   stars();
   $('#title .go').onclick = () => {
-    audioInit((saved || { settings: { sound: true, music: true } }).settings); audioResume(); sfx('quest');
+    audioInit((saved || { settings: { sound: true, music: true } }).settings); audioResume(); sfx('quest'); playTrack('theme'); prefetchTrack(saved && saved.region === 'dunes' ? 'dunes' : 'verge');
     if (saved) { st = saved; start(true); } else intro();
   };
 }
@@ -92,7 +92,7 @@ function start(returning) {
     game.scale.resize(Math.round(n.W * v.dpr), Math.round(n.H * v.dpr)); fit();
     const w = game.scene.getScene('world'); if (w && w.cameras) w.setZoom(n.Z, v.dpr);
   });
-  document.addEventListener('visibilitychange', () => { if (document.hidden) save(st); else audioResume(); });
+  document.addEventListener('visibilitychange', () => { if (document.hidden) { save(st); audioSuspend(); } else audioResume(); });
   addEventListener('pagehide', () => save(st));
   document.addEventListener('pointerdown', audioResume, { passive: true });
 }
