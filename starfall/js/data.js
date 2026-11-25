@@ -1,13 +1,14 @@
 export const WORLD = { w: 1800, h: 3000 };
 
 export const ART = {
-  portrait: { marr: 'art/p_marr.webp', sparks: 'art/p_sparks.webp', okafor: 'art/p_okafor.webp', skein: 'art/p_skein.webp', kestrel: 'art/p_kestrel.webp', corvin: 'art/p_corvin.webp', hush: 'art/p_hush.webp' },
+  portrait: { marr: 'art/p_marr.webp', sparks: 'art/p_sparks.webp', okafor: 'art/p_okafor.webp', skein: 'art/p_skein.webp', kestrel: 'art/p_kestrel.webp', corvin: 'art/p_corvin.webp', hush: 'art/p_hush.webp', ilse: 'art/p_ilse.webp', bix: 'art/p_bix.webp', pell: 'art/p_pell.webp' },
   calling: { vanguard: 'art/c_vanguard.webp', railwarden: 'art/c_railwarden.webp', psion: 'art/c_psion.webp', duelist: 'art/c_duelist.webp', shade: 'art/c_shade.webp', mender: 'art/c_mender.webp' },
   face: { vanguard: 'art/f_vanguard.webp', railwarden: 'art/f_railwarden.webp', psion: 'art/f_psion.webp', duelist: 'art/f_duelist.webp', shade: 'art/f_shade.webp', mender: 'art/f_mender.webp' },
   echo: { skein: 'art/e_skein.webp', glimmerkit: 'art/e_glimmerkit.webp', budlet: 'art/e_budlet.webp', rivet: 'art/e_rivet.webp', lumi: 'art/e_lumi.webp' },
-  boss: { thornmother: 'art/b_thornmother.webp', marrowking: 'art/b_marrowking.webp' },
-  codex: { skein: 'art/e_skein.webp', thornmother: 'art/b_thornmother.webp', echoes: 'art/e_glimmerkit.webp', ribline: 'art/r_dunes.webp', driftborn: 'art/p_kestrel.webp', skimmer: 'art/m_skimmer.webp', hound: 'art/m_hound.webp', syndicate: 'art/p_corvin.webp', quiet: 'art/p_hush.webp', marrowking: 'art/b_marrowking.webp' },
-  region: { verge: 'art/title.webp', dunes: 'art/r_dunes.webp', tower: 'art/r_tower.webp' },
+  echoAsc: { skein: 'art/e_skein_asc.webp', glimmerkit: 'art/e_glimmerkit_asc.webp', budlet: 'art/e_budlet_asc.webp', rivet: 'art/e_rivet_asc.webp', lumi: 'art/e_lumi_asc.webp' },
+  boss: { thornmother: 'art/b_thornmother.webp', marrowking: 'art/b_marrowking.webp', choir: 'art/b_choir.webp' },
+  codex: { skein: 'art/e_skein.webp', thornmother: 'art/b_thornmother.webp', echoes: 'art/e_glimmerkit.webp', ribline: 'art/r_dunes.webp', driftborn: 'art/p_kestrel.webp', skimmer: 'art/m_skimmer.webp', hound: 'art/m_hound.webp', syndicate: 'art/p_corvin.webp', quiet: 'art/p_hush.webp', marrowking: 'art/b_marrowking.webp', lattice: 'art/r_lattice.webp', skitter: 'art/m_skitter.webp', husker: 'art/m_husker.webp', leech: 'art/m_leech.webp', choir: 'art/b_choir.webp', hushfile: 'art/p_hush.webp', ledger: 'art/p_corvin.webp', drown: 'art/p_ilse.webp', echoorigin: 'art/e_skein_asc.webp', ossivar: 'art/r_tower.webp' },
+  region: { verge: 'art/title.webp', dunes: 'art/r_dunes.webp', lattice: 'art/r_lattice.webp', tower: 'art/r_tower.webp' },
   title: 'art/title.webp'
 };
 
@@ -97,7 +98,11 @@ export const ENEMIES = {
   skimmer: { name: 'Sand-skimmer', lvl: [13, 16], hp: 80, atk: 16, spd: 92, xp: 40, lumen: [8, 13], range: 30, atkCd: 1.3, aggro: 150, radius: 20 },
   hound: { name: 'Scrap-hound', lvl: [16, 19], hp: 130, atk: 20, spd: 66, xp: 55, lumen: [10, 16], range: 32, atkCd: 1.5, aggro: 140, radius: 22 },
   sdrone: { name: 'Syndicate drone', lvl: [18, 21], hp: 90, atk: 16, spd: 60, xp: 60, lumen: [12, 18], range: 150, atkCd: 1.8, aggro: 170, radius: 18, ranged: true, shot: 'red' },
-  marrowking: { name: 'The Marrowking', lvl: [22, 22], hp: 9000, atk: 58, spd: 48, xp: 1300, lumen: [700, 700], range: 90, atkCd: 1.8, aggro: 340, radius: 64, boss: true, sub: 'Nest-warden of Kharos' }
+  marrowking: { name: 'The Marrowking', lvl: [22, 22], hp: 9000, atk: 58, spd: 48, xp: 1300, lumen: [700, 700], range: 90, atkCd: 1.8, aggro: 340, radius: 64, boss: true, sub: 'Nest-warden of Kharos' },
+  skitter: { name: 'Lattice Skitter', lvl: [23, 26], hp: 150, atk: 24, spd: 86, xp: 70, lumen: [14, 20], range: 30, atkCd: 1.3, aggro: 150, radius: 20 },
+  husker: { name: 'Drowned Husker', lvl: [26, 29], hp: 260, atk: 33, spd: 44, xp: 90, lumen: [16, 24], range: 34, atkCd: 2, aggro: 130, radius: 22 },
+  leech: { name: 'Memory Leech', lvl: [28, 31], hp: 150, atk: 25, spd: 66, xp: 95, lumen: [18, 26], range: 150, atkCd: 2, aggro: 170, radius: 20, ranged: true, shot: 'blue' },
+  choir: { name: 'The Choir Below', lvl: [32, 32], hp: 22000, atk: 84, spd: 0, xp: 2200, lumen: [1100, 1100], range: 130, atkCd: 2.2, aggro: 380, radius: 70, boss: true, sub: 'What the reef remembers' }
 };
 
 export const REGIONS = {
@@ -124,7 +129,19 @@ export const REGIONS = {
     places: { start: { x: 1000, y: 2560 }, arrive: { x: 1000, y: 2480 }, spire: { x: 1000, y: 2420 }, kestrel: { x: 885, y: 2545 }, corvin: { x: 940, y: 1250 }, hush: { x: 300, y: 860 }, wreck: { x: 1520, y: 1800 }, dig: { x: 1210, y: 1060 }, canyon: { x: 330, y: 930 }, hollow: { x: 1000, y: 560 }, arena: { x: 1000, y: 420 } },
     npcs: ['kestrel', 'corvin', 'hush'],
     silent: { x: 300, y: 900, r: 250 },
-    boss: { type: 'marrowking', at: 'arena', quest: 'ii_boss' }, music: 'dunes'
+    boss: { type: 'marrowking', at: 'arena', quest: 'ii_boss' }, music: 'dunes', unlock: 'ii_travel'
+  },
+  lattice: {
+    name: 'Sunken Lattice', hub: 'Ribgate Camp', lvl: '23 to 32', w: 2000, h: 2800, bg: '#06222e', ground: 'reef', path: 'reefpath', motes: [0x7fc8ff, 0x5ff2d0, 0xbfe8ff],
+    paths: [[[1000, 2780], [1000, 2450], [1000, 2140], [880, 1920], [1000, 1720], [1300, 1660], [1420, 1460], [1180, 1250], [1000, 1060], [1000, 820], [1000, 560]], [[880, 1920], [700, 1580], [480, 1330], [600, 1080], [1000, 1060]], [[1180, 1250], [1330, 1020]]],
+    spawns: [
+      { type: 'skitter', x: 720, y: 1960, r: 280, count: 10 },
+      { type: 'husker', x: 1460, y: 1420, r: 230, count: 9 },
+      { type: 'leech', x: 1000, y: 980, r: 230, count: 9 }
+    ],
+    places: { start: { x: 1000, y: 2580 }, arrive: { x: 1000, y: 2500 }, spire: { x: 1000, y: 2440 }, marr: { x: 870, y: 2565 }, okafor: { x: 1140, y: 2590 }, bix: { x: 1095, y: 2150 }, ribs: { x: 1000, y: 2160 }, ilse: { x: 1560, y: 1700 }, pump: { x: 1540, y: 1650 }, pell: { x: 640, y: 1570 }, hush: { x: 440, y: 1300 }, shrine: { x: 450, y: 1260 }, confluence: { x: 620, y: 1070 }, corvin: { x: 1350, y: 1010 }, sluice: { x: 1380, y: 970 }, heartgate: { x: 1000, y: 650 }, heart: { x: 1000, y: 560 }, arena: { x: 1000, y: 380 } },
+    npcs: ['marr', 'okafor', 'bix', 'ilse', 'pell', 'hush', 'corvin'],
+    boss: { type: 'choir', at: 'arena', quest: 'iii_boss' }, music: 'lattice', unlock: 'iii_travel'
   },
   tower: {
     name: 'Ossivar’s Spire', hub: 'Endless floors', lvl: 'endless', w: 1200, h: 1500, bg: '#07070f', ground: 'towerfloor', path: 'path', motes: [0xffe6a0, 0x9ff6ff, 0xc58bff],
@@ -133,7 +150,8 @@ export const REGIONS = {
     npcs: [], tower: true, boss: null, music: 'theme'
   }
 };
-export const TOWER_POOL = ['shardling', 'glowmoth', 'crawler', 'skimmer', 'hound', 'sdrone'];
+export const TOWER_POOL = ['shardling', 'glowmoth', 'crawler', 'skimmer', 'hound', 'sdrone', 'skitter', 'husker', 'leech'];
+export const TOWER_GUARDS = ['thornmother', 'marrowking', 'choir'];
 
 export const SPAWNS = REGIONS.verge.spawns;
 export const PLACES = REGIONS.verge.places;
@@ -146,6 +164,9 @@ export const NPCS = {
   kestrel: { name: 'Kestrel', short: 'Kestrel', title: 'Driftborn guide', color: '#ffb86a' },
   corvin: { name: 'Corvin Hale', short: 'Corvin', title: 'Cindermark Syndicate', color: '#ff7a5a' },
   hush: { name: 'Mother Hush', short: 'Hush', title: 'The Quiet', color: '#b9c7d2' },
+  ilse: { name: 'Ilse Vane', short: 'Ilse', title: 'Lattice warden', color: '#7fc8ff' },
+  bix: { name: 'Tomas \u201cBix\u201d Rey', short: 'Bix', title: 'Diver', color: '#5ff2d0' },
+  pell: { name: 'Pell', short: 'Pell', title: 'Driftborn', color: '#ffd9a0' },
   you: { name: 'You', short: 'You', title: '', color: '#e8f6ff' }
 };
 
@@ -156,6 +177,11 @@ export const ECHOES = {
   rivet: { name: 'Rivet', family: 'Machine', color: 0xffcf5a, atk: 5, per: 1.0, skill: { name: 'Patch Shield', cd: 12, desc: 'Shield you for 16% of your max HP.' }, blurb: 'A repair drone that remembers its passengers. All of them.' },
   lumi: { name: 'Lumi', family: 'Tide', color: 0x7fc8ff, atk: 5, per: 1.2, skill: { name: 'Tide Pulse', cd: 9, desc: '150% damage to every enemy near Lumi.' }, blurb: 'Drifts like it is still underwater. Hums when it is happy.' }
 };
+ECHOES.skein.ascend = 'i ran so the rest could stay sleeping.';
+ECHOES.glimmerkit.ascend = 'i stole the light, then hid in it.';
+ECHOES.budlet.ascend = 'i was the hand that stayed behind.';
+ECHOES.rivet.ascend = 'i held the door while worlds fell through.';
+ECHOES.lumi.ascend = 'i was brightest before i learned fear.';
 export const HATCHABLE = ['glimmerkit', 'budlet', 'rivet', 'lumi'];
 
 export const SLOTS = [
@@ -203,7 +229,28 @@ export const CODEX = {
   hollowrib: { title: 'The hollow rib', src: 'Kestrel', text: 'Driftborn kids learn where it is before they can walk, and they learn never to go inside. Turns out something was living in there the whole time.' },
   marrowking: { title: 'The Marrowking', src: 'Kestrel', text: 'It wasn\u2019t stealing the Lumen. It was burying it, deep in Kharos\u2019s spine, as far from that canyon as it could get.' },
   ossivar: { title: 'Ossivar’s Spire', src: 'Lodge founder Aldren Vey, last log', text: 'The eldest stands upright, and every floor of his spine remembers a fight. I am going to the top. If the Lodge reads this, do not follow me until you are ready.' },
-  bridge: { title: 'Meridian bridge deck', src: 'maintenance tag, Sparks', text: 'DO NOT OPEN. I mean it. It’s humming again.' }
+  bridge: { title: 'Meridian bridge deck', src: 'maintenance tag, Sparks', text: 'DO NOT OPEN. I mean it. It’s humming again.' },
+  lattice: { title: 'The Sunken Lattice', src: 'Lodge survey, Act III', text: 'A star-dragon’s ribcage, half drowned, grown through with blue crystal. The tide moves hourly. The camp moves with it.' },
+  drown: { title: 'Why Dragons Drown', src: 'Ilse Vane, warden’s log', text: 'A star-dragon in pain seeks deep water. Pressure dulls the memories in its bones. It stays submerged until the loudest memory fades.' },
+  drownedlumen: { title: 'Drowned Lumen', src: 'Doctor Amara Okafor, field notes', text: 'Waterlogged Lumen plays memories slower and quieter. Voices sound younger underwater. Several samples repeated names none of us remember using.' },
+  ledger: { title: 'Corvin’s Ledger', src: 'Syndicate crate manifest, recovered', text: 'Every missing crate is marked delivered, not sold. Destination is always blank. Handwriting underneath reads: for the quiet, keep it quiet.' },
+  tags: { title: 'The First Meridian Tags', src: 'Sparks, engineering report', text: 'Recovered suit tags predate our launch records by eleven years. Serial numbers match living colonists. Either the records lie, or we do.' },
+  hushfile: { title: 'Mother Hush', src: 'Captain Marr, personal note', text: 'Hush was listed as Meridian’s memory archivist. Officially, she died during landing. She claims she chose the canyon instead.' },
+  echoorigin: { title: 'What Echoes Are', src: 'Unknown, scratched inside Pell’s helmet', text: 'Echo creatures form when a dragon loses part of itself. They stay small by forgetting. If reminded fully, they may grow again.' },
+  skitter: { title: 'Lattice Skitter', src: 'Bix, dive notes', text: 'Crystal crabs that nest in the shallows. They build with stolen Lumen, and only keep the shards that remember drowning.' },
+  husker: { title: 'Drowned Husker', src: 'Ilse Vane', text: 'Old colonist suits full of water and light. They repeat orders nobody gave in this lifetime. Do not answer them.' },
+  leech: { title: 'Memory Leech', src: 'Doctor Amara Okafor', text: 'Eels with clear bellies full of other people’s memories. They drain Lumen and carry it deeper than Hush’s nets can reach.' },
+  choir: { title: 'The Choir Below', src: 'Pell', text: 'Faces in the rib. They sing what they took. It sounded like my mother, and I never met my mother.' },
+  vey10: { title: 'The First Ten', src: 'Aldren Vey, climb log 1', text: 'Spine is hollow inside. Steps are worn smooth. Someone climbed this long before me.' },
+  vey20: { title: 'Supplies', src: 'Aldren Vey, climb log 4', text: 'Left food at floor fifteen. Too heavy now. The tower provides water. It tastes like rain.' },
+  vey30: { title: 'Windows', src: 'Aldren Vey, climb log 7', text: 'Vertebrae have openings like windows. Country looks smaller. Saw the Meridian wreck. We parked badly.' },
+  vey40: { title: 'Other Climbers', src: 'Carving found beside the steps', text: 'Names cut deep into bone. Hundreds of them. None are dated. None are Lodge.' },
+  vey50: { title: 'Halfway Is a Lie', src: 'Aldren Vey, climb log 12', text: 'Floor fifty. Breathing hurts. Knee is worse. Found my own boot print heading down.' },
+  vey60: { title: 'The Quiet Floors', src: 'Aldren Vey, climb log 15', text: 'No enemies since forty. That worries me more. My Echo stopped talking at fifty-eight.' },
+  vey70: { title: 'Camp', src: 'Aldren Vey, unsent letter to Marr', text: 'Found a camp. Bedroll still warm. Nobody here. If you read this, I borrowed their rope.' },
+  vey80: { title: 'Fresh Dust', src: 'Writing traced in dust, no author', text: 'Do not count the floors out loud. It adds one when you do.' },
+  vey90: { title: 'Vey, Slower', src: 'Aldren Vey, climb log 21', text: 'Hands shake now. Writing takes two tries. Something above keeps pace with me.' },
+  vey100: { title: 'Not the Top', src: 'Aldren Vey, final recovered log', text: 'Floor one hundred is another door. Locked from above. Heard myself knock back. Then I stopped recording.' }
 };
 
 const D = (who, text) => ({ who, text });
@@ -333,12 +380,111 @@ export const QUESTS = [
       D('you', 'Corvin\u2019s crates went west, toward the silence. He\u2019s not losing shipments. He\u2019s delivering them.'),
       D('kestrel', 'Then I\u2019m coming with you. The Driftborn owe the Lodge a favor, and I owe that smiling man a punch.'),
       D('skein', 'the water remembers more. go to the water.')
+    ] },
+  { id: 'iii_travel', act: 3, region: 'lattice', title: 'Go to the Water', goal: 'Sync to the Sunken Lattice at the Spire', kind: 'travel', reward: { xp: 300 }, codex: ['lattice'] },
+  { id: 'iii_marr', act: 3, region: 'lattice', title: 'Arrival at Ribgate', goal: 'Talk to Captain Marr at Ribgate Camp', kind: 'talk', npc: 'marr', reward: { xp: 500, lumen: 200 },
+    talk: [
+      D('marr', 'Half the reef is underwater. Tides change hourly.'),
+      D('you', 'Skein led us here. It said the water remembers.'),
+      D('marr', 'Then listen fast. We lose the camp at high tide.'),
+      D('skein', 'it is already listening back.')
+    ] },
+  { id: 'iii_ribs', act: 3, region: 'lattice', title: 'The Open Ribs', goal: 'Reach the Open Ribs', kind: 'goto', place: 'ribs', reward: { xp: 400 },
+    talk: [
+      D('bix', 'You’re the Lodge hunter? Bix. Syndicate diver. Ex.'),
+      D('you', 'Ex since when?'),
+      D('bix', 'Since they started drowning people for crystals.'),
+      D('bix', 'Skitters nest in the shallows past here. Mind your fingers. I didn’t.')
+    ] },
+  { id: 'iii_skitter', act: 3, region: 'lattice', title: 'Nests in the Shallows', goal: 'Clear Lattice Skitters', kind: 'hunt', enemy: 'skitter', count: 12, reward: { xp: 1400, lumen: 300, shards: 8 }, codex: ['skitter'],
+    done: [
+      D('bix', 'Every nest is the same. Shards from drowned things, nothing else.'),
+      D('skein', 'they only keep the drowning ones.')
+    ] },
+  { id: 'iii_ilse', act: 3, region: 'lattice', title: 'The Warden', goal: 'Question Ilse at the pump house', kind: 'talk', npc: 'ilse', reward: { xp: 600, lumen: 200 }, codex: ['drown'],
+    talk: [
+      D('ilse', 'This dragon did not crash. It landed here.'),
+      D('you', 'Why land inside a flood plain?'),
+      D('ilse', 'To drown itself. Slowly, on purpose.'),
+      D('ilse', 'Something in its head was too loud.'),
+      D('ilse', 'Old suits walk the eastern flats. Bring me their tags.')
+    ] },
+  { id: 'iii_husker', act: 3, region: 'lattice', title: 'Old Suits', goal: 'Recover tags from Drowned Huskers', kind: 'hunt', enemy: 'husker', count: 10, reward: { xp: 1800, lumen: 360, shards: 8, gear: 'armor', gearRar: 2 }, codex: ['husker'],
+    done: [
+      D('bix', 'These tags. Meridian crew.'),
+      D('you', 'Dated before we launched. That’s not possible.'),
+      D('bix', 'Tell the tags.')
+    ] },
+  { id: 'iii_pell', act: 3, region: 'lattice', title: 'The Listening Boy', goal: 'Find the boy by the water', kind: 'talk', npc: 'pell', reward: { xp: 500 },
+    talk: [
+      D('pell', 'You hear it too? The singing under the floor.'),
+      D('you', 'I hear water.'),
+      D('pell', 'Then you’re not listening yet. Come on. The old lady wants you.'),
+      D('skein', 'he hears what i hear.')
+    ] },
+  { id: 'iii_hush', act: 3, region: 'lattice', title: 'Hush in the Water', goal: 'Meet Mother Hush at the shrine', kind: 'talk', npc: 'hush', reward: { xp: 700, lumen: 240 }, codex: ['drownedlumen'],
+    talk: [
+      D('hush', 'You followed the quiet boy. Good.'),
+      D('you', 'You knew Corvin’s crates were coming here.'),
+      D('hush', 'I asked him to bring them.'),
+      D('hush', 'Dry memories scream. Drowned memories whisper.')
+    ] },
+  { id: 'iii_current', act: 3, region: 'lattice', title: 'Blue Current', goal: 'Follow the blue current to the Confluence', kind: 'goto', place: 'confluence', reward: { xp: 600 },
+    talk: [
+      D('pell', 'The current goes down here. Everything sad goes down here.'),
+      D('skein', 'follow it.')
+    ] },
+  { id: 'iii_corvin', act: 3, region: 'lattice', title: 'The Delivery Man', goal: 'Confront Corvin at the sluice', kind: 'talk', npc: 'corvin', reward: { xp: 800, lumen: 300 }, codex: ['ledger'],
+    talk: [
+      D('corvin', 'Finally. I am tired of looking guilty.'),
+      D('you', 'You delivered the Lumen to Hush, not to buyers.'),
+      D('corvin', 'The Syndicate thinks I stole it. Let them.'),
+      D('corvin', 'She sinks it here. The canyon thing goes hungry.'),
+      D('skein', 'he lies less in water.')
+    ] },
+  { id: 'iii_leech', act: 3, region: 'lattice', title: 'What Feeds Below', goal: 'Hunt Memory Leeches', kind: 'hunt', enemy: 'leech', count: 12, reward: { xp: 2200, lumen: 420, shards: 10, gear: 'weapon', gearRar: 2 }, codex: ['leech'],
+    done: [
+      D('corvin', 'They go around her nets. Straight down.'),
+      D('you', 'Down to what?'),
+      D('skein', 'to the one who is looking.')
+    ] },
+  { id: 'iii_tags', act: 3, region: 'lattice', title: 'Names We Lost', goal: 'Bring the tags to Doctor Okafor at camp', kind: 'talk', npc: 'okafor', reward: { xp: 900, lumen: 300 }, codex: ['tags', 'hushfile'],
+    talk: [
+      D('okafor', 'These tags match Meridian crew. Our crew.'),
+      D('you', 'But the dates are before we crashed.'),
+      D('okafor', 'Before we remember crashing, you mean.'),
+      D('sparks', 'Someone wiped us. Then stored the copies here.')
+    ] },
+  { id: 'iii_gate', act: 3, region: 'lattice', title: 'Down to the Heart', goal: 'Reach the Flooded Heart Chamber', kind: 'goto', place: 'heartgate', reward: { xp: 600 },
+    talk: [
+      D('bix', 'Last dry ground. After this, we swim.'),
+      D('you', 'You coming?'),
+      D('bix', 'Somebody has to hold the rope. Go.')
+    ] },
+  { id: 'iii_heart', act: 3, region: 'lattice', title: 'Skein’s Voice', goal: 'Listen at the Heart', kind: 'goto', place: 'heart', reward: { xp: 900, shards: 10 }, codex: ['echoorigin'],
+    talk: [
+      D('hush', 'The canyon feeder is not a monster.'),
+      D('you', 'Then what is it?'),
+      D('hush', 'This dragon’s heart. Still searching for its calf.'),
+      D('skein', 'i am not the calf.'),
+      D('skein', 'i am the part that ran.')
+    ] },
+  { id: 'iii_boss', act: 3, region: 'lattice', title: 'The Choir Below', goal: 'Defeat the Choir Below', kind: 'boss', enemy: 'choir', count: 1, reward: { xp: 4000, lumen: 1000, geode: 1 }, codex: ['choir'] },
+  { id: 'iii_after', act: 3, region: 'lattice', title: 'Memory of Water', goal: 'Talk to Ilse at the pump house', kind: 'talk', npc: 'ilse', reward: { xp: 1200, lumen: 600, geode: 1 }, actEnd: 3,
+    talk: [
+      D('ilse', 'The Choir is quiet. First time in my life.'),
+      D('you', 'It was guarding a memory. The Meridian, launching twice.'),
+      D('ilse', 'Then somebody launched you before. And wiped it.'),
+      D('skein', 'the heart heard me. it is coming.'),
+      D('ilse', 'Coming where?'),
+      D('skein', 'ashore.')
     ] }
 ];
 
 export const ACTS = {
   1: { title: 'Act I complete', sub: 'Landfall', text: 'The Thornmother was guarding a piece of the Meridian that should not exist. Captain Marr has questions. So does Skein.', next: 'Act II: The Singing Dark begins now. Captain Marr has news from the dunes.' },
-  2: { title: 'Act II complete', sub: 'The Singing Dark', text: 'Lumen is memory. Something in the quiet canyon is hungry for it, the Syndicate is digging it up, and Mother Hush knows more than she says. Kestrel has joined the Lodge.', next: 'Act III: Memory of Water (the Sunken Lattice) is coming in the next build. Bounties are open in both regions.' }
+  2: { title: 'Act II complete', sub: 'The Singing Dark', text: 'Lumen is memory. Something in the quiet canyon is hungry for it, the Syndicate is digging it up, and Mother Hush knows more than she says. Kestrel has joined the Lodge.', next: 'Act III: Memory of Water begins now. Skein wants to go to the water.' },
+  3: { title: 'Act III complete', sub: 'Memory of Water', text: 'Corvin was sinking Lumen to keep it from the canyon. The drowned memories include Meridian crew, from before the crash.', next: 'Act IV: the heart has found Skein, and it is coming ashore. Coming in a later build. Bounties are open in every region.' }
 };
 export const ACT_END = ACTS[1];
 
@@ -348,5 +494,22 @@ export const BOUNTIES = [
   { id: 'b3', enemy: 'crawler', count: 15, lumen: 180, shards: 4, minLvl: 8 },
   { id: 'b4', enemy: 'skimmer', count: 15, lumen: 320, shards: 5, minLvl: 13, region: 'dunes' },
   { id: 'b5', enemy: 'hound', count: 15, lumen: 420, shards: 6, minLvl: 16, region: 'dunes' },
-  { id: 'b6', enemy: 'sdrone', count: 15, lumen: 520, shards: 7, minLvl: 18, region: 'dunes' }
+  { id: 'b6', enemy: 'sdrone', count: 15, lumen: 520, shards: 7, minLvl: 18, region: 'dunes' },
+  { id: 'b7', enemy: 'skitter', count: 15, lumen: 640, shards: 8, minLvl: 23, region: 'lattice' },
+  { id: 'b8', enemy: 'husker', count: 15, lumen: 760, shards: 9, minLvl: 26, region: 'lattice' },
+  { id: 'b9', enemy: 'leech', count: 15, lumen: 880, shards: 10, minLvl: 28, region: 'lattice' }
 ];
+
+export const IDLE = {
+  marr: ['Still standing? Good. Stay that way.', 'Orders are on the board. No surprises today.', 'You smell like swamp and trouble again.'],
+  sparks: ['Do not touch that. It is load-bearing.', 'I fixed it twice. Third time costs you.', 'If it sparks, step back. If I spark, run.'],
+  okafor: ['Sit. Breathe. You are not fine.', 'Drink water before you tell me anything.', 'I patch hunters. Excuses heal themselves.'],
+  kestrel: ['Wind is good. Sight lines are better.', 'I missed once today. Still annoyed.', 'You walk loud. We will work on that.'],
+  corvin: ['Buying, selling, or just enjoying my face?', 'Everything is negotiable. Almost everything.', 'I delivered it. Where is another question.'],
+  hush: ['Quiet suits you.', 'Listen first. Speak if it helps.', 'The water heard you coming.'],
+  ilse: ['Check your seals before you check your courage.', 'Tide does not care about your plans.', 'Blue light means memory. Deep blue means leave.'],
+  bix: ['Lost two fingers. Kept the important ones.', 'Syndicate pays better. Lodge lets me sleep.', 'Goggles crack before I do. Usually.'],
+  pell: ['Your helmet would remember you loudly.', 'I heard a dragon dreaming under us.', 'Can Skein stay? It hums nice.']
+};
+
+export const TOWER_LINES = ['The tower keeps your place. Try again when ready.', 'Knocked out at the knees, not in spirit.', 'Good climb. Bad landing. There is a difference.', 'The stairs are patient. They will wait.', 'You fell. The tower took notes.', 'Rest up. Ossivar is not going anywhere.'];

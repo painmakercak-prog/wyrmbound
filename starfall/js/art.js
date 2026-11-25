@@ -164,9 +164,29 @@ export const LOOKS = {
       rr(x, cx - 14, 8, 28, 4, 1.5); fillStroke(x, '#2a1c14', 1.2); poly(x, [cx, 6, cx + 3, 9.5, cx, 13, cx - 3, 9.5]); fillStroke(x, '#5ff2ff', 1); glow(x, cx, 9.5, 7, '#5ff2ff', .7); },
     front: (x, cx) => { x.beginPath(); x.moveTo(cx - 4, 34.5); x.quadraticCurveTo(cx, 40.5, cx + 4, 34.5); x.quadraticCurveTo(cx, 36.5, cx - 4, 34.5); x.closePath(); fillStroke(x, '#4a2e1e', 1);
       x.beginPath(); x.moveTo(cx - 5, 31.5); x.quadraticCurveTo(cx, 30, cx + 5, 31.5); x.lineWidth = 1.6; x.strokeStyle = '#4a2e1e'; x.stroke(); }
+  },
+  ilse: {
+    skin: '#e8c8b0', coat: '#3a4650', trim: '#7fc8ff', iris: '#4a6a8a',
+    chest: (x, cx) => { rr(x, cx - 9, 41, 8, 7, 2); fillStroke(x, '#6a5a4a', 1.2); x.beginPath(); x.moveTo(cx, 38); x.lineTo(cx, 62); x.lineWidth = 2; x.strokeStyle = '#22303a'; x.stroke();
+      x.beginPath(); x.moveTo(cx + 6, 44); x.lineTo(cx + 10, 50); x.lineTo(cx + 8, 56); x.lineWidth = 1.2; x.strokeStyle = '#7fc8ff'; x.stroke(); glow(x, cx + 8, 50, 6, '#7fc8ff', .6); },
+    hairBack: (x, cx) => { for (const sgn of [-1, 1]) { for (let i = 0; i < 5; i++) { ell(x, cx + sgn * 16, 26 + i * 6, 3.4, 3.6); fillStroke(x, i % 2 ? '#b8bcc4' : '#d0d4dc', 1.3); } } },
+    hair: (x, cx) => { x.beginPath(); x.moveTo(cx - 17, 24); x.quadraticCurveTo(cx - 18, 5, cx, 5); x.quadraticCurveTo(cx + 18, 5, cx + 17, 24); x.quadraticCurveTo(cx + 10, 11, cx, 12); x.quadraticCurveTo(cx - 10, 11, cx - 17, 24); x.closePath(); fillStroke(x, lg(x, cx, 5, cx, 24, [[0, '#e8ecf0'], [1, '#a8acb4']]), 2);
+      x.beginPath(); x.moveTo(cx - 9, 31); x.lineTo(cx - 12, 36); x.moveTo(cx + 9, 31); x.lineTo(cx + 12, 36); x.lineWidth = 1; x.strokeStyle = 'rgba(127,200,255,.8)'; x.stroke(); }
+  },
+  bix: {
+    skin: '#c88a64', coat: '#1e3a44', trim: '#5ff2d0', iris: '#3a2a1a',
+    chest: (x, cx) => { x.beginPath(); x.moveTo(cx - 12, 40); x.lineTo(cx + 12, 40); x.lineWidth = 2.4; x.strokeStyle = '#5ff2d0'; x.stroke(); rr(x, cx - 15, 42, 6, 14, 3); fillStroke(x, '#5a6a72', 1.2); rr(x, cx + 9, 42, 6, 14, 3); fillStroke(x, '#5a6a72', 1.2); },
+    hair: (x, cx) => { x.beginPath(); x.ellipse(cx, 21, 17, 15, 0, Math.PI * 1.08, Math.PI * 1.92); x.lineWidth = 1.2; x.strokeStyle = 'rgba(80,50,40,.4)'; x.stroke();
+      rr(x, cx - 16, 11, 32, 5, 2.5); fillStroke(x, '#2a3a40', 1.2); ell(x, cx - 7, 12, 5.4, 4.4); fillStroke(x, 'rgba(127,230,255,.7)', 1.6); ell(x, cx + 7, 12, 5.4, 4.4); fillStroke(x, 'rgba(127,230,255,.7)', 1.6);
+      x.beginPath(); x.moveTo(cx + 4, 9.5); x.lineTo(cx + 8, 13); x.lineTo(cx + 6, 15); x.lineWidth = 1; x.strokeStyle = '#ffffff'; x.stroke(); glow(x, cx, 12, 10, '#7fe6ff', .35); }
+  },
+  pell: {
+    skin: '#c89070', coat: '#a8865a', trim: '#6a4a2a', iris: '#3a6a5a',
+    chest: (x, cx) => { x.beginPath(); x.moveTo(cx - 13, 40); x.quadraticCurveTo(cx, 48, cx + 13, 40); x.lineWidth = 3; x.strokeStyle = '#8a6a44'; x.stroke(); rr(x, cx + 3, 46, 6, 6, 1); fillStroke(x, '#6a5034', 1); },
+    hair: (x, cx) => { x.beginPath(); x.moveTo(cx - 18, 24); x.lineTo(cx - 19, 12); x.lineTo(cx - 13, 9); x.lineTo(cx - 10, 3); x.lineTo(cx - 3, 6); x.lineTo(cx + 3, 1); x.lineTo(cx + 9, 6); x.lineTo(cx + 15, 4); x.lineTo(cx + 17, 12); x.lineTo(cx + 19, 22); x.quadraticCurveTo(cx + 11, 13, cx + 2, 16); x.lineTo(cx - 6, 13); x.quadraticCurveTo(cx - 13, 16, cx - 18, 24); x.closePath(); fillStroke(x, lg(x, cx, 1, cx, 24, [[0, '#a86a3a'], [1, '#6a3e1e']]), 2); },
+    front: (x, cx) => { ell(x, cx, 52, 11, 10); fillStroke(x, lg(x, cx, 42, cx, 62, [[0, '#e8d8b8'], [1, '#9a8458']]), 1.8); ell(x, cx, 52, 7, 5.6); fillStroke(x, 'rgba(40,60,80,.85)', 1.2); ell(x, cx - 2, 50.5, 2.4, 1.4); x.fillStyle = 'rgba(200,240,255,.7)'; x.fill(); }
   }
 };
-
 function charCanvas(S, look) { return mk(64, 68, S, x => drawChar(x, look)); }
 export function portraitCanvas(look, size = 128) {
   const k = size / 44;
@@ -412,7 +432,7 @@ export function buildArt(S) {
   A.door = mk(90, 70, S, x => { poly(x, [6, 66, 10, 14, 80, 8, 86, 62]); fillStroke(x, lg(x, 0, 8, 0, 66, [[0, '#7a8a94'], [1, '#33434c']]), 2.4); rr(x, 24, 22, 42, 34, 4); fillStroke(x, '#22323a', 2); x.font = '700 9px sans-serif'; x.fillStyle = 'rgba(255,207,90,.8)'; x.textAlign = 'center'; x.fillText('MERIDIAN', 45, 18); glow(x, 45, 40, 26, '#5ff2ff', .35); });
 
   A.foot = mk(12, 8, S, x => { ell(x, 6, 4, 5, 3.2); fillStroke(x, '#24323c', 1.4); });
-  for (const k of ['vanguard', 'railwarden', 'psion', 'shade', 'mender', 'duelist', 'marr', 'sparks', 'okafor', 'kestrel', 'corvin', 'hush']) A['ch_' + k] = charCanvas(S, LOOKS[k]);
+  for (const k of ['vanguard', 'railwarden', 'psion', 'shade', 'mender', 'duelist', 'marr', 'sparks', 'okafor', 'kestrel', 'corvin', 'hush', 'ilse', 'bix', 'pell']) A['ch_' + k] = charCanvas(S, LOOKS[k]);
   A.w_knife = mk(12, 32, S, x => { poly(x, [6, 1, 10, 8, 9, 22, 3, 22, 2, 8]); fillStroke(x, lg(x, 0, 0, 12, 0, [[0, '#ffd8ea'], [.5, '#ffffff'], [1, '#ff5a9a']]), 1.4); glow(x, 6, 12, 10, '#ff5a9a', .7); rr(x, 1, 22, 10, 3, 1.5); fillStroke(x, '#3a3046', 1.2); rr(x, 4, 25, 4, 6, 2); fillStroke(x, '#1a1420', 1); });
   A.w_staff = mk(18, 74, S, x => { rr(x, 7, 14, 4, 58, 2); fillStroke(x, lg(x, 7, 0, 11, 0, [[0, '#dfe8e6'], [1, '#8aa8a2']]), 1.4); for (const p of [30, 50]) { rr(x, 5.5, p, 7, 4, 1.5); fillStroke(x, '#2fd0b8', 1); }
     glow(x, 9, 9, 10, '#5ff2d0', .9); ell(x, 9, 9, 6, 6); x.fillStyle = rg(x, 8, 8, 6, [[0, '#ffffff'], [.5, '#c8fff2'], [1, '#2fd0b8']]); x.fill(); x.lineWidth = 1.4; x.strokeStyle = OL; x.stroke(); });
@@ -478,6 +498,7 @@ export function buildArt(S) {
   });
   for (const id of Object.keys(ECHO_DRAW)) A['echo_' + id] = echoCanvas(id, S);
   buildDunes(A, S);
+  buildLattice(A, S);
   return A;
 }
 
@@ -599,5 +620,88 @@ function buildDunes(A, S) {
 export const ANCHORS = {
   tree0: [.5, .93], tree1: [.5, .93], tree2: [.5, .93], tree3: [.5, .93], rock: [.5, .9], moss: [.5, .7], bulb: [.5, .95], rib: [.17, .95], spire: [.5, .97],
   dune: [.5, .9], mesa: [.5, .95], vein: [.5, .9], wreck: [.5, .92], tentd: [.5, .96], fire: [.5, .8], rig: [.45, .98], fence: [.5, .95], scrap: [.5, .85],
-  hull: [.5, .98], lamp: [.5, .96], crate: [.5, .95], forge: [.5, .97], tent: [.5, .96], stall: [.5, .96], banner: [.5, .98], door: [.5, .95], geode: [.5, .9], root: [.5, .5]
+  hull: [.5, .98], lamp: [.5, .96], crate: [.5, .95], forge: [.5, .97], tent: [.5, .96], stall: [.5, .96], banner: [.5, .98], door: [.5, .95], geode: [.5, .9], root: [.5, .5], crystal: [.5, .92], coral: [.5, .95], kelp: [.5, .96], pool: [.5, .5], cage: [.5, .97]
 };
+
+function buildLattice(A, S) {
+  A.reef = mk(256, 256, Math.min(S, 2), (x, w, h) => {
+    x.fillStyle = '#0d3442'; x.fillRect(0, 0, w, h);
+    const R = rng(43);
+    const wrap = (fn) => { for (const dx of [-w, 0, w]) for (const dy of [-h, 0, h]) fn(dx, dy); };
+    for (let i = 0; i < 12; i++) { const cx = R() * w, cy = R() * h, r = 40 + R() * 70, light = R() > .5; wrap((dx, dy) => { x.fillStyle = rg(x, cx + dx, cy + dy, r, [[0, light ? 'rgba(90,170,190,.2)' : 'rgba(4,20,30,.3)'], [1, 'rgba(0,0,0,0)']]); x.fillRect(cx + dx - r, cy + dy - r, r * 2, r * 2); }); }
+    for (let i = 0; i < 12; i++) { const cx = R() * w, cy = R() * h, r = 2 + R() * 4; wrap((dx, dy) => { poly(x, [cx + dx, cy + dy - r * 1.6, cx + dx + r * .7, cy + dy, cx + dx, cy + dy + r * .5, cx + dx - r * .7, cy + dy]); x.fillStyle = R() < .5 ? 'rgba(127,200,255,.55)' : 'rgba(95,242,208,.4)'; x.fill(); }); }
+    for (let i = 0; i < 90; i++) { const cx = R() * w, cy = R() * h; x.fillStyle = `rgba(200,230,240,${.08 + R() * .12})`; x.fillRect(cx, cy, 1.6, 1.6); }
+  });
+  A.caustic = mk(256, 256, Math.min(S, 2), (x, w, h) => {
+    const R = rng(57);
+    x.lineCap = 'round';
+    for (let i = 0; i < 26; i++) { let px = R() * w, py = R() * h; x.beginPath(); x.moveTo(px, py); for (let k = 0; k < 4; k++) { const nx = px + (R() - .5) * 70, ny = py + (R() - .5) * 70; x.quadraticCurveTo((px + nx) / 2 + (R() - .5) * 30, (py + ny) / 2 + (R() - .5) * 30, nx, ny); px = nx; py = ny; } x.lineWidth = 1.5 + R() * 2.5; x.strokeStyle = 'rgba(160,230,255,.55)'; x.stroke(); }
+  });
+  A.reefpath = mk(120, 70, S > 2 ? 2 : S, x => { x.save(); x.scale(1, 70 / 120); x.fillStyle = rg(x, 60, 60, 60, [[0, 'rgba(150,200,210,.42)'], [.6, 'rgba(120,180,190,.25)'], [1, 'rgba(100,160,170,0)']]); x.fillRect(0, 0, 120, 120); x.restore(); });
+  A.pool = mk(220, 130, Math.min(S, 2), x => {
+    ell(x, 110, 65, 108, 62); x.fillStyle = rg(x, 110, 65, 108, [[0, 'rgba(40,140,190,.55)'], [.7, 'rgba(30,110,160,.45)'], [1, 'rgba(20,80,120,0)']]); x.fill();
+    for (const [a, b, r] of [[80, 50, 26], [140, 74, 34], [104, 86, 18]]) { x.beginPath(); x.ellipse(a, b, r, r * .35, 0, 0, Math.PI * 2); x.lineWidth = 1.6; x.strokeStyle = 'rgba(190,240,255,.35)'; x.stroke(); }
+  });
+  A.crystal = mk(60, 70, S, x => {
+    glow(x, 30, 50, 30, '#7fc8ff', .45);
+    shard(x, 30, 66, 13, 58, 0, '#e8fbff', '#3a8ac8'); shard(x, 16, 66, 9, 36, -.35, '#d8f4ff', '#2a6aa8'); shard(x, 44, 66, 9, 42, .3, '#d8f4ff', '#2a6aa8'); shard(x, 38, 66, 6, 22, .7, '#c8fff2', '#2a9a8a');
+  });
+  A.coral = mk(70, 64, S, x => {
+    x.lineCap = 'round';
+    const br = (x0, y0, a, l, d) => { if (d > 3 || l < 6) return; const x1 = x0 + Math.cos(a) * l, y1 = y0 + Math.sin(a) * l; x.beginPath(); x.moveTo(x0, y0); x.lineTo(x1, y1); x.lineWidth = 9 - d * 2; x.strokeStyle = OL; x.stroke(); x.lineWidth = 6.4 - d * 1.6; x.strokeStyle = '#e8ddd0'; x.stroke(); if (d === 3) { glow(x, x1, y1, 6, '#5ff2d0', .9); } br(x1, y1, a - .45, l * .72, d + 1); br(x1, y1, a + .4, l * .7, d + 1); };
+    br(35, 62, -Math.PI / 2, 20, 0); br(35, 62, -Math.PI / 2 - .7, 14, 1); br(35, 62, -Math.PI / 2 + .6, 15, 1);
+  });
+  A.kelp = mk(40, 80, S, x => {
+    x.lineCap = 'round';
+    for (const [b, c, ph] of [[14, '#2fa88a', 0], [22, '#3ac8a0', 1.4], [30, '#2a9080', 2.2]]) { x.beginPath(); x.moveTo(b, 78); for (let y = 78; y > 8; y -= 6) x.lineTo(b + Math.sin(y / 9 + ph) * 5, y); x.lineWidth = 6; x.strokeStyle = OL; x.stroke(); x.lineWidth = 3.6; x.strokeStyle = c; x.stroke(); glow(x, b + Math.sin(8 / 9 + ph) * 5, 10, 6, '#7fffe0', .8); }
+  });
+  A.cage = mk(150, 120, S, x => {
+    rr(x, 30, 40, 90, 70, 8); fillStroke(x, lg(x, 0, 40, 0, 110, [[0, '#5a6a72'], [1, '#2a343a']]), 2.4);
+    for (const p of [46, 66, 86, 106]) { rr(x, p - 3, 44, 6, 62, 2); fillStroke(x, '#7a8a92', 1.2); }
+    rr(x, 20, 30, 110, 14, 4); fillStroke(x, '#3a4a52', 2); rr(x, 64, 6, 22, 26, 4); fillStroke(x, '#4a5a62', 2); ell(x, 75, 14, 6, 6); fillStroke(x, '#7fc8ff', 1.2); glow(x, 75, 14, 14, '#7fc8ff', .8);
+    x.beginPath(); x.moveTo(120, 96); x.quadraticCurveTo(140, 100, 148, 114); x.lineWidth = 6; x.strokeStyle = OL; x.stroke(); x.lineWidth = 4; x.strokeStyle = '#4a5a62'; x.stroke();
+  });
+  A.skitter = mk(70, 50, S, x => {
+    x.lineCap = 'round';
+    for (const [a, b] of [[16, -8], [22, -4], [48, 4], [54, 8]]) { x.beginPath(); x.moveTo(a, 30); x.quadraticCurveTo(a + b, 36, a + b * 1.4, 48); x.lineWidth = 4.4; x.strokeStyle = OL; x.stroke(); x.lineWidth = 2.6; x.strokeStyle = '#e8ddd0'; x.stroke(); }
+    for (const sg of [-1, 1]) { const bx = 35 + sg * 26; x.beginPath(); x.moveTo(35 + sg * 12, 26); x.lineTo(bx, 18); x.lineWidth = 4; x.strokeStyle = OL; x.stroke(); x.lineWidth = 2.4; x.strokeStyle = '#e8ddd0'; x.stroke(); poly(x, [bx - 6, 20, bx, 4, bx + 6, 20, bx, 16]); fillStroke(x, lg(x, 0, 4, 0, 20, [[0, '#e8fbff'], [1, '#4a9ad8']]), 1.6); }
+    ell(x, 35, 28, 18, 11); fillStroke(x, lg(x, 35, 17, 35, 39, [[0, '#e8ddd0'], [1, '#8a8478']]), 2);
+    shard(x, 28, 24, 6, 16, -.3, '#e8fbff', '#3a8ac8'); shard(x, 36, 23, 7, 20, 0, '#e8fbff', '#3a8ac8'); shard(x, 44, 24, 6, 15, .3, '#e8fbff', '#3a8ac8');
+    ell(x, 29, 31, 2.6, 2.6); x.fillStyle = '#7fe6ff'; x.fill(); ell(x, 41, 31, 2.6, 2.6); x.fill(); glow(x, 29, 31, 6, '#7fe6ff', .9); glow(x, 41, 31, 6, '#7fe6ff', .9);
+  });
+  A.husker = mk(56, 78, S, x => {
+    for (const sg of [-1, 1]) { rr(x, 28 + sg * 9 - 6, 50, 12, 26, 5); fillStroke(x, lg(x, 0, 50, 0, 76, [[0, '#4a5662'], [1, '#2a323a']]), 2); }
+    rr(x, 10, 26, 36, 30, 10); fillStroke(x, lg(x, 0, 26, 0, 56, [[0, '#5a6874'], [1, '#2e3842']]), 2.2);
+    for (const sg of [-1, 1]) { rr(x, 28 + sg * 21 - 5, 30, 10, 24, 5); fillStroke(x, '#3e4a54', 1.8); }
+    rr(x, 22, 34, 12, 10, 3); fillStroke(x, '#1e262e', 1.2); ell(x, 28, 39, 3, 3); x.fillStyle = '#7fe6ff'; x.fill(); glow(x, 28, 39, 7, '#7fe6ff', .8);
+    ell(x, 28, 18, 15, 14); fillStroke(x, lg(x, 28, 4, 28, 32, [[0, '#6a7884'], [1, '#3a4652']]), 2.2);
+    ell(x, 28, 19, 10.5, 9); x.fillStyle = rg(x, 26, 16, 12, [[0, '#d8faff'], [.4, '#4ab8ff'], [1, '#0a3a6a']]); x.fill(); x.lineWidth = 1.6; x.strokeStyle = OL; x.stroke(); glow(x, 28, 19, 16, '#4ab8ff', .7);
+    for (const [a, b] of [[18, 56], [38, 58], [26, 62]]) { x.beginPath(); x.moveTo(a, b); x.quadraticCurveTo(a + 1, b + 6, a, b + 10); x.lineWidth = 2; x.strokeStyle = 'rgba(127,220,255,.8)'; x.stroke(); }
+    shard(x, 44, 30, 4, 10, .5, '#e8d8ff', '#8a6ac8'); shard(x, 12, 52, 3, 8, -.5, '#e8d8ff', '#8a6ac8');
+  });
+  A.leech = mk(96, 44, S, x => {
+    x.lineCap = 'round';
+    const pts = []; for (let i = 0; i <= 24; i++) { const t = i / 24; pts.push([8 + t * 80, 22 + Math.sin(t * Math.PI * 2.2) * 9]); }
+    const stroke = (w, c) => { x.beginPath(); pts.forEach(([a, b], i) => i ? x.lineTo(a, b) : x.moveTo(a, b)); x.lineWidth = w; x.strokeStyle = c; x.stroke(); };
+    stroke(16, OL); stroke(13, '#d8d0c4'); stroke(7, 'rgba(90,170,230,.9)');
+    for (let i = 3; i < 22; i += 3) { const [a, b] = pts[i]; glow(x, a, b, 5, '#ffe8a0', .7); }
+    for (let i = 2; i < 23; i += 2) { const [a, b] = pts[i]; poly(x, [a - 2, b - 6, a, b - 11, a + 2, b - 6]); x.fillStyle = '#e8e0d4'; x.fill(); }
+    const [hx, hy] = pts[24]; poly(x, [hx - 6, hy - 7, hx + 8, hy - 2, hx + 9, hy + 3, hx - 6, hy + 7]); fillStroke(x, '#e8e0d4', 1.8); ell(x, hx, hy - 2, 2, 2); x.fillStyle = '#7fe6ff'; x.fill(); glow(x, hx, hy - 2, 6, '#7fe6ff', .9);
+  });
+  A.blueshot = mk(20, 20, S, x => { glow(x, 10, 10, 10, '#7fc8ff', 1); ell(x, 10, 10, 4, 4); x.fillStyle = '#e8fbff'; x.fill(); });
+  A.choir = mk(250, 260, S, x => {
+    ell(x, 125, 244, 110, 16); x.fillStyle = 'rgba(40,140,200,.45)'; x.fill();
+    glow(x, 120, 150, 120, '#4ab8ff', .3);
+    x.beginPath(); x.moveTo(52, 248); x.bezierCurveTo(20, 170, 40, 40, 150, 16); x.bezierCurveTo(210, 6, 238, 40, 226, 70); x.bezierCurveTo(208, 50, 170, 46, 140, 64); x.bezierCurveTo(98, 92, 96, 190, 124, 248); x.closePath();
+    fillStroke(x, lg(x, 40, 20, 160, 248, [[0, '#d8ccb8'], [.5, '#a8987e'], [1, '#6a5a48']]), 3);
+    x.beginPath(); x.moveTo(70, 236); x.bezierCurveTo(46, 170, 60, 70, 150, 34); x.lineWidth = 2; x.strokeStyle = 'rgba(255,255,255,.25)'; x.stroke();
+    const faces = [[78, 210, 1], [70, 170, .95], [74, 128, .9], [92, 88, .85], [122, 58, .8], [158, 40, .72], [102, 150, .8], [100, 196, .85]];
+    for (const [fx, fy, k] of faces) {
+      ell(x, fx, fy, 13 * k, 16 * k); fillStroke(x, lg(x, fx, fy - 16 * k, fx, fy + 16 * k, [[0, '#e8d8c8'], [1, '#a8907a']]), 1.6);
+      for (const sg of [-1, 1]) { x.beginPath(); x.moveTo(fx + sg * 6 * k - 3 * k, fy - 4 * k); x.quadraticCurveTo(fx + sg * 6 * k, fy - 1 * k, fx + sg * 6 * k + 3 * k, fy - 4 * k); x.lineWidth = 1.3; x.strokeStyle = OL; x.stroke(); }
+      ell(x, fx, fy + 7 * k, 3.4 * k, 4.4 * k); x.fillStyle = '#1a0a14'; x.fill(); glow(x, fx, fy + 7 * k, 8 * k, '#7fc8ff', .7);
+      x.beginPath(); x.moveTo(fx - 4 * k, fy + 14 * k); x.quadraticCurveTo(fx - 3 * k, fy + 24 * k, fx - 5 * k, fy + 30 * k); x.lineWidth = 1.6; x.strokeStyle = 'rgba(127,220,255,.75)'; x.stroke();
+    }
+    for (let i = 0; i < 10; i++) shard(x, 60 + i * 16, 252, 4 + (i % 3), 14 + (i % 4) * 6, (i % 2 ? .3 : -.3), '#e8fbff', '#3a8ac8');
+  });
+}

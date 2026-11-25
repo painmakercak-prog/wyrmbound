@@ -1,6 +1,6 @@
 # Wyrmbound: Starfall — Project Status
 
-Last updated: 2026-11-25 (build 4 in progress)
+Last updated: 2026-11-25 (build 4 shipped)
 
 Play it: https://painmakercak-prog.github.io/wyrmbound/starfall/
 Code: `starfall/` on `main`. Deploys go to the `gh-pages` branch under `/starfall/`.
@@ -17,29 +17,25 @@ Owner: Kasey. Code is written by Claude. Art comes from Grok, story from Muse, m
 | 2 | Nov 2026 | Act II, Ribline Dunes: Kestrel, Corvin, Mother Hush, the silent canyon, Marrowking boss, travel between regions |
 | 2.1 | 2026-11-25 | Real music: title theme, Verge, Dunes and boss tracks with seamless loops |
 | 3 | 2026-11-25 | Shade, Mender and Duelist Callings; switching Calling at the Lodge; Ossivar's Spire endless tower; Ascendant Echoes; gear stars (Refine) |
+| 4 | 2026-11-25 | Act III, Sunken Lattice: Ilse, Bix, Pell; Skitters, Huskers, Leeches; the Choir Below boss; 16 quests; reef music (Glassy Depths); Vey's tower logs; idle lines; Ascendant Echo art; fix for bosses fully healing after a knockout |
 
-## In progress: build 4 (Act III, "Memory of Water")
+## In progress
 
-- New region: the Sunken Lattice (drowned crystal reef inside a dragon's ribcage)
-- New characters: Ilse Vane, Bix, Pell. Corvin, Mother Hush, Marr and Okafor return
-- New enemies: Lattice Skitter, Drowned Husker, Memory Leech. Boss: the Choir Below
-- 16 quests, 11 new codex entries, Act III end card
-- Muse's extra writing: Aldren Vey's tower logs every 10 floors, Ascend lines, idle lines for every character, tower knockout lines
-- Ascendant Echo art in menus
+Nothing yet. Next build is waiting on Kasey's playtest notes and a decision on what comes next (see below).
 
 ## Waiting on Kasey
 
-- [ ] Optional: Suno track "Memory of Water" for the Sunken Lattice (prompt in chat). Until it arrives, the reef reuses Glassy Horizons.
-- [ ] Play builds 3 and 4 on the iPhone and report anything that feels slow or wrong. Real-device performance and sound are not yet confirmed.
-- [ ] Tell Claude if the tower feels too easy or too hard (guardian floors especially).
+- [ ] Play builds 3 and 4 on the iPhone (Act III, the tower, Ascend, Refine, new Callings) and report anything that feels slow or wrong. Real-device performance and sound are not yet confirmed.
+- [ ] Tell Claude if the tower or the Choir Below feels too easy or too hard.
+- [ ] Decide what's next: Act IV, more Echo species, or polish.
 
 ## Assets received
 
-- Art (Grok): Act I set, Act II Ribline set, Shade/Mender/tower set, Act III reef set and Ascendant Echoes. All used.
-- Music (Suno): First Light Beyond (title), Glassy Horizons (Verge), Sun-bleached Frontier (Dunes), Defending the Core (boss). All used.
-- Writing (Muse): Act III script; tower codex, Ascend lines, idle lines, tower results. Going into build 4.
+- Art (Grok): Act I set, Act II Ribline set, Shade/Mender/tower set, Act III reef set and Ascendant Echoes. All in the game.
+- Music (Suno): First Light Beyond (title, tower), Glassy Horizons (Verge), Sun-bleached Frontier (Dunes), Glassy Depths (Sunken Lattice), Defending the Core (bosses). All in the game.
+- Writing (Muse): Act III script; tower codex, Ascend lines, idle lines, tower results. All in the game.
 
-## Next up (after build 4)
+## Next up
 
 1. Act IV: "the heart is coming ashore." Needs a Muse script, a Grok art batch and optionally a Suno track.
 2. More Echo species to hatch.
