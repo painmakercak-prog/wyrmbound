@@ -4,7 +4,7 @@ const KEY = 'starfall.save.v1';
 
 export function fresh(cls) {
   return {
-    v: 1, cls, lvl: 1, xp: 0, lumen: 0, shards: 0, geodes: 0, q: 0, qp: 0,
+    v: 1, cls, region: 'verge', lvl: 1, xp: 0, lumen: 0, shards: 0, geodes: 0, q: 0, qp: 0,
     gear: Object.fromEntries(SLOTS.map(s => [s.id, null])),
     echoes: {}, activeEcho: null, codex: {}, kills: {}, bounty: null,
     settings: { sound: true, music: true, autoSkill: true },
@@ -13,7 +13,7 @@ export function fresh(cls) {
 }
 
 export function load() {
-  try { const s = JSON.parse(localStorage.getItem(KEY) || 'null'); if (s && s.v === 1 && CALLINGS[s.cls]) return s; } catch (e) {}
+  try { const s = JSON.parse(localStorage.getItem(KEY) || 'null'); if (s && s.v === 1 && CALLINGS[s.cls]) { if (!s.region) s.region = 'verge'; return s; } } catch (e) {}
   return null;
 }
 export function save(st) { try { st.lastSeen = Date.now(); localStorage.setItem(KEY, JSON.stringify(st)); } catch (e) {} }
