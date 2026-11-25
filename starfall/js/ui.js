@@ -1,7 +1,7 @@
-import { CALLINGS, ECHOES, HATCHABLE, SLOTS, RARITY, CODEX, QUESTS, NPCS, BOUNTIES, ACTS, ART, REGIONS, ENEMIES } from './data.js?v=3';
-import { portraitCanvas, LOOKS, iconCanvas, echoCanvas, lumenCanvas, shardIconCanvas, geodeCanvas } from './art.js?v=3';
-import { heroStats, power, xpNeed, gearLine, upgradeCost, echoStats, echoLevelCost, EVOLVE_COST, ASCEND_COST, STAR_MAX, refineCost, refineNeed, save, wipe } from './state.js?v=3';
-import { sfx, setMusic, audioResume } from './audio.js?v=3';
+import { CALLINGS, ECHOES, HATCHABLE, SLOTS, RARITY, CODEX, QUESTS, NPCS, BOUNTIES, ACTS, ART, REGIONS, ENEMIES, TOWER_LINES } from './data.js?v=4';
+import { portraitCanvas, LOOKS, iconCanvas, echoCanvas, lumenCanvas, shardIconCanvas, geodeCanvas } from './art.js?v=4';
+import { heroStats, power, xpNeed, gearLine, upgradeCost, echoStats, echoLevelCost, EVOLVE_COST, ASCEND_COST, STAR_MAX, refineCost, refineNeed, save, wipe } from './state.js?v=4';
+import { sfx, setMusic, audioResume } from './audio.js?v=4';
 
 const $ = (s, r = document) => r.querySelector(s);
 const el = (tag, cls, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; };
@@ -73,7 +73,7 @@ export class UI {
   }
   callingImg(k) { return ART.calling[k] || this.img['c_' + k] || (this.img['c_' + k] = url(portraitCanvas(LOOKS[k], 192))); }
   stars(g) { return g && g.star ? ` <span class="stars">${'\u2605'.repeat(g.star)}</span>` : ''; }
-  echoImg(id) { return ART.echo[id] || this.img['e_' + id] || (this.img['e_' + id] = url(echoCanvas(id, 4))); }
+  echoImg(id) { if (this.st.echoes[id] && +this.st.echoes[id].evo === 2 && ART.echoAsc[id]) return ART.echoAsc[id]; return ART.echo[id] || this.img['e_' + id] || (this.img['e_' + id] = url(echoCanvas(id, 4))); }
   icon(kind, col) { const k = 'i_' + kind + col; return this.img[k] || (this.img[k] = url(iconCanvas(kind, col, 120))); }
 
   buildSkills() {
@@ -291,7 +291,7 @@ export class UI {
   }
   evolveModal(id, asc) {
     const m = $('#modal'), D = ECHOES[id];
-    if (asc) { m.innerHTML = `<div class="box"><div class="k">Ascendant</div><div class="hatch-art asc"><img class="pop" src="${this.echoImg(id)}" alt=""></div><h3>${D.name} ascends</h3><p>${id === 'skein' ? '<i>i remember the size of me. not yet. but soon.</i>' : 'It remembers what it was before it fell. Its attack more than doubles and it can grow to level 30.'}</p><button class="btn gold">Continue</button></div>`; m.classList.add('on'); $('button', m).onclick = () => m.classList.remove('on'); return; }
+    if (asc) { m.innerHTML = `<div class="box"><div class="k">Ascendant</div><div class="hatch-art asc"><img class="pop" src="${this.echoImg(id)}" alt=""></div><h3>${D.name} ascends</h3><p><i>${esc(D.ascend || '')}</i></p><p class="small muted">It remembers what it was before it fell. Its attack more than doubles and it can grow to level 30.</p><button class="btn gold">Continue</button></div>`; m.classList.add('on'); $('button', m).onclick = () => m.classList.remove('on'); return; }
     m.innerHTML = `<div class="box"><div class="k">Memory recalled</div><div class="hatch-art"><img class="pop" src="${this.echoImg(id)}" alt=""></div><h3>${D.name} remembers</h3><p>${id === 'skein' ? '<i>a sky full of us. a light that would not go out. a voice, calling, calling.</i>' : 'A whole memory surfaces: a world it once lived on. It fights harder now, and glows brighter.'}</p><button class="btn gold">Continue</button></div>`;
     m.classList.add('on'); $('button', m).onclick = () => m.classList.remove('on');
   }
@@ -367,7 +367,7 @@ export class UI {
     const rs = el('button', 'btn ghost', 'Start over'); rs.style.marginTop = '16px'; rs.style.width = '100%';
     rs.onclick = () => { if (rs.dataset.c) { wipe(); location.reload(); } else { rs.dataset.c = 1; rs.textContent = 'Tap again to erase your save'; rs.style.color = 'var(--red)'; } };
     bd.appendChild(rs);
-    bd.appendChild(el('div', 'small muted', 'Wyrmbound: Starfall · build 3. Engine: Phaser (MIT). Font: Chakra Petch (OFL). Art: Grok and drawn in code. Music: made with Suno.')).style.marginTop = '14px';
+    bd.appendChild(el('div', 'small muted', 'Wyrmbound: Starfall · build 4. Engine: Phaser (MIT). Font: Chakra Petch (OFL). Art: Grok and drawn in code. Music: made with Suno.')).style.marginTop = '14px';
   }
 
   actEnd(n = 1) {
@@ -377,10 +377,10 @@ export class UI {
     sfx('level');
   }
   travelMenu() {
-    const st = this.st, m = $('#modal'), unlock = QUESTS.findIndex(q => q.id === 'ii_travel'), towerAt = QUESTS.findIndex(q => q.id === 'boss');
+    const st = this.st, m = $('#modal'), towerAt = QUESTS.findIndex(q => q.id === 'boss');
     const box = el('div', 'box', `<div class="k">Spire sync</div><h3>Travel</h3><p class="small muted">Every Spire on Aurelis is grown from the same spine. Step in and step out somewhere else.</p>`);
     for (const [id, R] of Object.entries(REGIONS)) {
-      const locked = (id === 'dunes' && st.q < unlock) || (R.tower && st.q <= towerAt), here = id === st.region;
+      const locked = (R.unlock && st.q < QUESTS.findIndex(q => q.id === R.unlock)) || (R.tower && st.q <= towerAt), here = id === st.region;
       const sub = R.tower ? (locked ? 'Opens after the Thornmother' : (st.tower.best ? `Endless floors · best floor ${st.tower.best}` : 'Endless floors · not climbed yet')) : `${esc(R.hub)} · levels ${esc(R.lvl)}`;
       const c = el('div', 'tcard' + (locked ? ' lock' : ''), `<img src="${ART.region[id] || this.icon('tower', 0xffcf5a)}" alt=""><div class="grow"><b class="d">${esc(R.name)}</b><div class="small muted">${sub}</div></div>`);
       const b = el('button', 'btn' + (here ? ' ghost' : ''), here ? 'Here' : locked ? 'Locked' : 'Sync');
@@ -392,7 +392,7 @@ export class UI {
   }
   towerResult(reached, best, done) {
     const m = $('#modal');
-    m.innerHTML = `<div class="box"><div class="k">Ossivar\u2019s Spire</div><h3>Link lost on floor ${reached + 1}</h3><p class="muted">${reached ? `You cleared ${reached} floor${reached === 1 ? '' : 's'}.` : 'The Spire held this time.'} Best floor: <b class="d">${best}</b>. The next climb starts from floor ${best + 1}.</p><button class="btn gold">Return</button></div>`;
+    m.innerHTML = `<div class="box"><div class="k">Ossivar\u2019s Spire</div><h3>Link lost on floor ${reached + 1}</h3><p class="muted">${reached ? `You cleared ${reached} floor${reached === 1 ? '' : 's'}.` : 'The Spire held this time.'} Best floor: <b class="d">${best}</b>. The next climb starts from floor ${best + 1}.</p><p class="small"><i>${esc(TOWER_LINES[Math.floor(Math.random() * TOWER_LINES.length)])}</i></p><button class="btn gold">Return</button></div>`;
     m.classList.add('on'); sfx('ui'); $('button', m).onclick = () => { m.classList.remove('on'); done(); };
   }
   offline(r, claim) {

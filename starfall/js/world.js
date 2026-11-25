@@ -1,13 +1,13 @@
-import { CALLINGS, ENEMIES, REGIONS, NPCS, ECHOES, QUESTS, SLOTS, RARITY, CODEX, BOUNTIES, TOWER_POOL, GEAR_NAMES } from './data.js?v=3';
-import { buildArt, ANCHORS } from './art.js?v=3';
-import { heroStats, echoStats, xpNeed, makeGear, rollRarity, gearValue, save } from './state.js?v=3';
-import { sfx, duck, playTrack } from './audio.js?v=3';
+import { CALLINGS, ENEMIES, REGIONS, NPCS, ECHOES, QUESTS, SLOTS, RARITY, CODEX, BOUNTIES, TOWER_POOL, TOWER_GUARDS, GEAR_NAMES, IDLE } from './data.js?v=4';
+import { buildArt, ANCHORS } from './art.js?v=4';
+import { heroStats, echoStats, xpNeed, makeGear, rollRarity, gearValue, save } from './state.js?v=4';
+import { sfx, duck, playTrack } from './audio.js?v=4';
 
 const dist = (a, b, c, d) => Math.hypot(c - a, d - b);
 const rnd = (a, b) => a + Math.random() * (b - a);
 const ri = (a, b) => Math.floor(rnd(a, b + 1));
 
-const HIT = { thornmother: [60, 120], marrowking: [110, 210] };
+const HIT = { thornmother: [60, 120], marrowking: [110, 210], choir: [110, 240] };
 const hy = e => (HIT[e.type] || [16, 44])[0];
 const topY = e => (HIT[e.type] || [16, 44])[1];
 
@@ -97,7 +97,7 @@ export class WorldScene extends Phaser.Scene {
     g.setDepth(-1e6);
     const tint = (x, y, r, col, a, mode = 'ADD') => { const s = this.add.image(x, y, 'soft').setScale(r / 32).setTint(col).setAlpha(a).setBlendMode(mode); s.setDepth(-9e5); return s; };
     this.tall = [];
-    const placeProp = (key, x, y, s = 1, flip = false) => { const [ax, ay] = ANCHORS[key] || [.5, .9]; const p = this.img(x, y, key, ax, ay, s); if (flip) p.setFlipX(true); p.setDepth(y); if (/^tree|^rib|^spire|^rig|^mesa/.test(key)) this.tall.push(p); return p; };
+    const placeProp = (key, x, y, s = 1, flip = false) => { const [ax, ay] = ANCHORS[key] || [.5, .9]; const p = this.img(x, y, key, ax, ay, s); if (flip) p.setFlipX(true); p.setDepth(y); if (/^tree|^rib|^spire|^rig|^mesa|^cage/.test(key)) this.tall.push(p); return p; };
     for (const PATH of R.paths) for (let i = 0; i < PATH.length - 1; i++) {
       const [ax, ay] = PATH[i], [bx, by] = PATH[i + 1], n = Math.ceil(dist(ax, ay, bx, by) / 24);
       for (let k = 0; k < n; k++) { const t = k / n; const d = this.img(ax + (bx - ax) * t + rnd(-6, 6), ay + (by - ay) * t + rnd(-4, 4), R.path, .5, .5, rnd(1.1, 1.5)); d.setDepth(-8e5); d.setAlpha(i < 2 && R === REGIONS.verge && PATH === R.paths[0] ? 0 : 1); }
@@ -107,7 +107,8 @@ export class WorldScene extends Phaser.Scene {
     this.tweens.add({ targets: this.spireGlow, alpha: .9, scale: 3.6, duration: 1800, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
     tint(P.spire.x, P.spire.y, 180, 0x9ff6ff, .18);
     const R0 = (() => { let a = 1234; return () => { a = (a * 16807) % 2147483647; return a / 2147483647; }; })();
-    if (this.R.tower) this.buildTower(tint, placeProp, R0); else if (this.st.region === 'dunes') this.buildDunes(tint, placeProp, R0); else this.buildVerge(tint, placeProp, R0);
+    this.caustic = null;
+    if (this.R.tower) this.buildTower(tint, placeProp, R0); else if (this.st.region === 'dunes') this.buildDunes(tint, placeProp, R0); else if (this.st.region === 'lattice') this.buildLattice(tint, placeProp, R0); else this.buildVerge(tint, placeProp, R0);
   }
 
   buildVerge(tint, placeProp, R) {
@@ -171,6 +172,37 @@ export class WorldScene extends Phaser.Scene {
     this.door = null; this.geodeGlow = null;
   }
 
+  buildLattice(tint, placeProp, R) {
+    const P = this.P, PATHS = this.R.paths, W = this.R.w, H = this.R.h;
+    this.caustic = this.add.tileSprite(0, 0, W, H, 'caustic').setOrigin(0).setTileScale(this.sx('caustic') * 1.6).setBlendMode('ADD').setAlpha(.1).setDepth(-8.7e5);
+    const pool = (x, y, sx, sy, a = 1) => { const p = this.img(x, y, 'pool', .5, .5, 1).setScale(this.sx('pool') * sx, this.sx('pool') * sy).setAlpha(a).setDepth(-8.6e5); this.tweens.add({ targets: p, alpha: a * .75, duration: rnd(1800, 2600), yoyo: true, repeat: -1, ease: 'Sine.easeInOut' }); return p; };
+    for (const [x, y, sx, sy] of [[720, 1960, 3.2, 2.6], [460, 2200, 2.2, 1.6], [1460, 1420, 2.6, 2.2], [1700, 1900, 2, 1.8], [620, 1060, 2.4, 1.8], [300, 700, 2.6, 2.4], [1700, 700, 2.6, 2.2], [1000, 380, 5.2, 3.4], [1000, 860, 2.8, 1.6], [240, 1600, 2, 2.6], [1780, 1150, 1.8, 2.6]]) pool(x, y, sx, sy);
+    tint(1000, 380, 460, 0x1a5a8a, .35, 'NORMAL'); tint(1000, 380, 380, 0x4ab8ff, .18); tint(1000, 2600, 300, 0xffb870, .14); tint(620, 1060, 200, 0x5ff2d0, .2);
+    const okSpot = (x, y, pad) => distToPath(PATHS, x, y) > pad && dist(x, y, 1000, 2600) > 280 && dist(x, y, P.spire.x, P.spire.y) > 140 && dist(x, y, P.arena.x, P.arena.y) > 300 && Object.keys(P).every(k => ['start', 'arrive', 'spire', 'arena'].includes(k) || dist(x, y, P[k].x, P[k].y) > 110);
+    for (let i = 0, n = 0; i < 500 && n < 64; i++) { const x = rnd(-30, 2030), y = rnd(60, 2720); if (!okSpot(x, y, 90)) continue; placeProp(R() < .55 ? 'crystal' : 'coral', x, y, rnd(.8, 1.4), R() < .5); n++; }
+    for (let i = 0, n = 0; i < 300 && n < 46; i++) { const x = rnd(20, 1980), y = rnd(80, 2700); if (!okSpot(x, y, 60)) continue; placeProp('kelp', x, y, rnd(.8, 1.3), R() < .5); n++; }
+    for (let i = 0; i < 60; i++) { const x = rnd(40, 1960), y = rnd(80, 2700); if (!okSpot(x, y, 60)) continue; placeProp('rock', x, y, rnd(.7, 1.1), R() < .5).setTint(0x7aa8b8); }
+    for (let y = 2500; y > 300; y -= 300) { placeProp('rib', 150 + rnd(-30, 30), y, rnd(1.3, 1.6), false).setTint(0xc8d8e0); placeProp('rib', 1850 + rnd(-30, 30), y - 150, rnd(1.3, 1.6), true).setTint(0xc8d8e0); }
+    placeProp('rib', 820, 700, 2, false).setTint(0xb8d0e0); placeProp('rib', 1180, 690, 2, true).setTint(0xb8d0e0);
+    placeProp('rib', 880, 2200, 1.4, false).setTint(0xd8e0e8); placeProp('rib', 1120, 2190, 1.4, true).setTint(0xd8e0e8);
+    for (const [x, y] of [[860, 2690], [1150, 2690], [770, 2600], [1240, 2620]]) placeProp('tent', x, y, rnd(.85, 1));
+    this.campfire = placeProp('fire', 1000, 2630, 1.1);
+    const fl = this.add.image(1000, 2610, 'soft').setTint(0xffa040).setBlendMode('ADD').setScale(3).setAlpha(.45).setDepth(2631); this.tweens.add({ targets: fl, alpha: .7, scale: 3.4, duration: 260, yoyo: true, repeat: -1 });
+    for (const [x, y] of [[820, 2490], [1180, 2490], [1540, 1760], [450, 1360], [1000, 720]]) { placeProp('lamp', x, y, 1); const l = this.add.image(x, y - 80, 'soft').setTint(0x7fc8ff).setBlendMode('ADD').setScale(2.2).setAlpha(.45).setDepth(y + 1); this.tweens.add({ targets: l, alpha: .65, duration: rnd(900, 1500), yoyo: true, repeat: -1 }); }
+    placeProp('crate', 720, 2660, 1); placeProp('crate', 744, 2684, .9); placeProp('crate', 1290, 2700, .9);
+    placeProp('cage', P.pump.x + 60, P.pump.y - 20, 1.1); placeProp('fence', P.pump.x - 70, P.pump.y + 40, 1).setTint(0x9fb8c8);
+    placeProp('wreck', 1250, 1900, 1).setTint(0x8ab8d8); placeProp('crate', 1180, 1940, .8).setTint(0x8ab8d8);
+    for (let i = 0; i < 7; i++) { const a = i / 7 * Math.PI * 2; placeProp('rock', P.shrine.x + Math.cos(a) * 70, P.shrine.y + Math.sin(a) * 46, 1.1).setTint(0xb8c8d8); }
+    tint(P.shrine.x, P.shrine.y, 110, 0xbfe8ff, .25);
+    for (const [x, y] of [[1290, 1050], [1350, 1060], [1410, 1050], [1470, 1030]]) placeProp('fence', x, y, 1).setTint(0x8aa0b0);
+    placeProp('cage', P.sluice.x + 40, P.sluice.y - 50, .85);
+    for (let i = 0; i < 10; i++) { const a = rnd(Math.PI * 1.05, Math.PI * 1.95), rr = rnd(300, 380); placeProp('crystal', P.arena.x + Math.cos(a) * rr, P.arena.y + Math.sin(a) * rr * .7, rnd(1.2, 1.7), R() < .5); }
+    const cur = this.add.graphics().setDepth(-8.5e5); cur.lineStyle(3, 0x5ff2d0, .35);
+    const pts = [[880, 1920], [760, 1720], [700, 1580], [560, 1420], [480, 1330], [540, 1180], [620, 1080]]; cur.beginPath(); cur.moveTo(pts[0][0], pts[0][1]); for (const [x, y] of pts.slice(1)) cur.lineTo(x, y); cur.strokePath();
+    this.tweens.add({ targets: cur, alpha: .4, duration: 1400, yoyo: true, repeat: -1 });
+    this.door = null; this.geodeGlow = null;
+  }
+
   buildTower(tint, placeProp, R) {
     const P = this.P;
     tint(P.arena.x, P.arena.y, 520, 0xffcf5a, .1); tint(P.arena.x, P.arena.y, 420, 0x2a1a4a, .35, 'NORMAL'); tint(600, 1300, 300, 0x9ff6ff, .12);
@@ -183,6 +215,7 @@ export class WorldScene extends Phaser.Scene {
 
   towerStart() {
     const st = this.st; if (!st.tower) st.tower = { best: 0, from: 'verge' };
+    this.unlockCodex('ossivar');
     this.floor = st.tower.best + 1; this.towerState = 'wait';
     this.time.delayedCall(1200, () => this.towerFloor());
   }
@@ -193,7 +226,7 @@ export class WorldScene extends Phaser.Scene {
     this.ui.banner('Ossivar’s Spire', 'Floor ' + n, n % 10 === 0 ? 'Guardian floor' : '');
     sfx('boss');
     if (n % 10 === 0) {
-      const type = (n / 10) % 2 ? 'thornmother' : 'marrowking', Lb = ENEMIES[type].lvl[0];
+      const type = TOWER_GUARDS[(n / 10 - 1) % TOWER_GUARDS.length], Lb = ENEMIES[type].lvl[0];
       const hpMul = 2.2 * Math.max(.6, 1 + .2 * (L - Lb)), atkMul = 1.15 * Math.max(.7, 1 + .13 * (L - Lb));
       this.spawnEnemy({ type, x: P.arena.x, y: P.arena.y, r: 1, count: 0, boss: true, once: true, lvl: L, hpMul, atkMul }, P.arena);
       this.boss.hp = this.boss.hpMax;
@@ -211,7 +244,7 @@ export class WorldScene extends Phaser.Scene {
       const lum = 20 + 12 * n; st.lumen += lum; this.ui.lumenBump();
       let extra = '';
       if (n % 5 === 0) { const sh = 2 + Math.floor(n / 5); st.shards += sh; extra += ` · +${sh} memory`; }
-      if (n % 10 === 0) { st.geodes++; extra += ' · +1 geode'; this.towerGear(3 + n); }
+      if (n % 10 === 0) { st.geodes++; extra += ' · +1 geode'; this.towerGear(3 + n); this.unlockCodex('vey' + n); }
       if (n > st.tower.best) { st.tower.best = n; extra += ' · new best'; }
       this.heal(this.hero.hpMax * .25, '', true);
       sfx('quest'); this.ui.banner('Floor ' + n + ' cleared', '+' + lum + ' Lumen', extra.replace(/^ · /, ''));
@@ -267,6 +300,7 @@ export class WorldScene extends Phaser.Scene {
       if (id === 'sparks') { const w = this.img(16, -20, 'wrench', .5, .8); w.setRotation(.5); c.add(w); }
       if (id === 'marr' || id === 'corvin') body.setFlipX(true);
       if (id === 'hush') { c.setAlpha(.85); body.setTint(0xd8dce4); }
+      if (id === 'pell') body.setScale(body.scaleX * .84);
       c.setDepth(p.y);
       const name = this.add.text(p.x, p.y + 6, NPCS[id].short, this.txt(11, '#e8f6ff')).setOrigin(.5, 0).setDepth(p.y + 1).setAlpha(.85);
       const mark = this.add.text(p.x, p.y - 82, '!', this.txt(26, '#ffcf5a', 5)).setOrigin(.5).setDepth(4.5e5).setVisible(false);
@@ -311,7 +345,7 @@ export class WorldScene extends Phaser.Scene {
     if (at) { x = at.x; y = at.y; }
     const lvl = sp.lvl || ri(D.lvl[0], D.lvl[1]);
     const c = this.add.container(x, y);
-    const shadow = this.img(0, 0, 'shadow', .5, .5, D.boss ? (sp.type === 'marrowking' ? 5.2 : 4.4) : D.radius / 16);
+    const shadow = this.img(0, 0, 'shadow', .5, .5, D.boss ? ({ marrowking: 5.2, choir: 5.6 }[sp.type] || 4.4) : D.radius / 16);
     const key = sp.type === 'glowmoth' ? 'moth' : sp.type;
     const parts = [shadow];
     let wl, wr;
@@ -320,7 +354,7 @@ export class WorldScene extends Phaser.Scene {
       const gl = this.add.image(0, -28, 'soft').setTint(0xc58bff).setBlendMode('ADD').setAlpha(.4).setScale(1.3);
       parts.push(gl, wl, wr);
     }
-    const fly = sp.type === 'glowmoth' || sp.type === 'sdrone' || sp.type === 'skimmer';
+    const fly = ['glowmoth', 'sdrone', 'skimmer', 'leech'].includes(sp.type);
     const body = this.img(0, fly ? -14 : 0, key, .5, fly ? .9 : .95);
     if (sp.type === 'marrowking') { body.setOrigin(.56, .93); }
     parts.push(body);
@@ -330,7 +364,7 @@ export class WorldScene extends Phaser.Scene {
     Object.assign(c, { type: sp.type, D, sp, lvl, hpMax: Math.round(D.hp * hpMul), atk: D.atk * atkMul, body, wl, wr, shadow, bar, state: 'idle', cd: rnd(.5, 1.5), wander: null, wt: rnd(0, 3), t: rnd(0, 10), stun: 0, slow: 0, flash: 0, home: { x, y }, special: 5, broodA: false, broodB: false, dead: false, aggro: false });
     c.hp = c.hpMax;
     if (sp.aggro) { c.aggro = true; c.state = 'chase'; }
-    if (D.boss) { c.setScale(1); this.boss = c; this.ui.bossBar(c); sfx('boss'); this.cameras.main.shake(500, .004); this.ui.bossIntro(D, sp.type); if (sp.type === 'marrowking') { body.scaleY = 0; this.tweens.add({ targets: body, scaleY: this.sx('marrowking'), duration: 700, ease: 'Back.easeOut' }); this.sandBurst(c.x, c.y, 24); } }
+    if (D.boss) { c.setScale(1); this.boss = c; this.ui.bossBar(c); sfx('boss'); this.cameras.main.shake(500, .004); this.ui.bossIntro(D, sp.type); if (sp.type === 'choir') { body.scaleY = 0; this.tweens.add({ targets: body, scaleY: this.sx('choir'), duration: 1200, ease: 'Sine.easeOut' }); this.ring(c.x, c.y, 0x7fc8ff, 4); } if (sp.type === 'marrowking') { body.scaleY = 0; this.tweens.add({ targets: body, scaleY: this.sx('marrowking'), duration: 700, ease: 'Back.easeOut' }); this.sandBurst(c.x, c.y, 24); } }
     this.enemies.push(c);
     c.setAlpha(0); this.tweens.add({ targets: c, alpha: 1, duration: 400 });
     return c;
@@ -378,6 +412,7 @@ export class WorldScene extends Phaser.Scene {
     this.frameBoss(dt);
     this.fadeProps(dt);
     this.updateMusic();
+    if (this.caustic) { this.caustic.tilePositionX += dt * 7; this.caustic.tilePositionY += dt * 4; }
     this.ui.tick(dt);
   }
 
@@ -426,6 +461,7 @@ export class WorldScene extends Phaser.Scene {
   }
   bestHunt() {
     const l = this.st.lvl;
+    if (this.st.region === 'lattice') return l >= 28 ? 'leech' : l >= 26 ? 'husker' : 'skitter';
     if (this.st.region === 'dunes') return l >= 18 ? 'sdrone' : l >= 16 ? 'hound' : 'skimmer';
     return l >= 9 ? 'crawler' : l >= 5 ? 'glowmoth' : 'shardling';
   }
@@ -587,7 +623,7 @@ export class WorldScene extends Phaser.Scene {
     this.gainRes(kind === 'basic' ? 3.5 : 6);
   }
   damageEnemy(e, dmg, crit, color) {
-    e.hp -= dmg; e.flash = .08; e.aggro = true; if (e.state === 'idle' || e.state === 'return') e.state = 'chase';
+    e.hp -= dmg; e.flash = .08; if (!this.hero.dead) { e.aggro = true; if (e.state === 'idle' || e.state === 'return') e.state = 'chase'; }
     this.num(e.x + rnd(-8, 8), e.y - topY(e), crit ? dmg + '!' : '' + dmg, crit ? '#ffcf5a' : (color || '#ffffff'), crit ? 22 : 16, crit);
     this.burstE.setParticleTint(crit ? 0xffcf5a : 0x9ff6ff); this.burstE.explode(crit ? 10 : 5, e.x, e.y - hy(e));
     if (crit) this.cameras.main.shake(90, .0025);
@@ -637,7 +673,7 @@ export class WorldScene extends Phaser.Scene {
 
   kill(e) {
     e.dead = true; e.bar.destroy();
-    this.shardE.setParticleTint({ glowmoth: 0xd9a8ff, crawler: 0xff8ab8, skimmer: 0xfff0d8, hound: 0xff8a4a, sdrone: 0xff5a3a, marrowking: 0xffcf8a, thornmother: 0xff8ab8 }[e.type] || 0x9ff6ff);
+    this.shardE.setParticleTint({ glowmoth: 0xd9a8ff, crawler: 0xff8ab8, skimmer: 0xfff0d8, hound: 0xff8a4a, sdrone: 0xff5a3a, marrowking: 0xffcf8a, thornmother: 0xff8ab8, skitter: 0x7fc8ff, husker: 0x9fd8ff, leech: 0xbfe8ff, choir: 0x7fc8ff }[e.type] || 0x9ff6ff);
     this.shardE.explode(e.D.boss ? 40 : 10, e.x, e.y - 16);
     e.body.setTintFill(0xffffff);
     this.tweens.add({ targets: e, alpha: 0, scaleX: e.scaleX * 1.25, scaleY: e.scaleY * .6, duration: 260, onComplete: () => e.destroy() });
@@ -747,7 +783,7 @@ export class WorldScene extends Phaser.Scene {
       else { const a = Math.atan2(ty - p.y, tx - p.x); p.vx = Math.cos(a) * p.spd; p.vy = Math.sin(a) * p.spd; p.x += p.vx * dt; p.y += p.vy * dt; }
       p.s.setPosition(p.x, p.y); p.s.rotation = Math.atan2(p.vy || 0, p.vx || 1);
       if (Math.random() < .5) { const tr = this.add.image(p.x, p.y, 'dot').setScale(this.sx('dot') * .8).setTint(p.tint || 0xffffff).setBlendMode('ADD').setDepth(5e5 - 1).setAlpha(.6); this.tweens.add({ targets: tr, alpha: 0, scale: 0, duration: 260, onComplete: () => tr.destroy() }); }
-      if (p.toHero) { if (dist(p.x, p.y, tx, ty) < 14) { p.done = true; this.hurtHero(p.dmg); this.burstE.setParticleTint(0xff6ab0); this.burstE.explode(6, p.x, p.y); } }
+      if (p.toHero) { if (dist(p.x, p.y, tx, ty) < 14) { p.done = true; this.hurtHero(p.dmg); if (p.drain) this.res = Math.max(0, this.res - p.drain); this.burstE.setParticleTint(0xff6ab0); this.burstE.explode(6, p.x, p.y); } }
       else if (p.pierce) { for (const e of this.enemies) if (!e.dead && !p.hitSet.has(e) && dist(p.x, p.y, e.x, e.y - hy(e)) < 26 + (e.D.boss ? 40 : 0)) { p.hitSet.add(e); this.hit(e, p.mult, 'skill'); } }
       else { const e = p.tgt || this.enemies.find(e => !e.dead && dist(p.x, p.y, e.x, e.y - 16) < 22); if (e && dist(p.x, p.y, e.x, e.y - hy(e)) < 20 + (e.D.boss ? 40 : 0)) { p.done = true; this.hit(e, p.mult, 'basic'); if (p.heal) this.heal(this.hero.hpMax * p.heal, '', true); if (p.splash) for (const o of this.enemiesIn(e.x, e.y, p.splash)) if (o !== e) this.hit(o, p.mult * .5, 'basic'); this.burstE.setParticleTint(p.tint || 0xffffff); this.burstE.explode(6, p.x, p.y); } }
       if (p.life <= 0) p.done = true;
@@ -976,8 +1012,8 @@ export class WorldScene extends Phaser.Scene {
         if (D.boss) this.bossLogic(e, dt);
       } else if (e.state === 'return' || (h.dead && e.aggro)) {
         const d = dist(e.x, e.y, e.home.x, e.home.y);
-        if (d > 8) { mvx = (e.home.x - e.x) / d; mvy = (e.home.y - e.y) / d; } else { e.state = 'idle'; e.hp = e.hpMax; }
-        e.hp = Math.min(e.hpMax, e.hp + e.hpMax * dt * .2);
+        if (d > 8) { mvx = (e.home.x - e.x) / d; mvy = (e.home.y - e.y) / d; } else { e.state = 'idle'; if (!D.boss) e.hp = e.hpMax; }
+        if (!D.boss) e.hp = Math.min(e.hpMax, e.hp + e.hpMax * dt * .2);
       } else {
         e.wt -= dt;
         if (e.wt <= 0) { e.wt = rnd(2, 5); const a = rnd(0, Math.PI * 2); e.wander = { x: e.home.x + Math.cos(a) * rnd(10, 70), y: e.home.y + Math.sin(a) * rnd(10, 50) }; }
@@ -989,7 +1025,7 @@ export class WorldScene extends Phaser.Scene {
       e.setDepth(e.y);
       e.bar.clear();
       if (!D.boss && e.hp < e.hpMax) {
-        const w = 34, y = e.y - ({ glowmoth: 66, skimmer: 52, sdrone: 66, hound: 56 }[e.type] || 50);
+        const w = 34, y = e.y - ({ glowmoth: 66, skimmer: 52, sdrone: 66, hound: 56, husker: 82, leech: 64, skitter: 52 }[e.type] || 50);
         e.bar.fillStyle(0x061016, .85); e.bar.fillRoundedRect(e.x - w / 2 - 1, y - 1, w + 2, 6, 3);
         e.bar.fillStyle(0xff5a6e, 1); e.bar.fillRoundedRect(e.x - w / 2, y, Math.max(2, w * e.hp / e.hpMax), 4, 2);
       }
@@ -1005,6 +1041,10 @@ export class WorldScene extends Phaser.Scene {
     else if (e.type === 'crawler' || e.type === 'hound') { e.body.rotation = moving ? Math.sin(e.t * 20) * .05 : 0; e.body.y = moving ? -Math.abs(Math.sin(e.t * 20)) * 1.5 : 0; }
     else if (e.type === 'skimmer') { const f = Math.sin(e.t * 9); e.body.setScale(k * (1 + f * .04), k * (1 - Math.abs(f) * .22)); e.body.y = -16 + Math.sin(e.t * 2.4) * 4; e.body.rotation = (mvx || 0) * .12; }
     else if (e.type === 'sdrone') { e.body.y = -18 + Math.sin(e.t * 3.2) * 5; e.body.rotation = Math.sin(e.t * 1.7) * .08; }
+    else if (e.type === 'skitter') { e.body.rotation = moving ? Math.sin(e.t * 26) * .07 : 0; e.body.x = moving ? Math.sin(e.t * 13) * 2 : 0; e.body.y = moving ? -Math.abs(Math.sin(e.t * 26)) * 1.2 : 0; }
+    else if (e.type === 'husker') { e.body.rotation = moving ? Math.sin(e.t * 4) * .06 : Math.sin(e.t * 1.2) * .02; e.body.y = moving ? -Math.abs(Math.sin(e.t * 4)) * 2 : 0; }
+    else if (e.type === 'leech') { e.body.y = -18 + Math.sin(e.t * 2.6) * 6; e.body.rotation = Math.sin(e.t * 3) * .12; e.body.scaleX = k * (1 + Math.sin(e.t * 6) * .05) * (e.body.flipX ? 1 : 1); }
+    else if (e.type === 'choir') { e.body.rotation = Math.sin(e.t * .9) * .03; if (e.body.scaleY > 0) e.body.scaleX = k * (1 + Math.sin(e.t * 1.6) * .015); }
     else if (e.type === 'marrowking') { if (!e.burrowed) { e.body.rotation = Math.sin(e.t * 1.4) * .05; e.body.scaleX = k * (1 + Math.sin(e.t * 2) * .02); } }
     else { e.body.setScale(k * (1 + Math.sin(e.t * 2) * .015), k * (1 + Math.sin(e.t * 2 + 1) * .02)); }
   }
@@ -1012,9 +1052,9 @@ export class WorldScene extends Phaser.Scene {
   enemyAttack(e) {
     const D = e.D, h = this.hero; e.cd = D.atkCd * rnd(.9, 1.15);
     if (D.ranged) {
-      e.body.setTintFill(D.shot === 'red' ? 0xff6a4a : 0xff8ac8); this.time.delayedCall(90, () => e.body && e.body.clearTint());
-      const red = D.shot === 'red';
-      this.time.delayedCall(250, () => { if (!e.dead) this.proj({ x: e.x, y: e.y - (red ? 30 : 40), toHero: true, key: red ? 'redshot' : 'spore', spd: red ? 300 : 230, dmg: e.atk, tint: red ? 0xff4a3a : 0xff6ab0, life: 2 }); });
+      const red = D.shot === 'red', blue = D.shot === 'blue';
+      e.body.setTintFill(red ? 0xff6a4a : blue ? 0x9fe0ff : 0xff8ac8); this.time.delayedCall(90, () => e.body && e.body.clearTint());
+      this.time.delayedCall(250, () => { if (!e.dead) this.proj({ x: e.x, y: e.y - (red ? 30 : 40), toHero: true, key: red ? 'redshot' : blue ? 'blueshot' : 'spore', spd: red ? 300 : blue ? 260 : 230, dmg: e.atk, tint: red ? 0xff4a3a : blue ? 0x7fc8ff : 0xff6ab0, life: 2, drain: blue ? 8 : 0 }); });
       return;
     }
     const lunge = Math.atan2(h.y - e.y, h.x - e.x);
@@ -1024,6 +1064,7 @@ export class WorldScene extends Phaser.Scene {
 
   bossLogic(e, dt) {
     if (e.type === 'marrowking') return this.marrowLogic(e, dt);
+    if (e.type === 'choir') return this.choirLogic(e, dt);
     e.special -= dt;
     const h = this.hero, frac = e.hp / e.hpMax;
     if (!e.broodA && frac < .6) { e.broodA = true; this.brood(e); }
@@ -1050,12 +1091,50 @@ export class WorldScene extends Phaser.Scene {
     const D0 = ENEMIES[type];
     for (let i = 0; i < 3; i++) {
       const a = rnd(0, Math.PI * 2); const m = this.spawnEnemy({ type, x: e.x, y: e.y, r: 10, count: 0, boss: true }, { x: e.x + Math.cos(a) * 110, y: e.y + Math.sin(a) * 70 });
-      m.hpMax = m.hp = Math.round(D0.hp * mul * (type === 'shardling' ? 1 : 3)); m.atk = D0.atk * (type === 'shardling' ? 2.2 : 3); m.aggro = true; m.state = 'chase'; m.sp = null; m.body.setTint(type === 'shardling' ? 0xffa0d0 : 0xffd0a0);
+      m.hpMax = m.hp = Math.round(D0.hp * mul * (type === 'shardling' ? 1 : 3)); m.atk = D0.atk * (type === 'shardling' ? 2.2 : 3) * Math.min(1, mul); m.aggro = true; m.state = 'chase'; m.sp = null; m.body.setTint(type === 'shardling' ? 0xffa0d0 : 0xffd0a0);
     }
   }
 
   sandBurst(x, y, n = 12) {
     for (let i = 0; i < n; i++) { const p = this.img(x + rnd(-40, 40), y + rnd(-10, 10), 'sandpuff', .5, .5, rnd(1, 2)).setDepth(y + 20); this.tweens.add({ targets: p, x: p.x + rnd(-60, 60), y: p.y - rnd(10, 50), alpha: 0, scale: p.scale * 1.8, duration: rnd(500, 900), onComplete: () => p.destroy() }); }
+  }
+
+  choirLogic(e, dt) {
+    e.special -= dt;
+    const h = this.hero, frac = e.hp / e.hpMax;
+    e.volley = (e.volley ?? 1.5) - dt;
+    if (e.volley <= 0 && !h.dead && dist(h.x, h.y, e.x, e.y) > e.D.range + 30) {
+      e.volley = frac < .3 ? 1.7 : 2.3;
+      for (let k = 0; k < 2; k++) this.time.delayedCall(k * 160, () => { if (!e.dead) this.proj({ x: e.x + rnd(-60, 30), y: e.y - rnd(80, 200), toHero: true, key: 'blueshot', spd: 280, dmg: e.atk * .32, tint: 0x7fc8ff, life: 2.4, drain: 5 }); });
+    }
+    if (!e.broodA && frac < .66) { e.broodA = true; this.brood(e, 'husker', .6, 'The drowned rise'); }
+    if (!e.broodB && frac < .33) { e.broodB = true; this.brood(e, 'husker', .6, 'The drowned rise'); }
+    if (e.special > 0) return;
+    e.special = frac < .3 ? 4.6 : 6.2;
+    e.alt = ((e.alt || 0) + 1) % 3;
+    e.body.setTint(0x9fe0ff); this.time.delayedCall(200, () => e.body && e.body.clearTint());
+    if (e.alt === 1 || e.alt === 0 && frac < .5) {
+      this.num(e.x, e.y - 270, 'Flood Wave', '#7fc8ff', 16); sfx('boss');
+      const cols = [-240, -120, 0, 120, 240], gap = ri(0, 4), rows = frac < .3 ? 5 : 4;
+      for (let r = 0; r < rows; r++) for (let c = 0; c < cols.length; c++) {
+        if (c === gap || (frac < .3 && c === (gap + 2) % 5 && r % 2)) continue;
+        const t = this.addTele(e.x + cols[c], e.y + 90 + r * 78, 56, 1.1 + r * .35, 0x4ab8ff);
+        t.onHit = tt => { this.splash(tt.x, tt.y); if (!h.dead && dist(h.x, h.y, tt.x, tt.y) < tt.r + 8) this.hurtHero(e.atk * 1.15); };
+      }
+    } else if (e.alt === 2) {
+      this.num(e.x, e.y - 270, 'Stolen Song', '#bfe8ff', 16);
+      this.ring(e.x, e.y - 120, 0xbfe8ff, 3);
+      const t = this.addTele(e.x, e.y + 40, 190, 1.6, 0x9fb8ff);
+      t.onHit = tt => { this.ring(tt.x, tt.y, 0x7fc8ff, 5); this.cameras.main.shake(260, .007); sfx('spike'); if (!h.dead && dist(h.x, h.y, tt.x, tt.y) < tt.r + 6) { this.hurtHero(e.atk * 1.6); this.res = Math.max(0, this.res - 20); } };
+    } else {
+      this.num(e.x, e.y - 270, 'Undertow', '#7fc8ff', 16);
+      for (let k = 0; k < 3; k++) { const t = this.addTele(h.x + rnd(-90, 90), h.y + rnd(-60, 60), 62, 1.2 + k * .3, 0x4ab8ff); t.onHit = tt => { this.splash(tt.x, tt.y); if (!h.dead && dist(h.x, h.y, tt.x, tt.y) < tt.r + 8) this.hurtHero(e.atk * 1.3); }; }
+    }
+  }
+  splash(x, y) {
+    this.burstE.setParticleTint(0x7fc8ff); this.burstE.explode(14, x, y - 10);
+    const r = this.img(x, y, 'ring', .5, .5, .3).setTint(0x7fc8ff).setBlendMode('ADD').setDepth(5e5); r.scaleY *= .6;
+    this.tweens.add({ targets: r, scaleX: r.scaleX * 4, scaleY: r.scaleY * 4, alpha: 0, duration: 420, onComplete: () => r.destroy() });
   }
 
   marrowLogic(e, dt) {
@@ -1099,7 +1178,7 @@ export class WorldScene extends Phaser.Scene {
   updateMarkers() {
     const q = this.quest();
     for (const id in this.npcs) { const n = this.npcs[id]; const on = !!(q && q.kind === 'talk' && q.npc === id); n.mark.setVisible(on); n.mark.setText('!'); }
-    if (this.npcs.hush) { const show = !!(q && q.id === 'ii_canyon'); const n = this.npcs.hush; if (n.c.visible !== show) { n.c.setVisible(show); n.name.setVisible(show); } }
+    if (this.npcs.hush && this.st.region === 'dunes') { const show = !!(q && q.id === 'ii_canyon'); const n = this.npcs.hush; if (n.c.visible !== show) { n.c.setVisible(show); n.name.setVisible(show); } }
     if (this.geodeGlow) this.geodeGlow.setVisible(!!(q && q.id === 'geode'));
     const B = this.R.boss;
     if (B) {
@@ -1115,8 +1194,8 @@ export class WorldScene extends Phaser.Scene {
   talkTo(id) {
     const q = this.quest();
     if (q && q.kind === 'talk' && q.npc === id) { this.dialogue(q.talk, () => this.completeQuest()); return; }
-    const idle = { marr: 'Hunt smart, recruit. Come back in one piece.', sparks: 'Bring me Lumen! I have so many ideas. Some of them are safe!', okafor: 'Rest when you can. Your Echo feels it when you push too hard.', kestrel: 'Walk between the ribs, never under them. You\u2019ll be fine.', corvin: 'Always a pleasure. Mind the fences, they bite.', hush: '\u2026' };
-    if (idle[id]) this.dialogue([{ who: id, text: idle[id] }]);
+    const lines = IDLE[id];
+    if (lines) this.dialogue([{ who: id, text: lines[ri(0, lines.length - 1)] }]);
   }
   arrivePlace(place) {
     const q = this.quest(); if (!q || q.place !== place) return;

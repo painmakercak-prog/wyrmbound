@@ -4,6 +4,7 @@ const TRACKS = {
   theme: { src: 'music/theme.mp3', loop: [37.384, 116.796] },
   verge: { src: 'music/verge.mp3', loop: [23.452, 129.033] },
   dunes: { src: 'music/dunes.mp3', loop: [7.059, 67.361] },
+  lattice: { src: 'music/lattice.mp3', loop: [25.751, 117.029] },
   boss: { src: 'music/boss.mp3', loop: [17.183, 103.747] }
 };
 const bytes = {}, decoded = {}, lead = {};
