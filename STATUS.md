@@ -1,6 +1,6 @@
 # Wyrmbound: Starfall — Project Status
 
-Last updated: 2026-11-25 (build 5 shipped)
+Last updated: 2026-11-25 (build 5.1 shipped)
 
 Play it: https://painmakercak-prog.github.io/wyrmbound/starfall/
 Code: `starfall/` on `main`. Deploys go to the `gh-pages` branch under `/starfall/`.
@@ -19,6 +19,7 @@ Owner: Kasey. Code is written by Claude. Art comes from Grok, story from Muse, m
 | 3 | 2026-11-25 | Shade, Mender and Duelist Callings; switching Calling at the Lodge; Ossivar's Spire endless tower; Ascendant Echoes; gear stars (Refine) |
 | 4 | 2026-11-25 | Act III, Sunken Lattice: Ilse, Bix, Pell; Skitters, Huskers, Leeches; the Choir Below boss; 16 quests; reef music (Glassy Depths); Vey's tower logs; idle lines; Ascendant Echo art; fix for bosses fully healing after a knockout |
 | 5 | 2026-11-25 | Character creator (name, body type, 3 heads, 3 faces, 3 bodies, skin, hair, gear toggle); rename and restyle any time; Ascension ranks I–VI (levels 1/10/20/30/40/50) with permanent bonuses, unlockable portraits with equipped bonuses, and frames; skill tree with 3 branches per Calling, 1 point per level, keystones (Executioner, Second Wind, Overdrive), reset for Lumen |
+| 5.1 | 2026-11-25 | Grok portraits: female/male versions of every Calling face, and painted Ascension rank portraits (Hunter to Starborn, male and female) |
 
 ## In progress
 
@@ -26,7 +27,6 @@ Nothing yet. Next build is waiting on Kasey's playtest notes and a decision on w
 
 ## Waiting on Kasey
 
-- [ ] Grok: 16 portraits (opposite-sex Calling faces + Ascension rank portraits). Prompt in chat. Until then rank portraits are drawn from the player's own look.
 - [ ] Muse: Ascension rank lines, skill tree names, 60 random names, Act IV script. Prompt in chat.
 - [ ] Optional: have Grok or Muse playtest the live build in a browser (prompt in chat).
 
@@ -36,13 +36,13 @@ Nothing yet. Next build is waiting on Kasey's playtest notes and a decision on w
 
 ## Assets received
 
-- Art (Grok): Act I set, Act II Ribline set, Shade/Mender/tower set, Act III reef set and Ascendant Echoes. All in the game.
+- Art (Grok): Act I set, Act II Ribline set, Shade/Mender/tower set, Act III reef set, Ascendant Echoes, opposite-sex Calling faces and Ascension rank portraits. All in the game.
 - Music (Suno): First Light Beyond (title, tower), Glassy Horizons (Verge), Sun-bleached Frontier (Dunes), Glassy Depths (Sunken Lattice), Defending the Core (bosses). All in the game.
 - Writing (Muse): Act III script; tower codex, Ascend lines, idle lines, tower results. All in the game.
 
 ## Next up
 
-1. Drop in Grok's portraits and Muse's names/rank lines as soon as they arrive.
+1. Drop in Muse's names, rank lines and skill tree names as soon as they arrive.
 2. Act IV: "the heart is coming ashore." Needs Muse's script, then a Grok art batch and optionally a Suno track.
 3. More Echo species to hatch.
 4. A real-iPhone performance pass.

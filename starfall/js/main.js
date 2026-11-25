@@ -1,10 +1,10 @@
-import { CALLINGS, ART } from './data.js?v=5';
-import { fresh, load, save, offlineRewards } from './state.js?v=5';
-import { UI } from './ui.js?v=5';
-import { portraitCanvas, LOOKS, DEFAULT_LOOKS } from './art.js?v=5';
-import { creator } from './creator.js?v=5';
-import { WorldScene } from './world.js?v=5';
-import { audioInit, audioResume, audioSuspend, sfx, playTrack, prefetchTrack } from './audio.js?v=5';
+import { CALLINGS, ART } from './data.js?v=5.1';
+import { fresh, load, save, offlineRewards } from './state.js?v=5.1';
+import { UI } from './ui.js?v=5.1';
+import { portraitCanvas, LOOKS, DEFAULT_LOOKS } from './art.js?v=5.1';
+import { creator } from './creator.js?v=5.1';
+import { WorldScene } from './world.js?v=5.1';
+import { audioInit, audioResume, audioSuspend, sfx, playTrack, prefetchTrack } from './audio.js?v=5.1';
 
 const $ = s => document.querySelector(s);
 let game = null, ui = null, st = null;
@@ -40,7 +40,7 @@ function stars() {
 function titleScreen() {
   const t = $('#title');
   const saved = load();
-  t.innerHTML = `<div class="home"><div><div class="logo">WYRMBOUND</div><div class="sub">STARFALL</div></div><div><div class="tag2">Bond an Echo. Hunt the bones of fallen stars.</div><button class="btn go">${saved ? 'Continue' : 'Begin'}</button></div></div><div class="foot">Build 5 · Character creator, Ascension and talents</div>`;
+  t.innerHTML = `<div class="home"><div><div class="logo">WYRMBOUND</div><div class="sub">STARFALL</div></div><div><div class="tag2">Bond an Echo. Hunt the bones of fallen stars.</div><button class="btn go">${saved ? 'Continue' : 'Begin'}</button></div></div><div class="foot">Build 5.1 · Character creator, Ascension and talents</div>`;
   stars();
   $('#title .go').onclick = () => {
     audioInit((saved || { settings: { sound: true, music: true } }).settings); audioResume(); sfx('quest'); playTrack('theme'); prefetchTrack(saved && saved.region === 'dunes' ? 'dunes' : 'verge');
