@@ -2,12 +2,12 @@ export const WORLD = { w: 1800, h: 3000 };
 
 export const ART = {
   portrait: { marr: 'art/p_marr.webp', sparks: 'art/p_sparks.webp', okafor: 'art/p_okafor.webp', skein: 'art/p_skein.webp', kestrel: 'art/p_kestrel.webp', corvin: 'art/p_corvin.webp', hush: 'art/p_hush.webp' },
-  calling: { vanguard: 'art/c_vanguard.webp', railwarden: 'art/c_railwarden.webp', psion: 'art/c_psion.webp', duelist: 'art/c_duelist.webp' },
-  face: { vanguard: 'art/f_vanguard.webp', railwarden: 'art/f_railwarden.webp', psion: 'art/f_psion.webp', duelist: 'art/f_duelist.webp' },
+  calling: { vanguard: 'art/c_vanguard.webp', railwarden: 'art/c_railwarden.webp', psion: 'art/c_psion.webp', duelist: 'art/c_duelist.webp', shade: 'art/c_shade.webp', mender: 'art/c_mender.webp' },
+  face: { vanguard: 'art/f_vanguard.webp', railwarden: 'art/f_railwarden.webp', psion: 'art/f_psion.webp', duelist: 'art/f_duelist.webp', shade: 'art/f_shade.webp', mender: 'art/f_mender.webp' },
   echo: { skein: 'art/e_skein.webp', glimmerkit: 'art/e_glimmerkit.webp', budlet: 'art/e_budlet.webp', rivet: 'art/e_rivet.webp', lumi: 'art/e_lumi.webp' },
   boss: { thornmother: 'art/b_thornmother.webp', marrowking: 'art/b_marrowking.webp' },
   codex: { skein: 'art/e_skein.webp', thornmother: 'art/b_thornmother.webp', echoes: 'art/e_glimmerkit.webp', ribline: 'art/r_dunes.webp', driftborn: 'art/p_kestrel.webp', skimmer: 'art/m_skimmer.webp', hound: 'art/m_hound.webp', syndicate: 'art/p_corvin.webp', quiet: 'art/p_hush.webp', marrowking: 'art/b_marrowking.webp' },
-  region: { verge: 'art/title.webp', dunes: 'art/r_dunes.webp' },
+  region: { verge: 'art/title.webp', dunes: 'art/r_dunes.webp', tower: 'art/r_tower.webp' },
   title: 'art/title.webp'
 };
 
@@ -50,11 +50,44 @@ export const CALLINGS = {
   }
 };
 
-export const LOCKED_CALLINGS = [
-  { name: 'Shade', role: 'Burst · Crits', blurb: 'Twin phase-knives. Former Syndicate enforcers who walked away.' },
-  { name: 'Mender', role: 'Healer · Support', blurb: 'Med-drone and pulse staff. The Lodge’s field medics.' },
-  { name: 'Duelist', role: 'Fast · Single target', blurb: 'Twin pistols and Driftborn swagger.', art: 'duelist' }
-];
+CALLINGS.shade = {
+  name: 'Shade', role: 'Burst · Crits', mentor: 'Vex',
+  blurb: 'Former Syndicate enforcer who walked away. Twin phase-knives, and you are never where they aim.',
+  base: { hp: 120, atk: 15, def: 5, crit: 0.18 }, per: { hp: 19, atk: 3.0, def: 1.1 },
+  speed: 132, range: 44, atkCd: 0.62, attack: 'knife', color: 0xff5a9a,
+  skills: [
+    { id: 'blink', name: 'Phase Step', cd: 6, desc: 'Blink behind your target and strike for 240% damage. Always a critical hit.' },
+    { id: 'fan', name: 'Knife Fan', cd: 7, desc: 'Throw five phase-knives in a fan, 90% damage each. They pierce.' },
+    { id: 'veil', name: 'Shadow Veil', cd: 14, desc: 'For 5 seconds, take 60% less damage and gain 25% crit chance.' }
+  ],
+  ult: { id: 'eclipse', name: 'Eclipse', desc: 'Dash through up to six nearby enemies for 320% damage each.' }
+};
+CALLINGS.mender = {
+  name: 'Mender', role: 'Healer · Support', mentor: 'Doctor Amara Okafor',
+  blurb: 'Lodge field medic. A pulse staff, a med-drone, and the stubbornness to keep everyone breathing.',
+  base: { hp: 138, atk: 12, def: 7, crit: 0.06 }, per: { hp: 22, atk: 2.5, def: 1.6 },
+  speed: 118, range: 165, atkCd: 0.95, attack: 'pulse', color: 0x5ff2d0,
+  skills: [
+    { id: 'mend', name: 'Mending Pulse', cd: 8, desc: 'Heal 22% of your max HP and deal 130% damage to every enemy around you.' },
+    { id: 'medrone', name: 'Med-drone', cd: 16, desc: 'A drone that heals you 3% per second and zaps enemies for 55% damage. Lasts 8 seconds.' },
+    { id: 'stasis', name: 'Stasis Field', cd: 12, desc: 'A field that slows enemies and deals 45% damage every half second for 5 seconds.' }
+  ],
+  ult: { id: 'lifeline', name: 'Lifeline', desc: 'Fully heal, gain a shield worth 40% of max HP, and burst for 320% damage around you.' }
+};
+CALLINGS.duelist = {
+  name: 'Duelist', role: 'Fast · Single target', mentor: 'Kestrel',
+  blurb: 'Driftborn sharpshooter. Twin pistols, a wide hat, and a habit of finishing fights early.',
+  base: { hp: 112, atk: 13, def: 5, crit: 0.14 }, per: { hp: 17, atk: 2.7, def: 1.1 },
+  speed: 126, range: 185, atkCd: 0.55, attack: 'pistol', color: 0xffcf5a,
+  skills: [
+    { id: 'quickdraw', name: 'Quickdraw', cd: 5, desc: 'Fan the hammer: four shots at your target, 85% damage each.' },
+    { id: 'ricochet', name: 'Ricochet', cd: 8, desc: 'A round that bounces between up to five enemies, 150% damage each.' },
+    { id: 'roll', name: 'Dune Roll', cd: 10, desc: 'Roll clear of danger. Your next three shots are critical hits.' }
+  ],
+  ult: { id: 'deadeye', name: 'Deadeye', desc: 'Mark up to five enemies on screen and fire: 460% damage to each.' }
+};
+
+export const LOCKED_CALLINGS = [];
 
 export const ENEMIES = {
   shardling: { name: 'Shardling', lvl: [1, 3], hp: 40, atk: 6, spd: 62, xp: 12, lumen: [2, 4], range: 26, atkCd: 1.4, aggro: 110, radius: 16 },
@@ -92,8 +125,15 @@ export const REGIONS = {
     npcs: ['kestrel', 'corvin', 'hush'],
     silent: { x: 300, y: 900, r: 250 },
     boss: { type: 'marrowking', at: 'arena', quest: 'ii_boss' }, music: 'dunes'
+  },
+  tower: {
+    name: 'Ossivar’s Spire', hub: 'Endless floors', lvl: 'endless', w: 1200, h: 1500, bg: '#07070f', ground: 'towerfloor', path: 'path', motes: [0xffe6a0, 0x9ff6ff, 0xc58bff],
+    paths: [], spawns: [],
+    places: { start: { x: 600, y: 1180 }, arrive: { x: 600, y: 1180 }, spire: { x: 600, y: 1420 }, arena: { x: 600, y: 760 } },
+    npcs: [], tower: true, boss: null, music: 'theme'
   }
 };
+export const TOWER_POOL = ['shardling', 'glowmoth', 'crawler', 'skimmer', 'hound', 'sdrone'];
 
 export const SPAWNS = REGIONS.verge.spawns;
 export const PLACES = REGIONS.verge.places;
@@ -133,6 +173,9 @@ export const RARITY = [
 export const GEAR_NAMES = {
   vanguard: { weapon: ['Arc-blade', 'Lodge Cutter', 'Hull-breaker', 'Starfall Edge'], armor: ['Plate Vest', 'Bulkhead Mail', 'Ark Warden Plate', 'Vaelbone Aegis'], implant: ['Link Spur', 'Choir Splice', 'Resonant Core', 'Wyrm Sync'], charm: ['Brass Token', 'Lantern Pin', 'Captain’s Seal', 'Ossivar Shard'] },
   railwarden: { weapon: ['Rail Carbine', 'Dune Longrail', 'Ribline Repeater', 'Starfall Lance'], armor: ['Scout Duster', 'Sandglass Coat', 'Caravan Mantle', 'Vaelbone Shroud'], implant: ['Link Spur', 'Range Splice', 'Hawkeye Core', 'Wyrm Sync'], charm: ['Brass Token', 'Compass Pin', 'Brannoch’s Bullet', 'Ossivar Shard'] },
+  shade: { weapon: ['Phase Knives', 'Quietsteel Pair', 'Veilcutters', 'Starfall Fangs'], armor: ['Night Wrap', 'Dustveil Leathers', 'Syndicate Shadowcoat', 'Vaelbone Shroud'], implant: ['Link Spur', 'Reflex Splice', 'Phase Core', 'Wyrm Sync'], charm: ['Brass Token', 'Broken Badge', 'Vex’s Coin', 'Ossivar Shard'] },
+  mender: { weapon: ['Pulse Staff', 'Lifeline Rod', 'Choir Caduceus', 'Starfall Crook'], armor: ['Field Coat', 'Medic’s Mantle', 'Lodge Surgeon Plate', 'Vaelbone Vestment'], implant: ['Link Spur', 'Vitals Splice', 'Mending Core', 'Wyrm Sync'], charm: ['Brass Token', 'Suture Pin', 'Okafor’s Lens', 'Ossivar Shard'] },
+  duelist: { weapon: ['Twin Irons', 'Dune Repeaters', 'Ribline Pair', 'Starfall Sixes'], armor: ['Trail Duster', 'Sandrunner Coat', 'Caravan Longcoat', 'Vaelbone Mantle'], implant: ['Link Spur', 'Deadeye Splice', 'Gunsight Core', 'Wyrm Sync'], charm: ['Brass Token', 'Lucky Shell', 'Kestrel’s Feather', 'Ossivar Shard'] },
   psion: { weapon: ['Focus Orb', 'Choir Prism', 'Hymn Lantern', 'Starfall Halo'], armor: ['Pilgrim Robe', 'Glasswood Vestment', 'Lattice Raiment', 'Vaelbone Veil'], implant: ['Link Spur', 'Echo Splice', 'Chorus Core', 'Wyrm Sync'], charm: ['Brass Token', 'Moth-wing Pin', 'Lio’s Bell', 'Ossivar Shard'] }
 };
 
@@ -159,6 +202,7 @@ export const CODEX = {
   quiet: { title: 'The Quiet', src: 'Mother Hush', text: 'Out there the Choir sings to you. In here you can hear yourself think. Ask yourself who taught the Vael to sing.' },
   hollowrib: { title: 'The hollow rib', src: 'Kestrel', text: 'Driftborn kids learn where it is before they can walk, and they learn never to go inside. Turns out something was living in there the whole time.' },
   marrowking: { title: 'The Marrowking', src: 'Kestrel', text: 'It wasn\u2019t stealing the Lumen. It was burying it, deep in Kharos\u2019s spine, as far from that canyon as it could get.' },
+  ossivar: { title: 'Ossivar’s Spire', src: 'Lodge founder Aldren Vey, last log', text: 'The eldest stands upright, and every floor of his spine remembers a fight. I am going to the top. If the Lodge reads this, do not follow me until you are ready.' },
   bridge: { title: 'Meridian bridge deck', src: 'maintenance tag, Sparks', text: 'DO NOT OPEN. I mean it. It’s humming again.' }
 };
 

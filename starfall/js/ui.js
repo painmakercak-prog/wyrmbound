@@ -1,7 +1,7 @@
-import { CALLINGS, LOCKED_CALLINGS, ECHOES, HATCHABLE, SLOTS, RARITY, CODEX, QUESTS, NPCS, BOUNTIES, ACTS, ART, REGIONS, ENEMIES } from './data.js?v=2.1';
-import { portraitCanvas, LOOKS, iconCanvas, echoCanvas, lumenCanvas, shardIconCanvas, geodeCanvas } from './art.js?v=2.1';
-import { heroStats, power, xpNeed, gearLine, upgradeCost, echoStats, echoLevelCost, EVOLVE_COST, save, wipe } from './state.js?v=2.1';
-import { sfx, setMusic, audioResume } from './audio.js?v=2.1';
+import { CALLINGS, ECHOES, HATCHABLE, SLOTS, RARITY, CODEX, QUESTS, NPCS, BOUNTIES, ACTS, ART, REGIONS, ENEMIES } from './data.js?v=3';
+import { portraitCanvas, LOOKS, iconCanvas, echoCanvas, lumenCanvas, shardIconCanvas, geodeCanvas } from './art.js?v=3';
+import { heroStats, power, xpNeed, gearLine, upgradeCost, echoStats, echoLevelCost, EVOLVE_COST, ASCEND_COST, STAR_MAX, refineCost, refineNeed, save, wipe } from './state.js?v=3';
+import { sfx, setMusic, audioResume } from './audio.js?v=3';
 
 const $ = (s, r = document) => r.querySelector(s);
 const el = (tag, cls, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; };
@@ -71,6 +71,8 @@ export class UI {
     else c = portraitCanvas(LOOKS[who], 192);
     return (this.img['p_' + who] = url(c));
   }
+  callingImg(k) { return ART.calling[k] || this.img['c_' + k] || (this.img['c_' + k] = url(portraitCanvas(LOOKS[k], 192))); }
+  stars(g) { return g && g.star ? ` <span class="stars">${'\u2605'.repeat(g.star)}</span>` : ''; }
   echoImg(id) { return ART.echo[id] || this.img['e_' + id] || (this.img['e_' + id] = url(echoCanvas(id, 4))); }
   icon(kind, col) { const k = 'i_' + kind + col; return this.img[k] || (this.img[k] = url(iconCanvas(kind, col, 120))); }
 
@@ -99,7 +101,8 @@ export class UI {
     $('#res .pw b').textContent = fmt(power(st));
     const canForge = Object.values(st.gear).some(g => g && st.lumen >= upgradeCost(g));
     const e = st.activeEcho && st.echoes[st.activeEcho];
-    const canEcho = st.geodes > 0 || (e && ((e.lvl < (e.evo ? 20 : 10) && st.shards >= echoLevelCost(e.lvl)) || (e.lvl >= 10 && !e.evo && st.shards >= EVOLVE_COST)));
+    const es = e && echoStats(st, st.activeEcho);
+    const canEcho = st.geodes > 0 || (e && ((e.lvl < es.cap && st.shards >= echoLevelCost(e.lvl)) || (es.evo === 0 && e.lvl >= es.cap && st.shards >= EVOLVE_COST) || (es.evo === 1 && e.lvl >= es.cap && st.shards >= ASCEND_COST)));
     if (this.cur !== 'forge') $('#nav button[data-p="forge"]').classList.toggle('new', canForge);
     if (this.cur !== 'echoes') $('#nav button[data-p="echoes"]').classList.toggle('new', !!canEcho);
   }
@@ -118,7 +121,13 @@ export class UI {
   quest() {
     if (!this.w) return;
     const st = this.st, q = QUESTS[st.q], b = $('#qt');
-    if (q) {
+    if (this.w.R.tower) {
+      const left = this.w.enemies.filter(e => !e.dead).length;
+      $('.k', b).firstChild.textContent = 'Ossivar\u2019s Spire ';
+      $('.t', b).textContent = 'Floor ' + (this.w.floor || 1);
+      $('.g', b).innerHTML = this.w.towerState === 'fight' ? `Enemies left <b>${left}</b> · Best ${st.tower.best}` : `Best floor <b>${st.tower.best}</b>`;
+      this.hintNav(null);
+    } else if (q) {
       $('.k', b).firstChild.textContent = 'Main · Act ' + ['I', 'II', 'III', 'IV', 'V'][(q.act || 1) - 1] + ' ';
       $('.t', b).textContent = q.title;
       $('.g', b).innerHTML = esc(q.goal) + (q.count ? ` <b>${Math.min(st.qp, q.count)}/${q.count}</b>` : '');
@@ -218,13 +227,13 @@ export class UI {
 
   p_hero(bd) {
     const st = this.st, C = CALLINGS[st.cls], s = heroStats(st);
-    bd.innerHTML = `<div class="hero-top"><img src="${ART.calling[st.cls] || this.portrait('you')}" alt=""><div><div class="n">${C.name}</div><div class="r">${C.role} · Mentor: ${C.mentor}</div><div class="p">Level ${st.lvl} · Power ${fmt(power(st))}</div></div></div>
+    bd.innerHTML = `<div class="hero-top"><img src="${this.callingImg(st.cls)}" alt=""><div><div class="n">${C.name}</div><div class="r">${C.role} · Mentor: ${C.mentor}</div><div class="p">Level ${st.lvl} · Power ${fmt(power(st))}</div></div></div>
       <div class="stats"><div class="stat"><div class="k">Attack</div><div class="v">${Math.round(s.atk)}</div></div><div class="stat"><div class="k">Max HP</div><div class="v">${s.hpMax}</div></div><div class="stat"><div class="k">Defense</div><div class="v">${Math.round(s.def)}</div></div><div class="stat"><div class="k">Crit chance</div><div class="v">${(s.crit * 100).toFixed(1)}%</div></div></div>
       <div class="sec">Gear</div>`;
     for (const sl of SLOTS) {
       const g = st.gear[sl.id];
       const col = g ? parseInt(RARITY[g.rar].color.slice(1), 16) : 0x3a5262;
-      const r = el('div', 'slot', `<img src="${this.icon(sl.id, col)}" alt=""><div class="grow">${g ? `<div class="n r${g.rar}">${esc(g.name)}${g.up ? ' +' + g.up : ''}</div><div class="s">${RARITY[g.rar].name} · item level ${g.ilvl} · ${esc(gearLine(sl.id, g))}</div>` : `<div class="n muted">${sl.name}</div><div class="s">Empty. Drops from hunts.</div>`}</div>`);
+      const r = el('div', 'slot', `<img src="${this.icon(sl.id, col)}" alt=""><div class="grow">${g ? `<div class="n r${g.rar}">${esc(g.name)}${g.up ? ' +' + g.up : ''}${this.stars(g)}</div><div class="s">${RARITY[g.rar].name} · item level ${g.ilvl} · ${esc(gearLine(sl.id, g))}</div>` : `<div class="n muted">${sl.name}</div><div class="s">Empty. Drops from hunts.</div>`}</div>`);
       bd.appendChild(r);
     }
     bd.appendChild(el('div', 'small muted', 'Better gear equips itself when it drops. Weaker drops are salvaged into Lumen.'));
@@ -236,12 +245,13 @@ export class UI {
     else {
       const id = st.activeEcho, D = ECHOES[id], S = echoStats(st, id), e = st.echoes[id];
       const cap = S.cap, cost = echoLevelCost(e.lvl);
-      const card = el('div', 'card', `<div class="echo-big"><div class="art"><img src="${this.echoImg(id)}" alt=""></div><div class="grow"><div class="n">${D.name}</div><div style="margin:4px 0 6px"><span class="tag g">${e.evo ? 'Recall' : 'Glint'}</span><span class="tag">${D.family}</span><span class="tag">Lv ${e.lvl}/${cap}</span></div><div class="small muted">${esc(D.blurb)}</div></div></div>
+      const card = el('div', 'card', `<div class="echo-big"><div class="art"><img src="${this.echoImg(id)}" alt=""></div><div class="grow"><div class="n">${D.name}</div><div style="margin:4px 0 6px"><span class="tag g">${['Glint', 'Recall', 'Ascendant'][S.evo]}</span><span class="tag">${D.family}</span><span class="tag">Lv ${e.lvl}/${cap}</span></div><div class="small muted">${esc(D.blurb)}</div></div></div>
         <div class="stats"><div class="stat"><div class="k">Echo attack</div><div class="v">${Math.round(S.atk)}</div></div><div class="stat"><div class="k">${esc(D.skill.name)}</div><div class="small">${esc(D.skill.desc)}</div></div></div>
         <div class="row" style="margin-top:12px"></div>`);
       const row = $('.row', card);
       if (e.lvl < cap) { const b = el('button', 'btn grow', `Level up · <span class="c"><img src="${this.shardIcon}" alt="">${cost}</span>`); b.disabled = st.shards < cost; b.onclick = () => { st.shards -= cost; e.lvl++; sfx('level'); this.stats(); this.render(); }; row.appendChild(b); }
-      else if (!e.evo) { const b = el('button', 'btn gold grow', `Evolve to Recall · <span class="c"><img src="${this.shardIcon}" alt="">${EVOLVE_COST}</span>`); b.disabled = st.shards < EVOLVE_COST; b.onclick = () => { st.shards -= EVOLVE_COST; e.evo = true; sfx('hatch'); this.w.setEcho(id); this.evolveModal(id); this.render(); }; row.appendChild(b); }
+      else if (S.evo === 0) { const b = el('button', 'btn gold grow', `Evolve to Recall · <span class="c"><img src="${this.shardIcon}" alt="">${EVOLVE_COST}</span>`); b.disabled = st.shards < EVOLVE_COST; b.onclick = () => { st.shards -= EVOLVE_COST; e.evo = 1; sfx('hatch'); this.w.setEcho(id); this.evolveModal(id); this.render(); this.stats(); }; row.appendChild(b); }
+      else if (S.evo === 1) { const b = el('button', 'btn gold grow', `Ascend · <span class="c"><img src="${this.shardIcon}" alt="">${ASCEND_COST}</span>`); b.disabled = st.shards < ASCEND_COST; b.onclick = () => { st.shards -= ASCEND_COST; e.evo = 2; sfx('hatch'); this.w.setEcho(id); this.evolveModal(id, true); this.render(); this.stats(); }; row.appendChild(b); }
       else row.appendChild(el('div', 'muted small', 'Fully remembered, for now.'));
       bd.appendChild(card);
       bd.appendChild(el('div', 'small muted', `Memory shards: <b>${st.shards}</b>. They drop from hunts and quests.`)).style.marginTop = '8px';
@@ -270,7 +280,7 @@ export class UI {
     m.classList.add('on'); sfx('gear');
     setTimeout(() => {
       sfx('hatch');
-      if (dup) { st.shards += 12; } else { st.echoes[id] = { lvl: 1, evo: false }; }
+      if (dup) { st.shards += 12; } else { st.echoes[id] = { lvl: 1, evo: 0 }; }
       const D = ECHOES[id];
       m.innerHTML = `<div class="box"><div class="k">${dup ? 'Familiar memory' : 'New Echo bonded'}</div><div class="hatch-art"><img class="pop" src="${this.echoImg(id)}" alt=""></div><h3>${D.name}</h3><div><span class="tag">${D.family}</span></div><p>${dup ? 'You already know this one. Its memories become 12 memory shards.' : esc(D.blurb)}</p><div class="row" style="justify-content:center;gap:10px"></div></div>`;
       const row = $('.row', m);
@@ -279,8 +289,9 @@ export class UI {
       this.w.onUiEvent('hatch'); this.w.unlockCodex('echoes'); save(st); this.stats();
     }, 1400);
   }
-  evolveModal(id) {
+  evolveModal(id, asc) {
     const m = $('#modal'), D = ECHOES[id];
+    if (asc) { m.innerHTML = `<div class="box"><div class="k">Ascendant</div><div class="hatch-art asc"><img class="pop" src="${this.echoImg(id)}" alt=""></div><h3>${D.name} ascends</h3><p>${id === 'skein' ? '<i>i remember the size of me. not yet. but soon.</i>' : 'It remembers what it was before it fell. Its attack more than doubles and it can grow to level 30.'}</p><button class="btn gold">Continue</button></div>`; m.classList.add('on'); $('button', m).onclick = () => m.classList.remove('on'); return; }
     m.innerHTML = `<div class="box"><div class="k">Memory recalled</div><div class="hatch-art"><img class="pop" src="${this.echoImg(id)}" alt=""></div><h3>${D.name} remembers</h3><p>${id === 'skein' ? '<i>a sky full of us. a light that would not go out. a voice, calling, calling.</i>' : 'A whole memory surfaces: a world it once lived on. It fights harder now, and glows brighter.'}</p><button class="btn gold">Continue</button></div>`;
     m.classList.add('on'); $('button', m).onclick = () => m.classList.remove('on');
   }
@@ -302,6 +313,18 @@ export class UI {
         b.onclick = () => { st.lumen -= cost; g.up = (g.up || 0) + 1; this.w.refreshStats(false); sfx('gear'); this.w.onUiEvent('forge'); this.render(); this.stats(); };
         r.appendChild(b);
       } else { info.innerHTML = `<div class="n muted">${sl.name}</div><div class="s">Nothing to upgrade yet.</div>`; r.appendChild(info); }
+      bd.appendChild(r);
+    }
+    bd.appendChild(el('div', 'sec', 'Refine'));
+    bd.appendChild(el('div', 'small muted', 'Each star adds 15% to a piece, on top of upgrades. Stars carry over when better gear replaces it.'));
+    for (const sl of SLOTS) {
+      const g = st.gear[sl.id]; if (!g) continue;
+      const star = g.star || 0, col = parseInt(RARITY[g.rar].color.slice(1), 16);
+      const r = el('div', 'slot', `<img src="${this.icon(sl.id, col)}" alt="">`);
+      const info = el('div', 'grow'), need = refineNeed(g), cost = refineCost(g), maxed = star >= STAR_MAX, ready = (g.up || 0) >= need;
+      info.innerHTML = `<div class="n r${g.rar}">${esc(g.name)}${this.stars(g) || ' <span class="muted small">no stars</span>'}</div><div class="s">${maxed ? 'Fully refined' : ready ? `Star ${star + 1}: ${esc(gearLine(sl.id, Object.assign({}, g, { star: star + 1 })))}` : `Needs +${need} upgrades first`}</div>`;
+      r.appendChild(info);
+      if (!maxed) { const b = el('button', 'btn', `<span class="c"><img src="${this.shardIcon}" alt="">${cost}</span>`); b.disabled = !ready || st.shards < cost; b.onclick = () => { st.shards -= cost; g.star = star + 1; this.w.refreshStats(false); sfx('hatch'); this.render(); this.stats(); }; r.appendChild(b); }
       bd.appendChild(r);
     }
   }
@@ -327,8 +350,15 @@ export class UI {
       bd.appendChild(el('div', 'card', `<b class="d">Hunt ${b.count} ${name}</b><div class="small muted">Reward: ${b.lumen} Lumen and ${b.shards} memory shards</div><div class="prog"><i style="width:${100 * st.bounty.prog / b.count}%"></i></div>`));
     }
     bd.appendChild(el('div', 'sec', 'Callings'));
-    bd.appendChild(el('div', 'card', `<b class="d">${C.name}</b> <span class="tag g">Yours</span><div class="small muted" style="margin-top:4px">${esc(C.blurb)}</div>`));
-    for (const L of LOCKED_CALLINGS) bd.appendChild(el('div', 'card row', `${L.art ? `<img src="${ART.calling[L.art]}" style="width:64px;height:64px;border-radius:12px;flex:none" alt="">` : ''}<div class="grow"><b class="d">${L.name}</b> <span class="tag">Act II</span><div class="small muted" style="margin-top:4px">${esc(L.blurb)}</div></div>`)).style.marginTop = '8px';
+    const canSwitch = st.q > QUESTS.findIndex(q => q.id === 'boss');
+    bd.appendChild(el('div', 'small muted', canSwitch ? 'Switch Calling any time. Level, gear, Echoes and story stay with you. Gear is reforged to suit the new Calling.' : 'Captain Marr lets you change Callings after the Thornmother falls.'));
+    for (const [k, K] of Object.entries(CALLINGS)) {
+      const mine = k === st.cls;
+      const c = el('div', 'card row', `<img src="${this.callingImg(k)}" style="width:64px;height:64px;border-radius:12px;flex:none;object-fit:cover" alt=""><div class="grow"><b class="d">${K.name}</b> ${mine ? '<span class="tag g">Yours</span>' : `<span class="tag">${esc(K.role)}</span>`}<div class="small muted" style="margin-top:4px">${esc(K.blurb)}</div></div>`);
+      c.style.marginTop = '8px';
+      if (!mine && canSwitch) { const b = el('button', 'btn', 'Switch'); b.onclick = () => { if (b.dataset.c) { this.close(); this.w.switchCalling(k); } else { b.dataset.c = 1; b.textContent = 'Confirm'; b.classList.add('gold'); } }; c.appendChild(b); }
+      bd.appendChild(c);
+    }
     bd.appendChild(el('div', 'sec', 'Settings'));
     const sw = (label, get, set) => { const r = el('div', 'set', `<span>${label}</span>`); const b = el('button', 'sw' + (get() ? ' on' : '')); b.setAttribute('aria-label', label); b.onclick = () => { set(!get()); b.classList.toggle('on', get()); sfx('ui'); }; r.appendChild(b); bd.appendChild(r); };
     sw('Sound effects', () => st.settings.sound, v => st.settings.sound = v);
@@ -337,7 +367,7 @@ export class UI {
     const rs = el('button', 'btn ghost', 'Start over'); rs.style.marginTop = '16px'; rs.style.width = '100%';
     rs.onclick = () => { if (rs.dataset.c) { wipe(); location.reload(); } else { rs.dataset.c = 1; rs.textContent = 'Tap again to erase your save'; rs.style.color = 'var(--red)'; } };
     bd.appendChild(rs);
-    bd.appendChild(el('div', 'small muted', 'Wyrmbound: Starfall · build 2.1. Engine: Phaser (MIT). Font: Chakra Petch (OFL). Art: Grok and drawn in code. Music: made with Suno.')).style.marginTop = '14px';
+    bd.appendChild(el('div', 'small muted', 'Wyrmbound: Starfall · build 3. Engine: Phaser (MIT). Font: Chakra Petch (OFL). Art: Grok and drawn in code. Music: made with Suno.')).style.marginTop = '14px';
   }
 
   actEnd(n = 1) {
@@ -347,17 +377,23 @@ export class UI {
     sfx('level');
   }
   travelMenu() {
-    const st = this.st, m = $('#modal'), unlock = QUESTS.findIndex(q => q.id === 'ii_travel');
+    const st = this.st, m = $('#modal'), unlock = QUESTS.findIndex(q => q.id === 'ii_travel'), towerAt = QUESTS.findIndex(q => q.id === 'boss');
     const box = el('div', 'box', `<div class="k">Spire sync</div><h3>Travel</h3><p class="small muted">Every Spire on Aurelis is grown from the same spine. Step in and step out somewhere else.</p>`);
     for (const [id, R] of Object.entries(REGIONS)) {
-      const locked = id === 'dunes' && st.q < unlock, here = id === st.region;
-      const c = el('div', 'tcard' + (locked ? ' lock' : ''), `<img src="${ART.region[id]}" alt=""><div class="grow"><b class="d">${esc(R.name)}</b><div class="small muted">${esc(R.hub)} · levels ${esc(R.lvl)}</div></div>`);
+      const locked = (id === 'dunes' && st.q < unlock) || (R.tower && st.q <= towerAt), here = id === st.region;
+      const sub = R.tower ? (locked ? 'Opens after the Thornmother' : (st.tower.best ? `Endless floors · best floor ${st.tower.best}` : 'Endless floors · not climbed yet')) : `${esc(R.hub)} · levels ${esc(R.lvl)}`;
+      const c = el('div', 'tcard' + (locked ? ' lock' : ''), `<img src="${ART.region[id] || this.icon('tower', 0xffcf5a)}" alt=""><div class="grow"><b class="d">${esc(R.name)}</b><div class="small muted">${sub}</div></div>`);
       const b = el('button', 'btn' + (here ? ' ghost' : ''), here ? 'Here' : locked ? 'Locked' : 'Sync');
       b.disabled = here || locked; b.onclick = () => { m.classList.remove('on'); this.w.travel(id); };
       c.appendChild(b); box.appendChild(c);
     }
     const x = el('button', 'btn ghost', 'Close'); x.style.marginTop = '12px'; x.onclick = () => { m.classList.remove('on'); if (this.w) this.w.paused = false; }; box.appendChild(x);
     m.innerHTML = ''; m.appendChild(box); m.classList.add('on'); if (this.w) this.w.paused = true; sfx('ui');
+  }
+  towerResult(reached, best, done) {
+    const m = $('#modal');
+    m.innerHTML = `<div class="box"><div class="k">Ossivar\u2019s Spire</div><h3>Link lost on floor ${reached + 1}</h3><p class="muted">${reached ? `You cleared ${reached} floor${reached === 1 ? '' : 's'}.` : 'The Spire held this time.'} Best floor: <b class="d">${best}</b>. The next climb starts from floor ${best + 1}.</p><button class="btn gold">Return</button></div>`;
+    m.classList.add('on'); sfx('ui'); $('button', m).onclick = () => { m.classList.remove('on'); done(); };
   }
   offline(r, claim) {
     const m = $('#modal'); const h = Math.floor(r.secs / 3600), mi = Math.round((r.secs % 3600) / 60);

@@ -1,8 +1,9 @@
-import { CALLINGS, LOCKED_CALLINGS, ART } from './data.js?v=2.1';
-import { fresh, load, save, offlineRewards } from './state.js?v=2.1';
-import { UI } from './ui.js?v=2.1';
-import { WorldScene } from './world.js?v=2.1';
-import { audioInit, audioResume, audioSuspend, sfx, playTrack, prefetchTrack } from './audio.js?v=2.1';
+import { CALLINGS, ART } from './data.js?v=3';
+import { fresh, load, save, offlineRewards } from './state.js?v=3';
+import { UI } from './ui.js?v=3';
+import { portraitCanvas, LOOKS } from './art.js?v=3';
+import { WorldScene } from './world.js?v=3';
+import { audioInit, audioResume, audioSuspend, sfx, playTrack, prefetchTrack } from './audio.js?v=3';
 
 const $ = s => document.querySelector(s);
 let game = null, ui = null, st = null;
@@ -38,7 +39,7 @@ function stars() {
 function titleScreen() {
   const t = $('#title');
   const saved = load();
-  t.innerHTML = `<div class="home"><div><div class="logo">WYRMBOUND</div><div class="sub">STARFALL</div></div><div><div class="tag2">Bond an Echo. Hunt the bones of fallen stars.</div><button class="btn go">${saved ? 'Continue' : 'Begin'}</button></div></div><div class="foot">Build 2.1 · Act II: The Singing Dark · now with music</div>`;
+  t.innerHTML = `<div class="home"><div><div class="logo">WYRMBOUND</div><div class="sub">STARFALL</div></div><div><div class="tag2">Bond an Echo. Hunt the bones of fallen stars.</div><button class="btn go">${saved ? 'Continue' : 'Begin'}</button></div></div><div class="foot">Build 3 · New Callings and Ossivar\u2019s Spire</div>`;
   stars();
   $('#title .go').onclick = () => {
     audioInit((saved || { settings: { sound: true, music: true } }).settings); audioResume(); sfx('quest'); playTrack('theme'); prefetchTrack(saved && saved.region === 'dunes' ? 'dunes' : 'verge');
@@ -55,15 +56,15 @@ function intro() {
 
 function pick() {
   const t = $('#title .in'); let sel = 'vanguard';
-  t.innerHTML = `<div class="h1">Choose your Calling</div><div class="cls"></div><button class="btn gold go" style="margin-top:16px">Begin as Vanguard</button>`;
-  const box = $('.cls', t);
+  t.innerHTML = `<div class="h1">Choose your Calling</div><div class="cls grid"></div><div class="clsd"></div><button class="btn gold go" style="margin-top:12px">Begin as Vanguard</button>`;
+  const box = $('.cls', t), det = $('.clsd', t);
+  det.textContent = CALLINGS[sel].blurb;
   for (const [k, C] of Object.entries(CALLINGS)) {
     const c = document.createElement('button'); c.className = 'clsc' + (k === sel ? ' sel' : ''); c.dataset.k = k;
-    c.innerHTML = `<img src="${ART.calling[k]}" alt=""><div class="grow"><div class="n">${C.name}</div><div class="r">${C.role}</div><div class="b">${C.blurb}</div></div>`;
-    c.onclick = () => { sel = k; for (const e of box.children) e.classList.toggle('sel', e.dataset.k === k); $('#title .go').textContent = 'Begin as ' + C.name; sfx('ui'); };
+    c.innerHTML = `<img src="${ART.calling[k] || portraitCanvas(LOOKS[k], 192).toDataURL('image/png')}" alt=""><div><div class="n">${C.name}</div><div class="r">${C.role}</div></div>`;
+    c.onclick = () => { sel = k; for (const e of box.children) e.classList.toggle('sel', e.dataset.k === k); det.textContent = C.blurb; $('#title .go').textContent = 'Begin as ' + C.name; sfx('ui'); };
     box.appendChild(c);
   }
-  for (const L of LOCKED_CALLINGS) { const c = document.createElement('div'); c.className = 'clsc lock'; c.innerHTML = `${L.art ? `<img src="${ART.calling[L.art]}" alt="">` : ''}<div class="grow"><div class="n">${L.name}</div><div class="r">${L.role} · unlocks in Act II</div><div class="b">${L.blurb}</div></div>`; box.appendChild(c); }
   $('#title .go').onclick = () => { st = fresh(sel); save(st); start(false); };
 }
 

@@ -1,4 +1,4 @@
-import { CALLINGS, ECHOES, SLOTS, RARITY, GEAR_NAMES, QUESTS } from './data.js?v=2.1';
+import { CALLINGS, ECHOES, SLOTS, RARITY, GEAR_NAMES, QUESTS } from './data.js?v=3';
 
 const KEY = 'starfall.save.v1';
 
@@ -8,12 +8,12 @@ export function fresh(cls) {
     gear: Object.fromEntries(SLOTS.map(s => [s.id, null])),
     echoes: {}, activeEcho: null, codex: {}, kills: {}, bounty: null,
     settings: { sound: true, music: true, autoSkill: true },
-    actDone: false, bossKills: 0, lastSeen: Date.now(), created: Date.now()
+    actDone: false, bossKills: 0, tower: { best: 0, from: 'verge' }, lastSeen: Date.now(), created: Date.now()
   };
 }
 
 export function load() {
-  try { const s = JSON.parse(localStorage.getItem(KEY) || 'null'); if (s && s.v === 1 && CALLINGS[s.cls]) { if (!s.region) s.region = 'verge'; return s; } } catch (e) {}
+  try { const s = JSON.parse(localStorage.getItem(KEY) || 'null'); if (s && s.v === 1 && CALLINGS[s.cls]) { if (!s.region) s.region = 'verge'; if (!s.tower) s.tower = { best: 0, from: 'verge' }; for (const k in s.echoes) s.echoes[k].evo = +s.echoes[k].evo || 0; return s; } } catch (e) {}
   return null;
 }
 export function save(st) { try { st.lastSeen = Date.now(); localStorage.setItem(KEY, JSON.stringify(st)); } catch (e) {} }
@@ -23,7 +23,7 @@ export const xpNeed = l => Math.round(24 * Math.pow(l, 1.55) + 26);
 
 export function gearValue(slot, g) {
   if (!g) return 0;
-  const m = RARITY[g.rar].mult * (1 + 0.1 * (g.up || 0));
+  const m = RARITY[g.rar].mult * (1 + 0.1 * (g.up || 0)) * (1 + 0.15 * (g.star || 0));
   if (slot === 'weapon') return (5 + 2.6 * g.ilvl) * m;
   if (slot === 'armor') return (26 + 13 * g.ilvl) * m;
   if (slot === 'implant') return (0.015 + 0.004 * g.ilvl) * m;
@@ -53,12 +53,17 @@ export function power(st) { const s = heroStats(st); return Math.round(s.atk * 4
 export function echoStats(st, id) {
   const e = st.echoes[id]; if (!e) return null;
   const D = ECHOES[id];
-  const atk = (D.atk + D.per * (e.lvl - 1)) * (e.evo ? 1.5 : 1);
-  return { atk, lvl: e.lvl, evo: e.evo, cap: e.evo ? 20 : 10 };
+  const ev = +e.evo || 0;
+  const atk = (D.atk + D.per * (e.lvl - 1)) * [1, 1.5, 2.2][ev];
+  return { atk, lvl: e.lvl, evo: ev, cap: [10, 20, 30][ev] };
 }
 function echoPower(st) { let p = 0; for (const id in st.echoes) { const s = echoStats(st, id); p += s.atk * 3; } return p; }
 export const echoLevelCost = lvl => 3 + lvl * 2;
 export const EVOLVE_COST = 15;
+export const ASCEND_COST = 40;
+export const STAR_MAX = 5;
+export const refineCost = g => 8 + 6 * (g.star || 0);
+export const refineNeed = g => 3 * ((g.star || 0) + 1);
 
 export const upgradeCost = g => g ? Math.round(18 * Math.pow(1.32, g.up || 0) * (1 + g.ilvl * 0.15)) : 0;
 
