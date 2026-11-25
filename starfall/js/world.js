@@ -1,7 +1,7 @@
-import { CALLINGS, ENEMIES, REGIONS, NPCS, ECHOES, QUESTS, SLOTS, RARITY, CODEX, BOUNTIES, TOWER_POOL, TOWER_GUARDS, GEAR_NAMES, IDLE } from './data.js?v=4';
-import { buildArt, ANCHORS } from './art.js?v=4';
-import { heroStats, echoStats, xpNeed, makeGear, rollRarity, gearValue, save } from './state.js?v=4';
-import { sfx, duck, playTrack } from './audio.js?v=4';
+import { CALLINGS, ENEMIES, REGIONS, NPCS, ECHOES, QUESTS, SLOTS, RARITY, CODEX, BOUNTIES, TOWER_POOL, TOWER_GUARDS, GEAR_NAMES, IDLE } from './data.js?v=5';
+import { buildArt, ANCHORS, heroCanvas } from './art.js?v=5';
+import { heroStats, echoStats, xpNeed, makeGear, rollRarity, gearValue, save, rankIndex } from './state.js?v=5';
+import { sfx, duck, playTrack } from './audio.js?v=5';
 
 const dist = (a, b, c, d) => Math.hypot(c - a, d - b);
 const rnd = (a, b) => a + Math.random() * (b - a);
@@ -42,7 +42,7 @@ export class WorldScene extends Phaser.Scene {
     this.fx = this.add.layer(); this.fx.setDepth(5e5);
     this.enemies = []; this.projs = []; this.zones = []; this.teles = []; this.drones = []; this.pickups = [];
     this.manualUntil = 0; this.joy = null; this.tapTarget = null; this.tapPoint = null;
-    this.res = 0; this.shield = 0; this.shieldT = 0; this.veilT = 0; this.iframeT = 0; this.critShots = 0;
+    this.res = 0; this.shield = 0; this.shieldT = 0; this.veilT = 0; this.iframeT = 0; this.critShots = 0; this.overT = 0; this.swReady = 0; this.regenUi = 0;
     this.cds = [0, 0, 0]; this.echoCd = 0; this.atkCd = 0;
     this.buildWorld();
     this.makeHero();
@@ -281,13 +281,26 @@ export class WorldScene extends Phaser.Scene {
     const h = this.add.container(at.x, at.y);
     const shadow = this.img(0, 0, 'shadow', .5, .5, 1.1);
     const fl = this.img(-7, -2, 'foot', .5, .5), fr = this.img(7, -2, 'foot', .5, .5);
-    const body = this.img(0, 0, 'ch_' + cls, .5, .97);
+    this.heroKey = this.heroTex();
+    const body = this.img(0, 0, this.heroKey, .5, .97);
     const wkey = { slash: 'w_blade', rail: 'w_rifle', orb: 'w_orb', knife: 'w_knife', pistol: 'w_pistol', pulse: 'w_staff' }[C.attack];
     const weapon = this.img(0, 0, wkey, .5, { slash: .85, knife: .8, pulse: .85 }[C.attack] || .5);
     h.add([shadow, fl, fr, body, weapon]);
     Object.assign(h, { shadow, fl, fr, body, weapon, facing: 1, walkT: 0, moving: false, vx: 0, vy: 0, kind: C.attack, hp: 1, dead: false, target: null, swing: 0 });
     this.hero = h;
     this.halo = this.img(0, 0, 'ring', .5, .5, .5).setTint(0x5ff2ff).setAlpha(0).setBlendMode('ADD');
+  }
+
+  restyle() {
+    const h = this.hero; this.heroKey = this.heroTex();
+    h.body.setTexture(this.heroKey); h.body.setScale(this.sx(this.heroKey));
+    this.ring(h.x, h.y - 20, 0x9ff6ff, 2.2); sfx('sync');
+  }
+  heroTex() {
+    const lk = this.st.look || null, key = 'hero_' + this.st.cls + '_' + (lk ? [lk.sex, lk.head, lk.face, lk.body, lk.skin, lk.hairc, lk.gear === false ? 0 : 1].join('') : 'd');
+    if (!this.art[key]) this.art[key] = heroCanvas(this.TS, this.st.cls, lk);
+    if (!this.textures.exists(key)) this.textures.addCanvas(key, this.art[key]);
+    return key;
   }
 
   makeNpcs() {
@@ -480,7 +493,8 @@ export class WorldScene extends Phaser.Scene {
     const C = CALLINGS[this.st.cls];
     this.atkCd -= dt; for (let i = 0; i < 3; i++) this.cds[i] = Math.max(0, this.cds[i] - dt);
     if (this.shieldT > 0) { this.shieldT -= dt; if (this.shieldT <= 0) this.shield = 0; }
-    this.iframeT = Math.max(0, this.iframeT - dt);
+    this.iframeT = Math.max(0, this.iframeT - dt); this.overT = Math.max(0, this.overT - dt);
+    const HM = h.mods; if (HM && HM.regen && h.hp < h.hpMax) { h.hp = Math.min(h.hpMax, h.hp + h.hpMax * HM.regen * dt); this.regenUi -= dt; if (this.regenUi <= 0) { this.regenUi = .5; this.ui.stats(); } }
     if (this.veilT > 0) { this.veilT -= dt; h.body.setAlpha(.5 + Math.sin(this.now * 10) * .1); if (this.veilT <= 0) h.body.setAlpha(1); }
     this.halo.setPosition(h.x, h.y - 26).setDepth(h.y + 2).setAlpha(this.shield > 0 ? .55 + Math.sin(this.now * 6) * .15 : 0);
     let mvx = 0, mvy = 0;
@@ -536,7 +550,7 @@ export class WorldScene extends Phaser.Scene {
   faceTo(x) { this.face(Math.sign(x - this.hero.x) || this.hero.facing); }
 
   animHero(dt) {
-    const h = this.hero; const k = this.sx('ch_' + this.st.cls);
+    const h = this.hero; const k = this.sx(this.heroKey);
     h.walkT += dt * (h.moving ? 11 : 2.6);
     if (h.moving) {
       const b = Math.abs(Math.sin(h.walkT)) * 3.2;
@@ -561,7 +575,7 @@ export class WorldScene extends Phaser.Scene {
 
   tryAttack(t, C) {
     if (this.atkCd > 0) return;
-    this.atkCd = C.atkCd; this.hero.swing = 1;
+    const M = this.hero.mods || {}; this.atkCd = C.atkCd / (1 + (M.aspd || 0)) * (this.overT > 0 ? .7 : 1); this.hero.swing = 1;
     const h = this.hero;
     if (C.attack === 'slash') {
       const a = Math.atan2(t.y - 14 - (h.y - 22), t.x - h.x);
@@ -618,6 +632,8 @@ export class WorldScene extends Phaser.Scene {
     const crit = !!opts.crit || Math.random() < h.crit + (this.veilT > 0 ? .25 : 0);
     let dmg = h.atk * mult * rnd(.92, 1.08) * (crit ? h.critDmg : 1);
     if (e.D.boss) dmg *= .9;
+    const M = h.mods; if (M && M.keys.execute && e.hp < e.hpMax * .3) dmg *= 1.3;
+    if (this.overT > 0) dmg *= 1.2;
     dmg = Math.max(1, Math.round(dmg));
     this.damageEnemy(e, dmg, crit, opts.color);
     this.gainRes(kind === 'basic' ? 3.5 : 6);
@@ -637,12 +653,16 @@ export class WorldScene extends Phaser.Scene {
     if (pop) { t.setScale(.4); this.tweens.add({ targets: t, scale: 1.15, duration: 120, yoyo: true, hold: 60, ease: 'Back.easeOut' }); }
     this.tweens.add({ targets: t, y: y - 34, alpha: { from: 1, to: 0 }, duration: 750, delay: 120, ease: 'Cubic.easeOut', onComplete: () => t.destroy() });
   }
-  gainRes(n) { this.res = Math.min(100, this.res + n); }
+  gainRes(n) { this.res = Math.min(100, this.res + n * (1 + (this.hero.mods ? this.hero.mods.res : 0))); }
 
   hurtHero(amount, src) {
     const h = this.hero; if (h.dead || this.iframeT > 0) return;
     if (this.veilT > 0) amount *= .4;
     let dmg = Math.max(1, Math.round(amount * (60 / (60 + h.def)) * rnd(.9, 1.1)));
+    if (this.shield <= 0 && h.hp - dmg <= 0 && h.mods && h.mods.keys.secondWind && this.now >= this.swReady) {
+      this.swReady = this.now + 90; h.hp = Math.round(h.hpMax * .3); this.iframeT = .8;
+      this.ring(h.x, h.y - 20, 0x7fffb0, 2.4); this.num(h.x, h.y - 90, 'Second Wind', '#7fffb0', 16, true); sfx('sync'); this.ui.stats(); return;
+    }
     if (this.shield > 0) { const a = Math.min(this.shield, dmg); this.shield -= a; dmg -= a; if (a) this.num(h.x, h.y - 70, 'absorb ' + a, '#9ff6ff', 12); }
     if (dmg <= 0) return;
     h.hp -= dmg; this.gainRes(1.5);
@@ -746,13 +766,16 @@ export class WorldScene extends Phaser.Scene {
   }
 
   gainXp(n) {
-    const st = this.st; st.xp += n;
+    const st = this.st; st.xp += Math.round(n * (1 + (this.hero.mods ? this.hero.mods.xp : 0)));
     let up = false;
     while (st.xp >= xpNeed(st.lvl)) { st.xp -= xpNeed(st.lvl); st.lvl++; up = true; }
     if (up) {
       this.refreshStats(true);
       this.ring(this.hero.x, this.hero.y - 30, 0xffcf5a, 3); this.burstE.setParticleTint(0xffcf5a); this.burstE.explode(30, this.hero.x, this.hero.y - 30);
       this.ui.levelUp(st.lvl); sfx('level');
+      const ri = rankIndex(st.lvl);
+      if (ri + 1 > (st.rankSeen || 1)) { st.rankSeen = ri + 1; this.time.delayedCall(900, () => this.ui.rankUp(ri)); }
+      this.ui.dotNav('hero');
     }
     this.ui.stats();
   }
@@ -800,7 +823,8 @@ export class WorldScene extends Phaser.Scene {
     const t = (h.target && !h.target.dead) ? h.target : this.nearestEnemy(h.x, h.y, C.range + 60);
     const needsTarget = !['bulwark', 'pulse', 'slam', 'veil', 'mend', 'medrone', 'stasis', 'roll'].includes(S.id);
     if (needsTarget && !t) { this.ui.toast('No target in range'); return false; }
-    this.cds[i] = S.cd; h.swing = 1; sfx('skill');
+    const M = h.mods || { skillDmg: {}, skillCd: {}, skill: 0 }, P = 1 + (M.skillDmg[S.id] || 0) + (M.skill || 0);
+    this.cds[i] = S.cd * (1 - (M.skillCd[S.id] || 0)); h.swing = 1; sfx('skill');
     if (t) this.faceTo(t.x);
     const ax = h.x, ay = h.y - 20;
     switch (S.id) {
@@ -808,22 +832,22 @@ export class WorldScene extends Phaser.Scene {
         const a = Math.atan2(t.y - h.y, t.x - h.x);
         const s = this.img(h.x + Math.cos(a) * 26, h.y - 22 + Math.sin(a) * 14, 'slash', .5, .5, 1.8).setRotation(a).setTint(0xffcf5a).setBlendMode('ADD').setDepth(h.y + 5);
         this.tweens.add({ targets: s, alpha: 0, scale: s.scale * 1.4, duration: 300, onComplete: () => s.destroy() });
-        for (const e of this.enemiesIn(h.x, h.y, 95)) { const d = Math.abs(Phaser.Math.Angle.Wrap(Math.atan2(e.y - h.y, e.x - h.x) - a)); if (d < 1.3) this.hit(e, 1.9, 'skill'); }
+        for (const e of this.enemiesIn(h.x, h.y, 95)) { const d = Math.abs(Phaser.Math.Angle.Wrap(Math.atan2(e.y - h.y, e.x - h.x) - a)); if (d < 1.3) this.hit(e, 1.9 * P, 'skill'); }
         break;
       }
-      case 'bulwark': this.shield = Math.round(h.hpMax * .3); this.shieldT = 6; this.ring(h.x, h.y - 26, 0x5ff2ff, 1.4); this.num(h.x, h.y - 84, 'Bulwark', '#9ff6ff', 14); break;
-      case 'slam': this.ring(h.x, h.y - 4, 0xffcf5a, 2.2); this.cameras.main.shake(180, .005); for (const e of this.enemiesIn(h.x, h.y, 100)) { this.hit(e, 1.5, 'skill'); e.stun = 1.2; } break;
+      case 'bulwark': this.shield = Math.round(h.hpMax * .3 * P); this.shieldT = 6; this.ring(h.x, h.y - 26, 0x5ff2ff, 1.4); this.num(h.x, h.y - 84, 'Bulwark', '#9ff6ff', 14); break;
+      case 'slam': this.ring(h.x, h.y - 4, 0xffcf5a, 2.2); this.cameras.main.shake(180, .005); for (const e of this.enemiesIn(h.x, h.y, 100)) { this.hit(e, 1.5 * P, 'skill'); e.stun = 1.2; } break;
       case 'pierce': {
         const a = Math.atan2(t.y - h.y, t.x - h.x);
         this.beam(ax, ay, ax + Math.cos(a) * 340, ay + Math.sin(a) * 340, 0x9ff6ff, 7, 260); this.cameras.main.shake(100, .003);
-        for (const e of this.enemies) { if (e.dead) continue; const dx = e.x - h.x, dy = e.y - h.y; const along = dx * Math.cos(a) + dy * Math.sin(a), perp = Math.abs(-dx * Math.sin(a) + dy * Math.cos(a)); if (along > 0 && along < 340 && perp < 26 + (e.D.boss ? 40 : 0)) this.hit(e, 2.3, 'skill'); }
+        for (const e of this.enemies) { if (e.dead) continue; const dx = e.x - h.x, dy = e.y - h.y; const along = dx * Math.cos(a) + dy * Math.sin(a), perp = Math.abs(-dx * Math.sin(a) + dy * Math.cos(a)); if (along > 0 && along < 340 && perp < 26 + (e.D.boss ? 40 : 0)) this.hit(e, 2.3 * P, 'skill'); }
         break;
       }
-      case 'volley': { const a = Math.atan2(t.y - h.y, t.x - h.x); for (const d of [-.25, 0, .25]) this.proj({ x: ax, y: ay, vx: Math.cos(a + d) * 520, vy: Math.sin(a + d) * 520, key: 'bolt', spd: 520, mult: 1.1, pierce: true, hitSet: new Set(), tint: 0x5ff2ff, life: .7 }); break; }
-      case 'drone': { const d = this.img(h.x - 30, h.y - 60, 'echo_rivet', .5, .5, .8).setTint(0x9ff6ff).setDepth(5e5); this.drones.push({ s: d, t: 8, cd: 0 }); break; }
-      case 'pulse': { this.ring(h.x, h.y - 20, 0xc58bff, 2.6); for (const e of this.enemiesIn(h.x, h.y, 125)) this.hit(e, 1.7, 'skill'); break; }
-      case 'llance': this.proj({ x: ax, y: ay - 20, tgt: t, key: 'orb', scale: 2, spd: 640, mult: 3.2, tint: 0xe2c6ff }); break;
-      case 'hush': this.zone(t.x, t.y, 90, 5, .45, 0xc58bff); break;
+      case 'volley': { const a = Math.atan2(t.y - h.y, t.x - h.x); for (const d of [-.25, 0, .25]) this.proj({ x: ax, y: ay, vx: Math.cos(a + d) * 520, vy: Math.sin(a + d) * 520, key: 'bolt', spd: 520, mult: 1.1 * P, pierce: true, hitSet: new Set(), tint: 0x5ff2ff, life: .7 }); break; }
+      case 'drone': { const d = this.img(h.x - 30, h.y - 60, 'echo_rivet', .5, .5, .8).setTint(0x9ff6ff).setDepth(5e5); this.drones.push({ s: d, t: 8, cd: 0, mult: .6 * P }); break; }
+      case 'pulse': { this.ring(h.x, h.y - 20, 0xc58bff, 2.6); for (const e of this.enemiesIn(h.x, h.y, 125)) this.hit(e, 1.7 * P, 'skill'); break; }
+      case 'llance': this.proj({ x: ax, y: ay - 20, tgt: t, key: 'orb', scale: 2, spd: 640, mult: 3.2 * P, tint: 0xe2c6ff }); break;
+      case 'hush': this.zone(t.x, t.y, 90, 5, .45 * P, 0xc58bff); break;
       case 'blink': {
         const side = Math.sign(t.x - h.x) || 1, off = t.D.boss ? 70 : 34;
         this.ring(h.x, h.y - 20, 0xff5a9a, 1.2);
@@ -831,23 +855,23 @@ export class WorldScene extends Phaser.Scene {
         this.face(-side); this.ring(h.x, h.y - 20, 0xff5a9a, 1.6);
         const s = this.img(t.x, t.y - hy(t), 'slash', .5, .5, 1.4).setRotation(side > 0 ? Math.PI : 0).setTint(0xff5a9a).setBlendMode('ADD').setDepth(5e5);
         this.tweens.add({ targets: s, alpha: 0, scale: s.scale * 1.3, duration: 240, onComplete: () => s.destroy() });
-        this.hit(t, 2.4, 'skill', { crit: true });
+        this.hit(t, 2.4 * P, 'skill', { crit: true });
         break;
       }
-      case 'fan': { const a = Math.atan2(t.y - h.y, t.x - h.x); for (const d of [-.5, -.25, 0, .25, .5]) this.proj({ x: ax, y: ay, vx: Math.cos(a + d) * 560, vy: Math.sin(a + d) * 560, key: 'knife', spd: 560, mult: .9, pierce: true, hitSet: new Set(), tint: 0xff5a9a, life: .6 }); break; }
-      case 'veil': this.veilT = 5; this.ring(h.x, h.y - 24, 0xff5a9a, 1.6); this.num(h.x, h.y - 84, 'Shadow Veil', '#ff9ac4', 14); break;
-      case 'mend': this.heal(h.hpMax * .22); this.ring(h.x, h.y - 20, 0x5ff2d0, 2.4); for (const e of this.enemiesIn(h.x, h.y, 120)) this.hit(e, 1.3, 'skill'); break;
-      case 'medrone': { const d = this.img(h.x - 30, h.y - 60, 'medrone', .5, .5, 1).setDepth(5e5); this.drones.push({ s: d, t: 8, cd: 0, heal: true, ht: 1, col: 0x5ff2d0, mult: .55 }); break; }
-      case 'stasis': { const z = t || h; this.zone(z.x, z.y, 95, 5, .45, 0x5ff2d0); break; }
-      case 'quickdraw': for (let k = 0; k < 4; k++) this.time.delayedCall(k * 90, () => { if (t.dead || h.dead) return; this.beam(h.x + h.facing * 24, h.y - 26, t.x + rnd(-6, 6), t.y - hy(t) + rnd(-6, 6), 0xffcf5a, 2, 90); sfx('pistol'); this.hit(t, .85, 'skill'); }); break;
+      case 'fan': { const a = Math.atan2(t.y - h.y, t.x - h.x); for (const d of [-.5, -.25, 0, .25, .5]) this.proj({ x: ax, y: ay, vx: Math.cos(a + d) * 560, vy: Math.sin(a + d) * 560, key: 'knife', spd: 560, mult: .9 * P, pierce: true, hitSet: new Set(), tint: 0xff5a9a, life: .6 }); break; }
+      case 'veil': this.veilT = 5 * P; this.ring(h.x, h.y - 24, 0xff5a9a, 1.6); this.num(h.x, h.y - 84, 'Shadow Veil', '#ff9ac4', 14); break;
+      case 'mend': this.heal(h.hpMax * .22 * P); this.ring(h.x, h.y - 20, 0x5ff2d0, 2.4); for (const e of this.enemiesIn(h.x, h.y, 120)) this.hit(e, 1.3 * P, 'skill'); break;
+      case 'medrone': { const d = this.img(h.x - 30, h.y - 60, 'medrone', .5, .5, 1).setDepth(5e5); this.drones.push({ s: d, t: 8, cd: 0, heal: true, ht: 1, col: 0x5ff2d0, mult: .55 * P, healAmt: .03 * P }); break; }
+      case 'stasis': { const z = t || h; this.zone(z.x, z.y, 95, 5, .45 * P, 0x5ff2d0); break; }
+      case 'quickdraw': for (let k = 0; k < 4; k++) this.time.delayedCall(k * 90, () => { if (t.dead || h.dead) return; this.beam(h.x + h.facing * 24, h.y - 26, t.x + rnd(-6, 6), t.y - hy(t) + rnd(-6, 6), 0xffcf5a, 2, 90); sfx('pistol'); this.hit(t, .85 * P, 'skill'); }); break;
       case 'ricochet': {
         const seen = new Set(); let from = { x: h.x + h.facing * 24, y: h.y - 26 };
-        const bounce = (e, n) => { if (!e || e.dead || n >= 5) return; seen.add(e); const to = { x: e.x, y: e.y - hy(e) }; this.beam(from.x, from.y, to.x, to.y, 0xffe08a, 3, 140); this.hit(e, 1.5, 'skill'); from = to; const nx = this.nearestEnemy(e.x, e.y, 230, o => !seen.has(o)); this.time.delayedCall(110, () => bounce(nx, n + 1)); };
+        const bounce = (e, n) => { if (!e || e.dead || n >= 5) return; seen.add(e); const to = { x: e.x, y: e.y - hy(e) }; this.beam(from.x, from.y, to.x, to.y, 0xffe08a, 3, 140); this.hit(e, 1.5 * P, 'skill'); from = to; const nx = this.nearestEnemy(e.x, e.y, 230, o => !seen.has(o)); this.time.delayedCall(110, () => bounce(nx, n + 1)); };
         sfx('pistol'); bounce(t, 0); break;
       }
       case 'roll': {
         const a = t ? Math.atan2(h.y - t.y, h.x - t.x) : (h.facing > 0 ? Math.PI : 0);
-        this.iframeT = .45; this.critShots = 3;
+        this.iframeT = .45; this.critShots = 3 + Math.floor((M.skillDmg.roll || 0) / .12 + .01);
         this.tweens.add({ targets: h, x: Phaser.Math.Clamp(h.x + Math.cos(a) * 110, 20, this.R.w - 20), y: Phaser.Math.Clamp(h.y + Math.sin(a) * 80, 40, this.R.h - 30), duration: 240, ease: 'Quad.easeOut' });
         this.tweens.add({ targets: h.body, rotation: Math.PI * 2 * (Math.cos(a) > 0 ? 1 : -1), duration: 240, onComplete: () => h.body.rotation = 0 });
         this.num(h.x, h.y - 84, 'Next 3 shots crit', '#ffcf5a', 13); break;
@@ -862,6 +886,7 @@ export class WorldScene extends Phaser.Scene {
     const C = CALLINGS[this.st.cls], h = this.hero;
     const t = (h.target && !h.target.dead) ? h.target : this.nearestEnemy(h.x, h.y, 400);
     this.res = 0; sfx('ult'); this.ui.ultCast(C.ult.name);
+    if (h.mods && h.mods.keys.overdrive) { this.overT = 6; this.num(h.x, h.y - 96, 'Overdrive', '#ffcf5a', 15, true); }
     if (C.ult.id === 'starbreaker') {
       this.tweens.add({ targets: h.body, y: -60, duration: 220, yoyo: true, ease: 'Quad.easeOut', onComplete: () => {
         this.ring(h.x, h.y, 0xffcf5a, 4); this.ring(h.x, h.y, 0xffffff, 2.6); this.cameras.main.shake(350, .01);
@@ -902,7 +927,7 @@ export class WorldScene extends Phaser.Scene {
     const e = this.echo; if (!e || this.echoCd > 0 || this.hero.dead || this.silentOn) return false;
     const D = ECHOES[e.id], S = echoStats(this.st, e.id), h = this.hero;
     const t = (h.target && !h.target.dead) ? h.target : this.nearestEnemy(e.x, e.y, 260);
-    const eatk = S.atk + h.atk * .3;
+    const eatk = (S.atk + h.atk * .3) * (1 + (h.mods ? h.mods.echo : 0));
     const id = e.id;
     if ((id === 'skein' || id === 'glimmerkit' || id === 'lumi') && !t) return false;
     if (id === 'budlet' && h.hp > h.hpMax * .8) return false;
@@ -937,7 +962,7 @@ export class WorldScene extends Phaser.Scene {
     const t = h.target && !h.target.dead ? h.target : null;
     if (t && e.cd <= 0 && !this.silentOn && dist(e.x, e.y, t.x, t.y) < 200) {
       e.cd = 1.5; const S = echoStats(this.st, e.id);
-      this.proj({ x: e.x, y: e.y - 22, tgt: t, key: 'dot', scale: 1.4, spd: 420, mult: (S.atk + h.atk * .3) / h.atk * .9, tint: ECHOES[e.id].color });
+      this.proj({ x: e.x, y: e.y - 22, tgt: t, key: 'dot', scale: 1.4, spd: 420, mult: (S.atk + h.atk * .3) / h.atk * .9 * (1 + (h.mods ? h.mods.echo : 0)), tint: ECHOES[e.id].color });
     }
     const k = this.sx('echo_' + e.id) * [1, 1.25, 1.45][+(this.st.echoes[e.id]?.evo) || 0];
     if (e.hover) { e.body.y = -10 + Math.sin(e.t * 3) * 4; e.body.rotation = Math.sin(e.t * 2) * .06; }
@@ -952,7 +977,7 @@ export class WorldScene extends Phaser.Scene {
       d.t -= dt; d.cd -= dt;
       d.s.x += (h.x - 26 - d.s.x) * dt * 3; d.s.y += (h.y - 64 + Math.sin(this.now * 4) * 4 - d.s.y) * dt * 3;
       if (d.cd <= 0) { const t = this.nearestEnemy(d.s.x, d.s.y, 230); if (t) { d.cd = d.heal ? .6 : .5; this.beam(d.s.x, d.s.y, t.x, t.y - 16, d.col || 0x5ff2ff, 2, 100); this.hit(t, d.mult || .6, 'skill'); } }
-      if (d.heal) { d.ht -= dt; if (d.ht <= 0) { d.ht = 1; this.heal(h.hpMax * .03, '', true); this.beam(d.s.x, d.s.y, h.x, h.y - 30, 0x7fffb0, 2, 160); } }
+      if (d.heal) { d.ht -= dt; if (d.ht <= 0) { d.ht = 1; this.heal(h.hpMax * (d.healAmt || .03), '', true); this.beam(d.s.x, d.s.y, h.x, h.y - 30, 0x7fffb0, 2, 160); } }
       if (d.t <= 0) { d.done = true; this.tweens.add({ targets: d.s, alpha: 0, duration: 300, onComplete: () => d.s.destroy() }); }
     }
     this.drones = this.drones.filter(d => !d.done);
