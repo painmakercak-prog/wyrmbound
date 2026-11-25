@@ -107,6 +107,7 @@ export function sfx(name) {
     case 'crit': noise(.09, .2, 2600); tone('square', 880, 440, .08, .05); break;
     case 'slash': noise(.12, .1, 4200); break;
     case 'rail': tone('sawtooth', 1400, 200, .14, .07); noise(.05, .08, 5000); break;
+    case 'pistol': tone('square', 900, 180, .07, .05); noise(.05, .12, 3200); break;
     case 'orb': tone('sine', 520, 980, .16, .08); break;
     case 'skill': tone('triangle', 330, 660, .18, .1); break;
     case 'ult': tone('sawtooth', 110, 880, .5, .12); bell(660, .12, 1.2); bell(990, .08, 1.4); break;

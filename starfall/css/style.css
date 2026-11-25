@@ -233,3 +233,13 @@ body.sheet-open #toasts { top: calc(var(--st) + 12px); }
 .tcard img { width: 56px; height: 72px; object-fit: cover; border-radius: 10px; flex: none; }
 .tcard.lock { opacity: .55; }
 .pop { animation: bin .45s cubic-bezier(.2, 1.6, .4, 1); }
+.stars { color: var(--gold); letter-spacing: .04em; font-size: .9em; text-shadow: 0 0 8px rgba(255, 207, 90, .6); }
+.hatch-art.asc { background: radial-gradient(circle, rgba(255, 207, 90, .35), transparent 70%); }
+.hatch-art.asc img { box-shadow: 0 0 46px rgba(255, 207, 90, .55); }
+.cls.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; max-height: none; overflow: visible; text-align: center; }
+.cls.grid .clsc { flex-direction: column; gap: 6px; padding: 8px 6px; }
+.cls.grid .clsc img { width: 64px; height: 64px; }
+.cls.grid .clsc .n { font-size: 16px; }
+.cls.grid .clsc .r { font-size: 11px; margin: 2px 0 0; }
+.clsd { min-height: 3.6em; margin-top: 10px; font-size: 13px; line-height: 1.4; color: var(--muted); text-align: center; }
+@media (max-height: 700px) { .cls.grid .clsc img { width: 48px; height: 48px; } .cls.grid .clsc { padding: 6px 4px; } }

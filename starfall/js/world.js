@@ -1,7 +1,7 @@
-import { CALLINGS, ENEMIES, REGIONS, NPCS, ECHOES, QUESTS, SLOTS, RARITY, CODEX, BOUNTIES } from './data.js?v=2.1';
-import { buildArt, ANCHORS } from './art.js?v=2.1';
-import { heroStats, echoStats, xpNeed, makeGear, rollRarity, gearValue, save } from './state.js?v=2.1';
-import { sfx, duck, playTrack } from './audio.js?v=2.1';
+import { CALLINGS, ENEMIES, REGIONS, NPCS, ECHOES, QUESTS, SLOTS, RARITY, CODEX, BOUNTIES, TOWER_POOL, GEAR_NAMES } from './data.js?v=3';
+import { buildArt, ANCHORS } from './art.js?v=3';
+import { heroStats, echoStats, xpNeed, makeGear, rollRarity, gearValue, save } from './state.js?v=3';
+import { sfx, duck, playTrack } from './audio.js?v=3';
 
 const dist = (a, b, c, d) => Math.hypot(c - a, d - b);
 const rnd = (a, b) => a + Math.random() * (b - a);
@@ -37,12 +37,12 @@ export class WorldScene extends Phaser.Scene {
     this.cameras.main.setBackgroundColor(this.R.bg);
     this.boss = null; this.silentOn = false; document.body.classList.remove('silent'); duck(false);
     this.musicHold = 0; playTrack(this.R.music || 'theme');
-    this.paused = false;
+    this.paused = false; this.travelling = false; this.towerState = null; this.floor = 0;
     this.now = 0;
     this.fx = this.add.layer(); this.fx.setDepth(5e5);
     this.enemies = []; this.projs = []; this.zones = []; this.teles = []; this.drones = []; this.pickups = [];
     this.manualUntil = 0; this.joy = null; this.tapTarget = null; this.tapPoint = null;
-    this.res = 0; this.shield = 0; this.shieldT = 0;
+    this.res = 0; this.shield = 0; this.shieldT = 0; this.veilT = 0; this.iframeT = 0; this.critShots = 0;
     this.cds = [0, 0, 0]; this.echoCd = 0; this.atkCd = 0;
     this.buildWorld();
     this.makeHero();
@@ -50,6 +50,7 @@ export class WorldScene extends Phaser.Scene {
     this.makeNpcs();
     this.setEcho(this.st.activeEcho);
     for (const s of this.R.spawns) for (let i = 0; i < s.count; i++) this.spawnEnemy(s);
+    if (this.R.tower) this.towerStart();
     this.cameras.main.setBounds(0, 0, this.R.w, this.R.h);
     this.cameras.main.startFollow(this.hero, true, 0.12, 0.12);
     this.setZoom(this.Z, this.dpr);
@@ -74,10 +75,11 @@ export class WorldScene extends Phaser.Scene {
     if (this.onReady) this.onReady(this);
   }
 
-  travel(id) {
+  travel(id, keepFrom) {
     if (this.travelling || !REGIONS[id]) return;
     if (id === this.st.region) { this.ui.toast('You are already here'); return; }
     this.travelling = true; this.paused = true;
+    if (REGIONS[id].tower && !keepFrom) this.st.tower.from = this.st.region;
     this.st.region = id; save(this.st);
     this.ui.bossBar(null); this.ui.joystick(null); sfx('sync');
     this.ring(this.hero.x, this.hero.y - 20, 0x9ff6ff, 3);
@@ -105,7 +107,7 @@ export class WorldScene extends Phaser.Scene {
     this.tweens.add({ targets: this.spireGlow, alpha: .9, scale: 3.6, duration: 1800, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
     tint(P.spire.x, P.spire.y, 180, 0x9ff6ff, .18);
     const R0 = (() => { let a = 1234; return () => { a = (a * 16807) % 2147483647; return a / 2147483647; }; })();
-    if (this.st.region === 'dunes') this.buildDunes(tint, placeProp, R0); else this.buildVerge(tint, placeProp, R0);
+    if (this.R.tower) this.buildTower(tint, placeProp, R0); else if (this.st.region === 'dunes') this.buildDunes(tint, placeProp, R0); else this.buildVerge(tint, placeProp, R0);
   }
 
   buildVerge(tint, placeProp, R) {
@@ -169,6 +171,77 @@ export class WorldScene extends Phaser.Scene {
     this.door = null; this.geodeGlow = null;
   }
 
+  buildTower(tint, placeProp, R) {
+    const P = this.P;
+    tint(P.arena.x, P.arena.y, 520, 0xffcf5a, .1); tint(P.arena.x, P.arena.y, 420, 0x2a1a4a, .35, 'NORMAL'); tint(600, 1300, 300, 0x9ff6ff, .12);
+    const ring = this.add.graphics().setDepth(-7e5);
+    ring.lineStyle(3, 0xffcf5a, .35); ring.strokeEllipse(P.arena.x, P.arena.y, 760, 540); ring.lineStyle(1.5, 0x9ff6ff, .3); ring.strokeEllipse(P.arena.x, P.arena.y, 640, 450);
+    for (let i = 0; i < 14; i++) { const a = i / 14 * Math.PI * 2, x = P.arena.x + Math.cos(a) * 470, y = P.arena.y + Math.sin(a) * 360; placeProp('rib', x, y, rnd(.9, 1.2), Math.cos(a) < 0).setTint(0xb8a8d8); }
+    for (let i = 0; i < 40; i++) { const x = rnd(40, 1160), y = rnd(80, 1460); if (dist(x, y, P.arena.x, P.arena.y) < 440 || dist(x, y, P.spire.x, P.spire.y) < 160) continue; placeProp('rock', x, y, rnd(.8, 1.2), R() < .5).setTint(0x8a7aa8); }
+    this.door = null; this.geodeGlow = null;
+  }
+
+  towerStart() {
+    const st = this.st; if (!st.tower) st.tower = { best: 0, from: 'verge' };
+    this.floor = st.tower.best + 1; this.towerState = 'wait';
+    this.time.delayedCall(1200, () => this.towerFloor());
+  }
+  towerFloor() {
+    if (this.hero.dead || !this.R.tower) return;
+    const n = this.floor, P = this.P, L = 3 + n;
+    this.towerState = 'fight';
+    this.ui.banner('Ossivar’s Spire', 'Floor ' + n, n % 10 === 0 ? 'Guardian floor' : '');
+    sfx('boss');
+    if (n % 10 === 0) {
+      const type = (n / 10) % 2 ? 'thornmother' : 'marrowking', Lb = ENEMIES[type].lvl[0];
+      const hpMul = 2.2 * Math.max(.6, 1 + .2 * (L - Lb)), atkMul = 1.15 * Math.max(.7, 1 + .13 * (L - Lb));
+      this.spawnEnemy({ type, x: P.arena.x, y: P.arena.y, r: 1, count: 0, boss: true, once: true, lvl: L, hpMul, atkMul }, P.arena);
+      this.boss.hp = this.boss.hpMax;
+    } else {
+      const count = Math.min(14, 5 + Math.floor(n / 3)), pool = TOWER_POOL.slice(0, Math.min(TOWER_POOL.length, 2 + Math.floor(n / 4)));
+      for (let i = 0; i < count; i++) { const a = rnd(0, Math.PI * 2), r = rnd(80, 280); this.time.delayedCall(i * 120, () => this.spawnEnemy({ type: pool[ri(0, pool.length - 1)], x: P.arena.x + Math.cos(a) * r, y: P.arena.y + Math.sin(a) * r * .7, r: 1, count: 0, once: true, aggro: true, lvl: L })); }
+    }
+    this.ui.quest();
+  }
+  towerCheck() {
+    if (this.towerState !== 'fight') return;
+    this.time.delayedCall(200, () => {
+      if (this.towerState !== 'fight' || this.hero.dead || this.enemies.some(e => !e.dead)) { this.ui.quest(); return; }
+      const st = this.st, n = this.floor; this.towerState = 'clear';
+      const lum = 20 + 12 * n; st.lumen += lum; this.ui.lumenBump();
+      let extra = '';
+      if (n % 5 === 0) { const sh = 2 + Math.floor(n / 5); st.shards += sh; extra += ` · +${sh} memory`; }
+      if (n % 10 === 0) { st.geodes++; extra += ' · +1 geode'; this.towerGear(3 + n); }
+      if (n > st.tower.best) { st.tower.best = n; extra += ' · new best'; }
+      this.heal(this.hero.hpMax * .25, '', true);
+      sfx('quest'); this.ui.banner('Floor ' + n + ' cleared', '+' + lum + ' Lumen', extra.replace(/^ · /, ''));
+      save(st); this.floor++; this.ui.quest();
+      this.time.delayedCall(3200, () => this.towerFloor());
+    });
+  }
+  towerGear(ilvl) {
+    const st = this.st, slot = SLOTS[ri(0, 3)].id, rar = Math.random() < .3 ? 3 : 2;
+    const g = makeGear(st.cls, slot, ilvl, rar), cur = st.gear[slot];
+    if (!cur || gearValue(slot, g) > gearValue(slot, cur)) { if (cur) { g.up = Math.max(0, (cur.up || 0) - 1); g.star = cur.star || 0; } st.gear[slot] = g; this.refreshStats(false); this.ui.gearPop(slot, g, true); }
+    else { const sell = 30 + rar * 20 + ilvl; st.lumen += sell; this.ui.gearPop(slot, g, false, sell); }
+    sfx('gear');
+  }
+  towerEnd() {
+    if (this.towerState === 'over') return;
+    const st = this.st, reached = this.floor - 1; this.towerState = 'over';
+    save(st);
+    this.time.delayedCall(1400, () => this.ui.towerResult(reached, st.tower.best, () => { this.travelling = false; this.travel(st.tower.from || 'verge', true); }));
+  }
+  switchCalling(k) {
+    const st = this.st; if (!CALLINGS[k] || k === st.cls) return;
+    st.cls = k;
+    for (const sl of SLOTS) { const g = st.gear[sl.id]; if (g) { const names = GEAR_NAMES[k][sl.id]; g.name = names[Math.min(names.length - 1, g.rar)]; } }
+    save(st); this.paused = true; sfx('sync');
+    this.ring(this.hero.x, this.hero.y - 20, CALLINGS[k].color, 3);
+    this.cameras.main.fadeOut(450, 6, 16, 23);
+    this.cameras.main.once('camerafadeoutcomplete', () => this.scene.restart(Object.assign(this.initData, { arrive: false })));
+  }
+
   makeHero() {
     const cls = this.st.cls, C = CALLINGS[cls];
     const at = this.initData.arrive ? this.P.arrive : this.P.start;
@@ -176,8 +249,8 @@ export class WorldScene extends Phaser.Scene {
     const shadow = this.img(0, 0, 'shadow', .5, .5, 1.1);
     const fl = this.img(-7, -2, 'foot', .5, .5), fr = this.img(7, -2, 'foot', .5, .5);
     const body = this.img(0, 0, 'ch_' + cls, .5, .97);
-    const wkey = C.attack === 'slash' ? 'w_blade' : C.attack === 'rail' ? 'w_rifle' : 'w_orb';
-    const weapon = this.img(0, 0, wkey, .5, C.attack === 'slash' ? .85 : .5);
+    const wkey = { slash: 'w_blade', rail: 'w_rifle', orb: 'w_orb', knife: 'w_knife', pistol: 'w_pistol', pulse: 'w_staff' }[C.attack];
+    const weapon = this.img(0, 0, wkey, .5, { slash: .85, knife: .8, pulse: .85 }[C.attack] || .5);
     h.add([shadow, fl, fr, body, weapon]);
     Object.assign(h, { shadow, fl, fr, body, weapon, facing: 1, walkT: 0, moving: false, vx: 0, vy: 0, kind: C.attack, hp: 1, dead: false, target: null, swing: 0 });
     this.hero = h;
@@ -215,7 +288,9 @@ export class WorldScene extends Phaser.Scene {
     e.add([shadow, glow, body]);
     const hover = ['skein', 'lumi', 'rivet'].includes(id);
     Object.assign(e, { id, body, glow, hover, t: 0, cd: 1, target: null, dash: null });
-    if (this.st.echoes[id].evo) { body.setScale(body.scaleX * 1.25); glow.setScale(1.8).setAlpha(.5); }
+    const ev = +this.st.echoes[id].evo || 0;
+    if (ev) { body.setScale(body.scaleX * (ev > 1 ? 1.45 : 1.25)); glow.setScale(ev > 1 ? 2.4 : 1.8).setAlpha(ev > 1 ? .6 : .5); }
+    if (ev > 1) { const halo = this.add.image(0, -18, 'ring').setTint(0xffcf5a).setBlendMode('ADD').setAlpha(.5).setScale(this.sx('ring') * .7); e.addAt(halo, 1); this.tweens.add({ targets: halo, angle: 360, duration: 6000, repeat: -1 }); this.tweens.add({ targets: glow, alpha: .85, duration: 1100, yoyo: true, repeat: -1 }); }
     this.echo = e;
   }
 
@@ -234,7 +309,7 @@ export class WorldScene extends Phaser.Scene {
     do { const a = rnd(0, Math.PI * 2), r = Math.sqrt(Math.random()) * sp.r; x = sp.x + Math.cos(a) * r; y = sp.y + Math.sin(a) * r * .8; tries++; }
     while (tries < 12 && this.hero && dist(x, y, this.hero.x, this.hero.y) < 170);
     if (at) { x = at.x; y = at.y; }
-    const lvl = ri(D.lvl[0], D.lvl[1]);
+    const lvl = sp.lvl || ri(D.lvl[0], D.lvl[1]);
     const c = this.add.container(x, y);
     const shadow = this.img(0, 0, 'shadow', .5, .5, D.boss ? (sp.type === 'marrowking' ? 5.2 : 4.4) : D.radius / 16);
     const key = sp.type === 'glowmoth' ? 'moth' : sp.type;
@@ -250,10 +325,11 @@ export class WorldScene extends Phaser.Scene {
     if (sp.type === 'marrowking') { body.setOrigin(.56, .93); }
     parts.push(body);
     c.add(parts);
-    const hpMul = D.boss ? 1 : (1 + .2 * (lvl - 1)), atkMul = D.boss ? 1 : (1 + .13 * (lvl - 1));
+    const hpMul = sp.hpMul || (D.boss ? 1 : (1 + .2 * (lvl - 1))), atkMul = sp.atkMul || (D.boss ? 1 : (1 + .13 * (lvl - 1)));
     const bar = this.add.graphics().setDepth(4.4e5);
     Object.assign(c, { type: sp.type, D, sp, lvl, hpMax: Math.round(D.hp * hpMul), atk: D.atk * atkMul, body, wl, wr, shadow, bar, state: 'idle', cd: rnd(.5, 1.5), wander: null, wt: rnd(0, 3), t: rnd(0, 10), stun: 0, slow: 0, flash: 0, home: { x, y }, special: 5, broodA: false, broodB: false, dead: false, aggro: false });
     c.hp = c.hpMax;
+    if (sp.aggro) { c.aggro = true; c.state = 'chase'; }
     if (D.boss) { c.setScale(1); this.boss = c; this.ui.bossBar(c); sfx('boss'); this.cameras.main.shake(500, .004); this.ui.bossIntro(D, sp.type); if (sp.type === 'marrowking') { body.scaleY = 0; this.tweens.add({ targets: body, scaleY: this.sx('marrowking'), duration: 700, ease: 'Back.easeOut' }); this.sandBurst(c.x, c.y, 24); } }
     this.enemies.push(c);
     c.setAlpha(0); this.tweens.add({ targets: c, alpha: 1, duration: 400 });
@@ -337,6 +413,7 @@ export class WorldScene extends Phaser.Scene {
 
   goalFor() {
     const q = this.quest(), P = this.P;
+    if (this.R.tower) return { tower: true };
     if (!q) { const b = this.bounty(); return { hunt: b && this.R.spawns.some(s => s.type === b.enemy) ? b.enemy : this.bestHunt() }; }
     const qr = q.region || 'verge';
     if (q.kind === 'travel' && qr === this.st.region) return { hunt: this.bestHunt() };
@@ -354,6 +431,7 @@ export class WorldScene extends Phaser.Scene {
   }
   bounty() { return this.st.bounty && BOUNTIES.find(b => b.id === this.st.bounty.id); }
   pickBounty() {
+    if (this.R.tower) return;
     const reg = this.st.region, l = this.st.lvl;
     const pool = BOUNTIES.filter(b => (b.region || 'verge') === reg && l >= b.minLvl);
     const b = pool.pop() || BOUNTIES.filter(b => (b.region || 'verge') === reg)[0];
@@ -366,6 +444,8 @@ export class WorldScene extends Phaser.Scene {
     const C = CALLINGS[this.st.cls];
     this.atkCd -= dt; for (let i = 0; i < 3; i++) this.cds[i] = Math.max(0, this.cds[i] - dt);
     if (this.shieldT > 0) { this.shieldT -= dt; if (this.shieldT <= 0) this.shield = 0; }
+    this.iframeT = Math.max(0, this.iframeT - dt);
+    if (this.veilT > 0) { this.veilT -= dt; h.body.setAlpha(.5 + Math.sin(this.now * 10) * .1); if (this.veilT <= 0) h.body.setAlpha(1); }
     this.halo.setPosition(h.x, h.y - 26).setDepth(h.y + 2).setAlpha(this.shield > 0 ? .55 + Math.sin(this.now * 6) * .15 : 0);
     let mvx = 0, mvy = 0;
     const speed = C.speed;
@@ -385,6 +465,9 @@ export class WorldScene extends Phaser.Scene {
           const near = this.nearestEnemy(h.x, h.y, 90, e => e.aggro);
           if (near) h.target = near;
           else { h.target = null; goal = G; if (dist(h.x, h.y, G.x, G.y) < 12) { if (G.npc) this.talkTo(G.npc); else if (G.travel) this.travel(G.travel); else this.arrivePlace(G.place); goal = null; } }
+        } else if (G.tower) {
+          if (!h.target || h.target.dead) h.target = this.nearestEnemy(h.x, h.y, 3000);
+          if (!h.target) goal = { x: this.P.arena.x, y: this.P.arena.y + 160 };
         } else if (G.boss) {
           const b = this.enemies.find(e => e.D.boss && !e.dead);
           if (b) h.target = b; else { h.target = this.nearestEnemy(h.x, h.y, 90, e => e.aggro); if (!h.target) goal = { x: this.P.arena.x, y: this.P.arena.y + 120 }; }
@@ -431,6 +514,9 @@ export class WorldScene extends Phaser.Scene {
     h.swing = Math.max(0, h.swing - dt * 4);
     if (h.kind === 'slash') { w.setPosition(13, -20 + h.body.y); w.rotation = .55 - Math.sin(h.swing * Math.PI) * 2.3 + (h.swing > 0 ? 1.2 * h.swing : 0); }
     else if (h.kind === 'rail') { w.setPosition(8 - h.swing * 6, -22 + h.body.y); w.rotation = -h.swing * .2; }
+    else if (h.kind === 'knife') { w.setPosition(12 + h.swing * 9, -20 + h.body.y); w.rotation = 1.25 - h.swing * 1.1; }
+    else if (h.kind === 'pistol') { w.setPosition(13 - h.swing * 5, -24 + h.body.y); w.rotation = -h.swing * .4; }
+    else if (h.kind === 'pulse') { w.setPosition(15, -14 + h.body.y); w.rotation = .14 - h.swing * .35; }
     else { w.setPosition(20, -40 + Math.sin(this.now * 3) * 4 + h.body.y); w.setScale(wk * (1 + h.swing * .5)); }
   }
 
@@ -450,6 +536,21 @@ export class WorldScene extends Phaser.Scene {
     } else if (C.attack === 'rail') {
       this.beam(h.x + h.facing * 26, h.y - 24, t.x, t.y - hy(t), 0x5ff2ff, 3, 140); sfx('rail');
       this.hit(t, 1, 'basic');
+    } else if (C.attack === 'knife') {
+      const a = Math.atan2(t.y - 14 - (h.y - 22), t.x - h.x);
+      for (const [d, rot] of [[0, -.5], [95, .5]]) this.time.delayedCall(d, () => {
+        if (t.dead) return;
+        const s = this.img(h.x + Math.cos(a) * 18, h.y - 22 + Math.sin(a) * 10, 'slash', .5, .5, .65).setRotation(a + rot).setTint(0xff7ab4).setBlendMode('ADD').setDepth(h.y + 5);
+        this.tweens.add({ targets: s, alpha: 0, scale: s.scale * 1.3, duration: 180, onComplete: () => s.destroy() });
+        sfx('slash'); this.hit(t, .56, 'basic');
+      });
+    } else if (C.attack === 'pistol') {
+      const crit = this.critShots > 0; if (crit) this.critShots--;
+      this.beam(h.x + h.facing * 24, h.y - 26, t.x, t.y - hy(t), crit ? 0xffffff : 0xffcf5a, crit ? 3 : 2, 100); sfx('pistol');
+      this.hit(t, 1, 'basic', { crit });
+    } else if (C.attack === 'pulse') {
+      this.proj({ x: h.x + h.facing * 18, y: h.y - 52, tgt: t, key: 'orb', spd: 360, mult: 1, splash: 30, tint: 0x5ff2d0, heal: .012 });
+      sfx('orb');
     } else {
       this.proj({ x: h.x + h.facing * 20, y: h.y - 40, tgt: t, key: 'orb', spd: 380, mult: 1, splash: 46, tint: 0xc58bff });
       sfx('orb');
@@ -463,6 +564,12 @@ export class WorldScene extends Phaser.Scene {
       const id = C.skills[i].id;
       if (id === 'bulwark' && this.hero.hp > this.hero.hpMax * .75 && !(t.D.boss)) continue;
       if ((id === 'slam' || id === 'pulse') && this.enemiesIn(this.hero.x, this.hero.y, 120).length < (t.D.boss ? 1 : 2) && Math.random() < .9) continue;
+      const hpf = this.hero.hp / this.hero.hpMax, crowd = this.enemiesIn(this.hero.x, this.hero.y, 130).length;
+      if (id === 'veil' && hpf > .8 && !t.D.boss && crowd < 3) continue;
+      if (id === 'mend' && hpf > .7 && crowd < 2) continue;
+      if (id === 'medrone' && hpf > .85 && !t.D.boss) continue;
+      if (id === 'stasis' && !t.D.boss && this.enemiesIn(t.x, t.y, 95).length < 2) continue;
+      if (id === 'roll' && hpf > .7 && !t.D.boss && crowd < 3 && !this.teles.some(z => !z.done && !z.friendlyOnly && dist(this.hero.x, this.hero.y, z.x, z.y) < z.r + 30)) continue;
       this.castSkill(i); break;
     }
     if (this.echo && this.echoCd <= 0 && this.st.settings.autoSkill) this.castEcho();
@@ -472,7 +579,7 @@ export class WorldScene extends Phaser.Scene {
   hit(e, mult, kind, opts = {}) {
     if (!e || e.dead) return;
     const h = this.hero;
-    const crit = Math.random() < h.crit;
+    const crit = !!opts.crit || Math.random() < h.crit + (this.veilT > 0 ? .25 : 0);
     let dmg = h.atk * mult * rnd(.92, 1.08) * (crit ? h.critDmg : 1);
     if (e.D.boss) dmg *= .9;
     dmg = Math.max(1, Math.round(dmg));
@@ -497,7 +604,8 @@ export class WorldScene extends Phaser.Scene {
   gainRes(n) { this.res = Math.min(100, this.res + n); }
 
   hurtHero(amount, src) {
-    const h = this.hero; if (h.dead) return;
+    const h = this.hero; if (h.dead || this.iframeT > 0) return;
+    if (this.veilT > 0) amount *= .4;
     let dmg = Math.max(1, Math.round(amount * (60 / (60 + h.def)) * rnd(.9, 1.1)));
     if (this.shield > 0) { const a = Math.min(this.shield, dmg); this.shield -= a; dmg -= a; if (a) this.num(h.x, h.y - 70, 'absorb ' + a, '#9ff6ff', 12); }
     if (dmg <= 0) return;
@@ -508,13 +616,14 @@ export class WorldScene extends Phaser.Scene {
     if (h.hp <= 0) this.heroDown();
     this.ui.stats();
   }
-  heal(n, label = '') {
-    const h = this.hero; n = Math.round(n); h.hp = Math.min(h.hpMax, h.hp + n);
-    this.num(h.x, h.y - 76, '+' + n + label, '#7fffb0', 15); this.ui.stats();
+  heal(n, label = '', quiet = false) {
+    const h = this.hero; if (h.dead) return; n = Math.round(n); h.hp = Math.min(h.hpMax, h.hp + n);
+    if (!quiet) this.num(h.x, h.y - 76, '+' + n + label, '#7fffb0', 15); this.ui.stats();
   }
 
   heroDown() {
     const h = this.hero; h.dead = true; h.hp = 0;
+    if (this.R.tower) { this.tweens.add({ targets: h, alpha: 0, duration: 600 }); sfx('down'); this.towerEnd(); return; }
     this.tweens.add({ targets: h, alpha: 0, duration: 600 });
     this.ui.toast('Link lost. Resyncing at the Spire…');
     sfx('down');
@@ -546,10 +655,11 @@ export class WorldScene extends Phaser.Scene {
     const q = this.quest();
     if (q && (q.kind === 'hunt' || q.kind === 'boss') && q.enemy === e.type) { st.qp++; this.ui.quest(); if (st.qp >= q.count) this.time.delayedCall(450, () => this.completeQuest()); }
     if (!q && st.bounty) { const b = this.bounty(); if (b && b.enemy === e.type) { st.bounty.prog++; this.ui.quest(); if (st.bounty.prog >= b.count) this.completeBounty(b); } }
+    if (this.R.tower) this.towerCheck();
     if (e.D.boss) {
       this.boss = null; this.ui.bossBar(null); st.bossKills++; this.bossCd = this.now + 240; this.musicHold = this.now + 4; this.cameras.main.shake(700, .008); this.cameras.main.flash(300, 255, 200, 240);
     } else {
-      const sp = e.sp; this.time.delayedCall(rnd(4500, 7000), () => { if (sp && !sp.boss) this.spawnEnemy(sp); });
+      const sp = e.sp; if (sp && !sp.once) this.time.delayedCall(rnd(4500, 7000), () => { if (!sp.boss) this.spawnEnemy(sp); });
     }
     if (this.hero.target === e) this.hero.target = null;
     if (this.tapTarget === e) this.tapTarget = null;
@@ -576,7 +686,7 @@ export class WorldScene extends Phaser.Scene {
     this.tweens.add({ targets: beam, alpha: 0, duration: 1200, delay: 500, onComplete: () => beam.destroy() });
     const cur = st.gear[slot];
     if (!cur || gearValue(slot, g) > gearValue(slot, cur)) {
-      if (cur) g.up = Math.max(0, (cur.up || 0) - 1);
+      if (cur) { g.up = Math.max(0, (cur.up || 0) - 1); g.star = cur.star || 0; }
       st.gear[slot] = g; this.refreshStats(false);
       this.ui.gearPop(slot, g, true);
     } else {
@@ -639,7 +749,7 @@ export class WorldScene extends Phaser.Scene {
       if (Math.random() < .5) { const tr = this.add.image(p.x, p.y, 'dot').setScale(this.sx('dot') * .8).setTint(p.tint || 0xffffff).setBlendMode('ADD').setDepth(5e5 - 1).setAlpha(.6); this.tweens.add({ targets: tr, alpha: 0, scale: 0, duration: 260, onComplete: () => tr.destroy() }); }
       if (p.toHero) { if (dist(p.x, p.y, tx, ty) < 14) { p.done = true; this.hurtHero(p.dmg); this.burstE.setParticleTint(0xff6ab0); this.burstE.explode(6, p.x, p.y); } }
       else if (p.pierce) { for (const e of this.enemies) if (!e.dead && !p.hitSet.has(e) && dist(p.x, p.y, e.x, e.y - hy(e)) < 26 + (e.D.boss ? 40 : 0)) { p.hitSet.add(e); this.hit(e, p.mult, 'skill'); } }
-      else { const e = p.tgt || this.enemies.find(e => !e.dead && dist(p.x, p.y, e.x, e.y - 16) < 22); if (e && dist(p.x, p.y, e.x, e.y - hy(e)) < 20 + (e.D.boss ? 40 : 0)) { p.done = true; this.hit(e, p.mult, 'basic'); if (p.splash) for (const o of this.enemiesIn(e.x, e.y, p.splash)) if (o !== e) this.hit(o, p.mult * .5, 'basic'); this.burstE.setParticleTint(p.tint || 0xffffff); this.burstE.explode(6, p.x, p.y); } }
+      else { const e = p.tgt || this.enemies.find(e => !e.dead && dist(p.x, p.y, e.x, e.y - 16) < 22); if (e && dist(p.x, p.y, e.x, e.y - hy(e)) < 20 + (e.D.boss ? 40 : 0)) { p.done = true; this.hit(e, p.mult, 'basic'); if (p.heal) this.heal(this.hero.hpMax * p.heal, '', true); if (p.splash) for (const o of this.enemiesIn(e.x, e.y, p.splash)) if (o !== e) this.hit(o, p.mult * .5, 'basic'); this.burstE.setParticleTint(p.tint || 0xffffff); this.burstE.explode(6, p.x, p.y); } }
       if (p.life <= 0) p.done = true;
       if (p.done) p.s.destroy();
     }
@@ -652,7 +762,7 @@ export class WorldScene extends Phaser.Scene {
     if (this.hero.dead || this.paused || this.cds[i] > 0) return false;
     const C = CALLINGS[this.st.cls], S = C.skills[i], h = this.hero;
     const t = (h.target && !h.target.dead) ? h.target : this.nearestEnemy(h.x, h.y, C.range + 60);
-    const needsTarget = !['bulwark', 'pulse', 'slam'].includes(S.id);
+    const needsTarget = !['bulwark', 'pulse', 'slam', 'veil', 'mend', 'medrone', 'stasis', 'roll'].includes(S.id);
     if (needsTarget && !t) { this.ui.toast('No target in range'); return false; }
     this.cds[i] = S.cd; h.swing = 1; sfx('skill');
     if (t) this.faceTo(t.x);
@@ -678,11 +788,39 @@ export class WorldScene extends Phaser.Scene {
       case 'pulse': { this.ring(h.x, h.y - 20, 0xc58bff, 2.6); for (const e of this.enemiesIn(h.x, h.y, 125)) this.hit(e, 1.7, 'skill'); break; }
       case 'llance': this.proj({ x: ax, y: ay - 20, tgt: t, key: 'orb', scale: 2, spd: 640, mult: 3.2, tint: 0xe2c6ff }); break;
       case 'hush': this.zone(t.x, t.y, 90, 5, .45, 0xc58bff); break;
+      case 'blink': {
+        const side = Math.sign(t.x - h.x) || 1, off = t.D.boss ? 70 : 34;
+        this.ring(h.x, h.y - 20, 0xff5a9a, 1.2);
+        h.x = Phaser.Math.Clamp(t.x + side * off, 20, this.R.w - 20); h.y = Phaser.Math.Clamp(t.y + 4, 40, this.R.h - 30);
+        this.face(-side); this.ring(h.x, h.y - 20, 0xff5a9a, 1.6);
+        const s = this.img(t.x, t.y - hy(t), 'slash', .5, .5, 1.4).setRotation(side > 0 ? Math.PI : 0).setTint(0xff5a9a).setBlendMode('ADD').setDepth(5e5);
+        this.tweens.add({ targets: s, alpha: 0, scale: s.scale * 1.3, duration: 240, onComplete: () => s.destroy() });
+        this.hit(t, 2.4, 'skill', { crit: true });
+        break;
+      }
+      case 'fan': { const a = Math.atan2(t.y - h.y, t.x - h.x); for (const d of [-.5, -.25, 0, .25, .5]) this.proj({ x: ax, y: ay, vx: Math.cos(a + d) * 560, vy: Math.sin(a + d) * 560, key: 'knife', spd: 560, mult: .9, pierce: true, hitSet: new Set(), tint: 0xff5a9a, life: .6 }); break; }
+      case 'veil': this.veilT = 5; this.ring(h.x, h.y - 24, 0xff5a9a, 1.6); this.num(h.x, h.y - 84, 'Shadow Veil', '#ff9ac4', 14); break;
+      case 'mend': this.heal(h.hpMax * .22); this.ring(h.x, h.y - 20, 0x5ff2d0, 2.4); for (const e of this.enemiesIn(h.x, h.y, 120)) this.hit(e, 1.3, 'skill'); break;
+      case 'medrone': { const d = this.img(h.x - 30, h.y - 60, 'medrone', .5, .5, 1).setDepth(5e5); this.drones.push({ s: d, t: 8, cd: 0, heal: true, ht: 1, col: 0x5ff2d0, mult: .55 }); break; }
+      case 'stasis': { const z = t || h; this.zone(z.x, z.y, 95, 5, .45, 0x5ff2d0); break; }
+      case 'quickdraw': for (let k = 0; k < 4; k++) this.time.delayedCall(k * 90, () => { if (t.dead || h.dead) return; this.beam(h.x + h.facing * 24, h.y - 26, t.x + rnd(-6, 6), t.y - hy(t) + rnd(-6, 6), 0xffcf5a, 2, 90); sfx('pistol'); this.hit(t, .85, 'skill'); }); break;
+      case 'ricochet': {
+        const seen = new Set(); let from = { x: h.x + h.facing * 24, y: h.y - 26 };
+        const bounce = (e, n) => { if (!e || e.dead || n >= 5) return; seen.add(e); const to = { x: e.x, y: e.y - hy(e) }; this.beam(from.x, from.y, to.x, to.y, 0xffe08a, 3, 140); this.hit(e, 1.5, 'skill'); from = to; const nx = this.nearestEnemy(e.x, e.y, 230, o => !seen.has(o)); this.time.delayedCall(110, () => bounce(nx, n + 1)); };
+        sfx('pistol'); bounce(t, 0); break;
+      }
+      case 'roll': {
+        const a = t ? Math.atan2(h.y - t.y, h.x - t.x) : (h.facing > 0 ? Math.PI : 0);
+        this.iframeT = .45; this.critShots = 3;
+        this.tweens.add({ targets: h, x: Phaser.Math.Clamp(h.x + Math.cos(a) * 110, 20, this.R.w - 20), y: Phaser.Math.Clamp(h.y + Math.sin(a) * 80, 40, this.R.h - 30), duration: 240, ease: 'Quad.easeOut' });
+        this.tweens.add({ targets: h.body, rotation: Math.PI * 2 * (Math.cos(a) > 0 ? 1 : -1), duration: 240, onComplete: () => h.body.rotation = 0 });
+        this.num(h.x, h.y - 84, 'Next 3 shots crit', '#ffcf5a', 13); break;
+      }
     }
     this.ui.skills();
     return true;
   }
-  ultReady() { return !this.hero.dead && (this.hero.target && !this.hero.target.dead) && (this.enemiesIn(this.hero.x, this.hero.y, 220).length >= 3 || this.hero.target.D.boss); }
+  ultReady() { const h = this.hero; if (h.dead) return false; if (CALLINGS[this.st.cls].ult.id === 'lifeline' && h.hp < h.hpMax * .4) return true; return (h.target && !h.target.dead) && (this.enemiesIn(h.x, h.y, 220).length >= 3 || h.target.D.boss); }
   castUlt() {
     if (this.res < 100 || this.hero.dead || this.paused) return false;
     const C = CALLINGS[this.st.cls], h = this.hero;
@@ -697,6 +835,26 @@ export class WorldScene extends Phaser.Scene {
       const x = t ? t.x : h.x, y = t ? t.y : h.y;
       this.addTele(x, y, 120, .55, 0x5ff2ff, true);
       this.time.delayedCall(550, () => { this.beam(x, y - 900, x, y, 0x9ff6ff, 22, 400); this.ring(x, y, 0x9ff6ff, 3.4); this.cameras.main.shake(300, .01); for (const e of this.enemiesIn(x, y, 125)) this.hit(e, 6.2, 'ult'); });
+    } else if (C.ult.id === 'eclipse') {
+      const list = this.enemies.filter(e => !e.dead && dist(h.x, h.y, e.x, e.y) < 280).sort((a, b) => dist(h.x, h.y, a.x, a.y) - dist(h.x, h.y, b.x, b.y)).slice(0, 6);
+      this.veilT = Math.max(this.veilT, .9); this.cameras.main.flash(200, 255, 90, 154);
+      list.forEach((e, i) => this.time.delayedCall(i * 120, () => {
+        if (e.dead || h.dead) return;
+        const side = Math.sign(e.x - h.x) || 1; this.beam(h.x, h.y - 20, e.x + side * 26, e.y - 20, 0xff5a9a, 6, 200);
+        h.x = Phaser.Math.Clamp(e.x + side * (e.D.boss ? 60 : 26), 20, this.R.w - 20); h.y = Phaser.Math.Clamp(e.y + 2, 40, this.R.h - 30); this.face(-side);
+        const s = this.img(e.x, e.y - hy(e), 'slash', .5, .5, 1.6).setRotation(rnd(0, Math.PI)).setTint(0xff5a9a).setBlendMode('ADD').setDepth(5e5);
+        this.tweens.add({ targets: s, alpha: 0, scale: s.scale * 1.4, duration: 260, onComplete: () => s.destroy() });
+        sfx('slash'); this.hit(e, 3.2, 'ult');
+      }));
+    } else if (C.ult.id === 'lifeline') {
+      this.heal(h.hpMax); this.shield = Math.round(h.hpMax * .4); this.shieldT = 8;
+      this.ring(h.x, h.y - 20, 0x5ff2d0, 3.4); this.ring(h.x, h.y - 20, 0xffffff, 2); this.cameras.main.flash(220, 95, 242, 208);
+      for (const e of this.enemiesIn(h.x, h.y, 150)) this.hit(e, 3.2, 'ult');
+    } else if (C.ult.id === 'deadeye') {
+      const v = this.cameras.main.worldView;
+      const list = this.enemies.filter(e => !e.dead && v.contains(e.x, e.y)).sort((a, b) => b.hp - a.hp).slice(0, 5);
+      const marks = list.map(e => { const m = this.img(e.x, e.y - hy(e), 'ring', .5, .5, .9).setTint(0xffcf5a).setBlendMode('ADD').setDepth(5e5); this.tweens.add({ targets: m, scale: m.scale * .5, duration: 500 }); return m; });
+      this.time.delayedCall(520, () => { marks.forEach(m => m.destroy()); list.forEach((e, i) => this.time.delayedCall(i * 70, () => { if (e.dead || h.dead) return; this.beam(h.x + h.facing * 24, h.y - 26, e.x, e.y - hy(e), 0xffffff, 4, 200); sfx('pistol'); this.hit(e, 4.6, 'ult'); })); this.cameras.main.shake(200, .006); });
     } else {
       this.cameras.main.flash(260, 197, 139, 255);
       const v = this.cameras.main.worldView;
@@ -745,7 +903,7 @@ export class WorldScene extends Phaser.Scene {
       e.cd = 1.5; const S = echoStats(this.st, e.id);
       this.proj({ x: e.x, y: e.y - 22, tgt: t, key: 'dot', scale: 1.4, spd: 420, mult: (S.atk + h.atk * .3) / h.atk * .9, tint: ECHOES[e.id].color });
     }
-    const k = this.sx('echo_' + e.id) * (this.st.echoes[e.id]?.evo ? 1.25 : 1);
+    const k = this.sx('echo_' + e.id) * [1, 1.25, 1.45][+(this.st.echoes[e.id]?.evo) || 0];
     if (e.hover) { e.body.y = -10 + Math.sin(e.t * 3) * 4; e.body.rotation = Math.sin(e.t * 2) * .06; }
     else { const b = Math.abs(Math.sin(e.t * 7)) * (dist(e.x, e.y, h.x - h.facing * 34, h.y + 8) > 6 ? 4 : 1); e.body.y = -6 - b; e.body.setScale(k * (1 + b * .01), k * (1 - b * .01)); }
     e.glow.y = e.body.y - 12;
@@ -757,7 +915,8 @@ export class WorldScene extends Phaser.Scene {
     for (const d of this.drones) {
       d.t -= dt; d.cd -= dt;
       d.s.x += (h.x - 26 - d.s.x) * dt * 3; d.s.y += (h.y - 64 + Math.sin(this.now * 4) * 4 - d.s.y) * dt * 3;
-      if (d.cd <= 0) { const t = this.nearestEnemy(d.s.x, d.s.y, 230); if (t) { d.cd = .5; this.beam(d.s.x, d.s.y, t.x, t.y - 16, 0x5ff2ff, 2, 100); this.hit(t, .6, 'skill'); } }
+      if (d.cd <= 0) { const t = this.nearestEnemy(d.s.x, d.s.y, 230); if (t) { d.cd = d.heal ? .6 : .5; this.beam(d.s.x, d.s.y, t.x, t.y - 16, d.col || 0x5ff2ff, 2, 100); this.hit(t, d.mult || .6, 'skill'); } }
+      if (d.heal) { d.ht -= dt; if (d.ht <= 0) { d.ht = 1; this.heal(h.hpMax * .03, '', true); this.beam(d.s.x, d.s.y, h.x, h.y - 30, 0x7fffb0, 2, 160); } }
       if (d.t <= 0) { d.done = true; this.tweens.add({ targets: d.s, alpha: 0, duration: 300, onComplete: () => d.s.destroy() }); }
     }
     this.drones = this.drones.filter(d => !d.done);
@@ -942,11 +1101,14 @@ export class WorldScene extends Phaser.Scene {
     for (const id in this.npcs) { const n = this.npcs[id]; const on = !!(q && q.kind === 'talk' && q.npc === id); n.mark.setVisible(on); n.mark.setText('!'); }
     if (this.npcs.hush) { const show = !!(q && q.id === 'ii_canyon'); const n = this.npcs.hush; if (n.c.visible !== show) { n.c.setVisible(show); n.name.setVisible(show); } }
     if (this.geodeGlow) this.geodeGlow.setVisible(!!(q && q.id === 'geode'));
-    const B = this.R.boss, bossIdx = QUESTS.findIndex(q => q.id === B.quest), arena = this.P[B.at];
+    const B = this.R.boss;
+    if (B) {
+    const bossIdx = QUESTS.findIndex(q => q.id === B.quest), arena = this.P[B.at];
     if (!this.boss && this.st.q >= bossIdx && this.now > (this.bossCd || 0) && !this.hero.dead && dist(this.hero.x, this.hero.y, arena.x, arena.y) < 420) {
       this.spawnEnemy({ type: B.type, x: arena.x, y: arena.y, r: 1, count: 0, boss: true }, arena);
     }
     if (this.door) this.door.setVisible(this.st.q > bossIdx);
+    }
     if (this.boss && !this.boss.dead && this.boss.aggro) this.ui.bossBar(this.boss);
   }
 
@@ -975,8 +1137,8 @@ export class WorldScene extends Phaser.Scene {
     if (r.lumen) { st.lumen += r.lumen; this.ui.lumenBump(); }
     if (r.shards) st.shards += r.shards;
     if (r.geode) st.geodes += r.geode;
-    if (r.gear) { const g = makeGear(st.cls, r.gear, Math.max(2, st.lvl), r.gearRar || 1); const cur = st.gear[r.gear]; while (cur && gearValue(r.gear, cur) >= gearValue(r.gear, g)) g.ilvl++; st.gear[r.gear] = g; this.refreshStats(false); this.ui.gearPop(r.gear, g, true); }
-    if (r.echo) { st.echoes[r.echo] = { lvl: 1, evo: false }; st.activeEcho = r.echo; this.setEcho(r.echo); this.ring(this.hero.x, this.hero.y - 20, 0xbfe8ff, 3); this.ui.newEcho(r.echo); }
+    if (r.gear) { const g = makeGear(st.cls, r.gear, Math.max(2, st.lvl), r.gearRar || 1); const cur = st.gear[r.gear]; if (cur) g.star = cur.star || 0; while (cur && gearValue(r.gear, cur) >= gearValue(r.gear, g)) g.ilvl++; st.gear[r.gear] = g; this.refreshStats(false); this.ui.gearPop(r.gear, g, true); }
+    if (r.echo) { st.echoes[r.echo] = { lvl: 1, evo: 0 }; st.activeEcho = r.echo; this.setEcho(r.echo); this.ring(this.hero.x, this.hero.y - 20, 0xbfe8ff, 3); this.ui.newEcho(r.echo); }
     for (const c of q.codex || []) this.unlockCodex(c);
     sfx('quest');
     this.ui.questDone(q, r);
@@ -988,7 +1150,7 @@ export class WorldScene extends Phaser.Scene {
     const q = this.quest();
     if (this.st.q >= QUESTS.findIndex(x => x.id === 'ii_brief')) this.st.actDone = true;
     if (!q && !this.st.bounty) this.pickBounty();
-    if (!q && this.st.bounty && this.bounty() && (this.bounty().region || 'verge') !== this.st.region) this.pickBounty();
+    if (!q && this.st.bounty && this.bounty() && (this.bounty().region || 'verge') !== this.st.region && !this.R.tower) this.pickBounty();
     if (q && !initial) this.ui.toast('New quest: ' + q.title);
     if (q && q.kind === 'travel' && (q.region || 'verge') === this.st.region) { this.time.delayedCall(initial ? 900 : 200, () => { if (this.quest() === q) this.completeQuest(); }); }
     if (q && (q.kind === 'hatch' || q.kind === 'forge')) this.checkUiQuest();
