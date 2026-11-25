@@ -1,7 +1,8 @@
-import { CALLINGS, ECHOES, HATCHABLE, SLOTS, RARITY, CODEX, QUESTS, NPCS, BOUNTIES, ACTS, ART, REGIONS, ENEMIES, TOWER_LINES } from './data.js?v=4';
-import { portraitCanvas, LOOKS, iconCanvas, echoCanvas, lumenCanvas, shardIconCanvas, geodeCanvas } from './art.js?v=4';
-import { heroStats, power, xpNeed, gearLine, upgradeCost, echoStats, echoLevelCost, EVOLVE_COST, ASCEND_COST, STAR_MAX, refineCost, refineNeed, save, wipe } from './state.js?v=4';
-import { sfx, setMusic, audioResume } from './audio.js?v=4';
+import { CALLINGS, ECHOES, HATCHABLE, SLOTS, RARITY, CODEX, QUESTS, NPCS, BOUNTIES, ACTS, ART, REGIONS, ENEMIES, TOWER_LINES, RANKS, CALLING_PORTRAIT, TREES, TREE_THEMES, TREE_ROW_REQ } from './data.js?v=5';
+import { portraitCanvas, LOOKS, iconCanvas, echoCanvas, lumenCanvas, shardIconCanvas, geodeCanvas, composeLook, RANK_THEMES } from './art.js?v=5';
+import { heroStats, power, xpNeed, gearLine, upgradeCost, echoStats, echoLevelCost, EVOLVE_COST, ASCEND_COST, STAR_MAX, refineCost, refineNeed, save, wipe, rankIndex, portraitDef, portraitUnlocked, treeOf, treePoints, branchSpent, nodeDef, canLearn, respecCost } from './state.js?v=5';
+import { sfx, setMusic, audioResume } from './audio.js?v=5';
+import { creator } from './creator.js?v=5';
 
 const $ = (s, r = document) => r.querySelector(s);
 const el = (tag, cls, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; };
@@ -62,7 +63,7 @@ export class UI {
   autoBtn() { $('#autob').classList.toggle('on', this.st.auto !== false); $('#askb').classList.toggle('on', !!this.st.settings.autoSkill); }
 
   portrait(who) {
-    if (who === 'you' && ART.face[this.st.cls]) return ART.face[this.st.cls];
+    if (who === 'you') return this.portraitImg(portraitUnlocked(this.st, this.st.portrait) ? this.st.portrait : 'calling');
     if (ART.portrait[who]) return ART.portrait[who];
     if (this.img['p_' + who]) return this.img['p_' + who];
     let c;
@@ -80,7 +81,20 @@ export class UI {
     const C = CALLINGS[this.st.cls];
     C.skills.forEach((s, i) => { $(`#sk${i} img`).src = this.icon(s.id, C.color); $(`#sk${i} .lb`).textContent = s.name; });
     $('#ult img').src = this.icon(C.ult.id, 0xffcf5a); $('#ult .lb').textContent = C.ult.name;
-    $('#pc .av img').src = this.portrait('you'); $('#pc .nm').textContent = C.name;
+    this.hudId();
+  }
+  hudId() {
+    const st = this.st, fr = RANKS.find(r => r.id === st.frame) || RANKS[0];
+    $('#pc .av img').src = this.portrait('you'); $('#pc .nm').textContent = st.name || CALLINGS[st.cls].name;
+    const av = $('#pc .av'); av.style.borderColor = fr.color; av.style.boxShadow = `0 0 10px ${fr.color}66`;
+  }
+  lookKey() { const l = this.st.look || {}; return this.st.cls + [l.sex, l.head, l.face, l.body, l.skin, l.hairc, l.gear === false ? 0 : 1].join(''); }
+  portraitImg(id) {
+    const st = this.st, sex = (st.look && st.look.sex) || 'm';
+    if (id === 'calling') { const artSex = { psion: 'f' }[st.cls] || 'm'; if (sex === artSex && ART.face[st.cls]) return ART.face[st.cls]; if (ART.faceAlt && ART.faceAlt[st.cls + '_' + sex]) return ART.faceAlt[st.cls + '_' + sex]; id = 'recruit'; }
+    if (ART.avatar && ART.avatar[id + '_' + sex]) return ART.avatar[id + '_' + sex];
+    const k = 'pr_' + id + this.lookKey();
+    return this.img[k] || (this.img[k] = url(portraitCanvas(composeLook(st.cls, st.look), 192, RANK_THEMES[id] || RANK_THEMES.recruit)));
   }
   echoBtn() {
     const id = this.st.activeEcho, b = $('#echob');
@@ -105,6 +119,7 @@ export class UI {
     const canEcho = st.geodes > 0 || (e && ((e.lvl < es.cap && st.shards >= echoLevelCost(e.lvl)) || (es.evo === 0 && e.lvl >= es.cap && st.shards >= EVOLVE_COST) || (es.evo === 1 && e.lvl >= es.cap && st.shards >= ASCEND_COST)));
     if (this.cur !== 'forge') $('#nav button[data-p="forge"]').classList.toggle('new', canForge);
     if (this.cur !== 'echoes') $('#nav button[data-p="echoes"]').classList.toggle('new', !!canEcho);
+    if (this.cur !== 'hero') $('#nav button[data-p="hero"]').classList.toggle('new', treePoints(st) > 0);
   }
   skills() { this.t = 1; }
   lumenBump() { const p = $('#lumen'); p.classList.remove('bump'); void p.offsetWidth; p.classList.add('bump'); this.stats(); }
@@ -188,8 +203,8 @@ export class UI {
       const L = lines[i], who = L.who, N = NPCS[who] || NPCS.you;
       d.style.setProperty('--c', who === 'you' ? '#5ff2ff' : N.color);
       $('.por', d).innerHTML = `<img src="${this.portrait(who)}" alt="">`;
-      $('.who', d).textContent = who === 'you' ? CALLINGS[this.st.cls].name + ' (you)' : N.name;
-      $('.ttl', d).textContent = N.title;
+      $('.who', d).textContent = who === 'you' ? (this.st.name || CALLINGS[this.st.cls].name) : N.name;
+      $('.ttl', d).textContent = who === 'you' ? CALLINGS[this.st.cls].name + ' · ' + RANKS[rankIndex(this.st.lvl)].name : N.title;
       const tx = $('.tx', d); tx.classList.toggle('sk', who === 'skein'); tx.textContent = '';
       let n = 0; clearInterval(typing);
       typing = setInterval(() => { n += 2; tx.textContent = L.text.slice(0, n); if (n >= L.text.length) { clearInterval(typing); typing = null; } }, 28);
@@ -226,10 +241,43 @@ export class UI {
   render() { const bd = $('#sheet .bd'); bd.innerHTML = ''; this['p_' + this.cur](bd); }
 
   p_hero(bd) {
-    const st = this.st, C = CALLINGS[st.cls], s = heroStats(st);
-    bd.innerHTML = `<div class="hero-top"><img src="${this.callingImg(st.cls)}" alt=""><div><div class="n">${C.name}</div><div class="r">${C.role} · Mentor: ${C.mentor}</div><div class="p">Level ${st.lvl} · Power ${fmt(power(st))}</div></div></div>
-      <div class="stats"><div class="stat"><div class="k">Attack</div><div class="v">${Math.round(s.atk)}</div></div><div class="stat"><div class="k">Max HP</div><div class="v">${s.hpMax}</div></div><div class="stat"><div class="k">Defense</div><div class="v">${Math.round(s.def)}</div></div><div class="stat"><div class="k">Crit chance</div><div class="v">${(s.crit * 100).toFixed(1)}%</div></div></div>
-      <div class="sec">Gear</div>`;
+    const tabs = el('div', 'tabs');
+    for (const [k, n] of [['over', 'Overview'], ['tree', 'Talents'], ['look', 'Appearance']]) {
+      const b = el('button', (this.heroTab || 'over') === k ? 'on' : '', n + (k === 'tree' && treePoints(this.st) ? ` <i class="badge">${treePoints(this.st)}</i>` : ''));
+      b.onclick = () => { this.heroTab = k; sfx('ui'); this.render(); }; tabs.appendChild(b);
+    }
+    bd.appendChild(tabs);
+    const tab = this.heroTab || 'over';
+    if (tab === 'tree') return this.p_tree(bd);
+    if (tab === 'look') return this.p_look(bd);
+    const st = this.st, C = CALLINGS[st.cls], s = heroStats(st), ri = rankIndex(st.lvl), R = RANKS[ri], nx = RANKS[ri + 1];
+    const top = el('div', 'hero-top', `<div class="hp-av" style="border-color:${(RANKS.find(r => r.id === st.frame) || R).color}"><img src="${this.portrait('you')}" alt=""></div><div class="grow"><div class="n">${esc(st.name || C.name)}</div><div class="r">${C.name} · Rank ${R.n} ${R.name}</div><div class="p">Level ${st.lvl} · Power ${fmt(power(st))}</div></div>`);
+    const rn = el('button', 'btn ghost small', 'Rename'); rn.onclick = () => this.renameModal(); top.appendChild(rn);
+    bd.appendChild(top);
+    bd.appendChild(el('div', 'card small rankcard', `<b class="d" style="color:${R.color}">Ascension Rank ${R.n}: ${R.name}</b><div class="muted">${nx ? `Next: <b>${nx.name}</b> at level ${nx.lvl}. Unlocks a portrait, a frame and ${esc(nx.permText.toLowerCase())}.` : 'Highest rank reached.'}</div>`));
+    bd.appendChild(el('div', 'stats', `<div class="stat"><div class="k">Attack</div><div class="v">${Math.round(s.atk)}</div></div><div class="stat"><div class="k">Max HP</div><div class="v">${s.hpMax}</div></div><div class="stat"><div class="k">Defense</div><div class="v">${Math.round(s.def)}</div></div><div class="stat"><div class="k">Crit</div><div class="v">${(s.crit * 100).toFixed(1)}% · ${(s.critDmg * 100).toFixed(0)}%</div></div>`));
+    bd.appendChild(el('div', 'sec', 'Portraits'));
+    bd.appendChild(el('div', 'small muted', 'Every rank unlocks a portrait and a permanent bonus. The portrait you wear adds its own bonus.'));
+    const grid = el('div', 'pgrid');
+    for (const P of [CALLING_PORTRAIT].concat(RANKS)) {
+      const open = portraitUnlocked(st, P.id), on = (st.portrait || 'calling') === P.id;
+      const c = el('button', 'ptile' + (open ? '' : ' lock') + (on ? ' on' : ''), `<img src="${this.portraitImg(P.id)}" alt=""><div class="pn">${P.id === 'calling' ? C.name : P.n + ' ' + P.name}</div><div class="pb">${esc(P.pbText)}</div>${open ? '' : `<div class="pl">Level ${P.lvl}</div>`}`);
+      if (open && !on) c.onclick = () => { st.portrait = P.id; this.w.refreshStats(false); this.hudId(); sfx('gear'); save(st); this.render(); this.stats(); };
+      grid.appendChild(c);
+    }
+    bd.appendChild(grid);
+    bd.appendChild(el('div', 'sec', 'Frame'));
+    const fr = el('div', 'frames');
+    for (const R2 of RANKS) {
+      const open = st.lvl >= R2.lvl, on = st.frame === R2.id;
+      const b = el('button', 'fr' + (open ? '' : ' lock') + (on ? ' on' : ''), `<i style="border-color:${R2.color};box-shadow:0 0 8px ${R2.color}88"></i><span>${R2.name}</span>`);
+      if (open) b.onclick = () => { st.frame = R2.id; this.hudId(); sfx('ui'); save(st); this.render(); };
+      fr.appendChild(b);
+    }
+    bd.appendChild(fr);
+    bd.appendChild(el('div', 'sec', 'Permanent rank bonuses'));
+    bd.appendChild(el('div', 'small', RANKS.slice(1).map(R2 => `<div class="${st.lvl >= R2.lvl ? '' : 'muted'}">${st.lvl >= R2.lvl ? '✓' : '·'} ${R2.n} ${R2.name}: ${esc(R2.permText)}</div>`).join('')));
+    bd.appendChild(el('div', 'sec', 'Gear'));
     for (const sl of SLOTS) {
       const g = st.gear[sl.id];
       const col = g ? parseInt(RARITY[g.rar].color.slice(1), 16) : 0x3a5262;
@@ -237,6 +285,63 @@ export class UI {
       bd.appendChild(r);
     }
     bd.appendChild(el('div', 'small muted', 'Better gear equips itself when it drops. Weaker drops are salvaged into Lumen.'));
+  }
+
+  p_tree(bd) {
+    const st = this.st, C = CALLINGS[st.cls], T = TREES[st.cls], t = treeOf(st), pts = treePoints(st);
+    const head = el('div', 'tree-head', `<div><b class="d">${pts}</b> point${pts === 1 ? '' : 's'} to spend</div><div class="small muted">You earn 1 point every level. Each row opens after you spend 3 more points in that branch.</div>`);
+    const cost = respecCost(st), spent = Object.values(t).reduce((a, b) => a + b, 0);
+    if (spent) { const rb = el('button', 'btn ghost small', cost ? `Reset · <span class="c"><img src="${this.lumenIcon}" alt="">${cost}</span>` : 'Reset (free)'); rb.disabled = st.lumen < cost; rb.onclick = () => { if (!rb.dataset.c) { rb.dataset.c = 1; rb.textContent = 'Tap again to reset'; return; } st.lumen -= cost; st.trees[st.cls] = {}; this.selNode = null; this.w.refreshStats(false); sfx('ui'); save(st); this.render(); this.stats(); }; head.appendChild(rb); }
+    bd.appendChild(head);
+    const tree = el('div', 'tree');
+    T.forEach((B, b) => {
+      const col = el('div', 'tcol');
+      const bs = branchSpent(st, b);
+      col.appendChild(el('div', 'tb', `<div class="tbn">${esc(B.name)}</div><div class="tbd">${esc(B.desc)}</div><div class="tbs">${bs} pts</div>`));
+      for (let r = 0; r < 6; r++) {
+        const N = nodeDef(st.cls, b, r), have = t[N.id] || 0, open = bs >= TREE_ROW_REQ[r], can = canLearn(st, b, r), sel = this.selNode === N.id;
+        const icon = N.icon === 'S' ? B.skill : N.icon;
+        const n = el('button', 'tn' + (have ? ' has' : '') + (open ? '' : ' lock') + (can ? ' can' : '') + (have >= N.max ? ' max' : '') + (N.k === 'key' ? ' key' : '') + (sel ? ' sel' : ''), `<img src="${this.icon(icon, N.k === 'key' ? 0xffcf5a : C.color)}" alt=""><i>${have}/${N.max}</i>`);
+        n.onclick = () => { this.selNode = N.id; sfx('tap'); this.render(); };
+        col.appendChild(n);
+      }
+      tree.appendChild(col);
+    });
+    bd.appendChild(tree);
+    const id = this.selNode;
+    if (id) {
+      const [b, r] = id.split('_').map(Number), N = nodeDef(st.cls, b, r), B = T[b], have = t[id] || 0;
+      const sk = C.skills.find(k => k.id === B.skill);
+      const name = N.icon === 'S' ? `${N.name} ${sk.name}` : N.name;
+      const per = N.k === 'key' ? N.desc : N.k === 'skillDmg' ? `+${Math.round(N.v * 100)}% ${sk.name} power per rank (damage, healing, shields).` : N.k === 'skillCd' ? `${sk.name} cooldown −${Math.round(N.v * 100)}% per rank.` : N.k === 'regen' ? `Regenerate ${(N.v * 100).toFixed(1)}% of max HP per second per rank.` : `+${N.k === 'crit' ? (N.v * 100).toFixed(0) : Math.round(N.v * 100)}% ${N.fmt} per rank.`;
+      const det = el('div', 'card tdet', `<div class="row"><img src="${this.icon(N.icon === 'S' ? B.skill : N.icon, N.k === 'key' ? 0xffcf5a : C.color)}" style="width:44px;height:44px" alt=""><div class="grow"><b class="d">${esc(name)}</b> <span class="tag">${have}/${N.max}</span><div class="small muted">${esc(B.name)} · row ${r + 1}${branchSpent(st, b) < TREE_ROW_REQ[r] ? ` · needs ${TREE_ROW_REQ[r]} points in ${esc(B.name)}` : ''}</div></div></div><div class="small" style="margin-top:6px">${esc(per)}</div>`);
+      const lb = el('button', 'btn gold', have >= N.max ? 'Maxed' : 'Learn · 1 point'); lb.style.marginTop = '10px'; lb.style.width = '100%';
+      lb.disabled = !canLearn(st, b, r);
+      lb.onclick = () => { if (!canLearn(st, b, r)) return; t[id] = have + 1; this.w.refreshStats(false); sfx('level'); save(st); this.render(); this.stats(); };
+      det.appendChild(lb); bd.appendChild(det);
+    } else bd.appendChild(el('div', 'small muted tdet', 'Tap a talent to see what it does.'));
+  }
+
+  p_look(bd) {
+    const st = this.st, box = el('div');
+    bd.appendChild(box);
+    creator(box, { cls: st.cls, look: st.look, name: st.name, mode: 'edit', onDone: (look, name) => { st.look = look; st.name = name; save(st); this.img = Object.fromEntries(Object.entries(this.img).filter(([k]) => !k.startsWith('pr_'))); this.hudId(); this.heroTab = 'over'; this.close(); this.w.restyle(); } });
+  }
+  renameModal() {
+    const st = this.st, m = $('#modal');
+    m.innerHTML = `<div class="box"><div class="k">Beacon Lodge registry</div><h3>Rename</h3><div class="cre-name"><input type="text" maxlength="16" value="${esc(st.name || '')}" autocomplete="off" spellcheck="false"></div><div class="row" style="justify-content:center;gap:10px;margin-top:12px"><button class="btn ghost">Cancel</button><button class="btn gold">Save</button></div></div>`;
+    m.classList.add('on');
+    const inp = $('input', m), [cancel, ok] = m.querySelectorAll('.btn');
+    cancel.onclick = () => m.classList.remove('on');
+    ok.onclick = () => { const v = String(inp.value).replace(/[^A-Za-z0-9 '\-.]/g, '').replace(/\s+/g, ' ').trim().slice(0, 16); if (v.length < 2) { inp.focus(); return; } st.name = v; save(st); this.hudId(); m.classList.remove('on'); sfx('quest'); this.render(); };
+  }
+  rankUp(ri) {
+    const R = RANKS[ri], m = $('#modal'), st = this.st;
+    m.innerHTML = `<div class="box"><div class="k">Ascension</div><div class="hatch-art asc"><img class="pop" src="${this.portraitImg(R.id)}" alt=""></div><h3 style="color:${R.color}">Rank ${R.n}: ${R.name}</h3><p class="small"><b>Permanent:</b> ${esc(R.permText)}<br><b>New portrait:</b> ${esc(R.pbText)} while equipped<br><b>New frame</b> unlocked</p><div class="row" style="justify-content:center;gap:10px"><button class="btn ghost">Later</button><button class="btn gold">Equip portrait</button></div></div>`;
+    m.classList.add('on'); sfx('hatch');
+    const [later, eq] = m.querySelectorAll('.btn');
+    later.onclick = () => m.classList.remove('on');
+    eq.onclick = () => { st.portrait = R.id; st.frame = R.id; this.w.refreshStats(false); this.hudId(); save(st); m.classList.remove('on'); this.stats(); };
   }
 
   p_echoes(bd) {

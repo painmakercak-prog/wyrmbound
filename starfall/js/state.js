@@ -1,10 +1,10 @@
-import { CALLINGS, ECHOES, SLOTS, RARITY, GEAR_NAMES, QUESTS } from './data.js?v=4';
+import { CALLINGS, ECHOES, SLOTS, RARITY, GEAR_NAMES, QUESTS, RANKS, CALLING_PORTRAIT, TREES, TREE_THEMES, TREE_ROW_REQ } from './data.js?v=5';
 
 const KEY = 'starfall.save.v1';
 
-export function fresh(cls) {
+export function fresh(cls, look, name) {
   return {
-    v: 1, cls, region: 'verge', lvl: 1, xp: 0, lumen: 0, shards: 0, geodes: 0, q: 0, qp: 0,
+    v: 1, cls, name: name || 'Hunter', look: look || null, portrait: 'calling', frame: 'recruit', trees: {}, rankSeen: 1, region: 'verge', lvl: 1, xp: 0, lumen: 0, shards: 0, geodes: 0, q: 0, qp: 0,
     gear: Object.fromEntries(SLOTS.map(s => [s.id, null])),
     echoes: {}, activeEcho: null, codex: {}, kills: {}, bounty: null,
     settings: { sound: true, music: true, autoSkill: true },
@@ -13,7 +13,7 @@ export function fresh(cls) {
 }
 
 export function load() {
-  try { const s = JSON.parse(localStorage.getItem(KEY) || 'null'); if (s && s.v === 1 && CALLINGS[s.cls]) { if (!s.region) s.region = 'verge'; if (!s.tower) s.tower = { best: 0, from: 'verge' }; for (const k in s.echoes) s.echoes[k].evo = +s.echoes[k].evo || 0; return s; } } catch (e) {}
+  try { const s = JSON.parse(localStorage.getItem(KEY) || 'null'); if (s && s.v === 1 && CALLINGS[s.cls]) { if (!s.region) s.region = 'verge'; if (!s.tower) s.tower = { best: 0, from: 'verge' }; if (!s.trees) s.trees = {}; if (!s.portrait) s.portrait = 'calling'; if (!s.frame) s.frame = 'recruit'; if (!s.rankSeen) s.rankSeen = rankIndex(s.lvl) + 1; for (const k in s.echoes) s.echoes[k].evo = +s.echoes[k].evo || 0; return s; } } catch (e) {}
   return null;
 }
 export function save(st) { try { st.lastSeen = Date.now(); localStorage.setItem(KEY, JSON.stringify(st)); } catch (e) {} }
@@ -39,14 +39,40 @@ export function gearLine(slot, g) {
   return '';
 }
 
+export function rankIndex(lvl) { let r = 0; for (let i = 0; i < RANKS.length; i++) if (lvl >= RANKS[i].lvl) r = i; return r; }
+export function portraitDef(id) { return id === 'calling' ? CALLING_PORTRAIT : RANKS.find(r => r.id === id) || CALLING_PORTRAIT; }
+export function portraitUnlocked(st, id) { if (id === 'calling') return true; const r = RANKS.find(x => x.id === id); return !!r && st.lvl >= r.lvl; }
+export function treeOf(st, cls = st.cls) { if (!st.trees) st.trees = {}; return st.trees[cls] || (st.trees[cls] = {}); }
+export function treeSpent(st, cls = st.cls) { return Object.values(treeOf(st, cls)).reduce((a, b) => a + b, 0); }
+export function treePoints(st) { return Math.max(0, st.lvl - 1 - treeSpent(st)); }
+export function branchSpent(st, b) { const t = treeOf(st); let n = 0; for (let r = 0; r < 6; r++) n += t[b + '_' + r] || 0; return n; }
+export function nodeDef(cls, b, r) { const B = TREES[cls][b], N = TREE_THEMES[B.theme][r]; return Object.assign({ id: b + '_' + r, branch: B }, N); }
+export function canLearn(st, b, r) { const N = nodeDef(st.cls, b, r), have = treeOf(st)[N.id] || 0; return treePoints(st) > 0 && have < N.max && branchSpent(st, b) >= TREE_ROW_REQ[r]; }
+export const respecCost = st => st.lvl < 10 ? 0 : st.lvl * 40;
+export function mods(st) {
+  const m = { atkPct: 0, hpPct: 0, defPct: 0, crit: 0, critDmg: 0, aspd: 0, res: 0, echo: 0, regen: 0, xp: 0, skill: 0, skillDmg: {}, skillCd: {}, keys: {} };
+  const add = o => { for (const k in o) m[k] += o[k]; };
+  for (const R of RANKS) if (st.lvl >= R.lvl) add(R.perm);
+  if (portraitUnlocked(st, st.portrait || 'calling')) add(portraitDef(st.portrait || 'calling').pb);
+  const T = TREES[st.cls], t = treeOf(st);
+  if (T) for (let b = 0; b < 3; b++) for (let r = 0; r < 6; r++) {
+    const n = t[b + '_' + r] || 0; if (!n) continue;
+    const N = TREE_THEMES[T[b].theme][r], sid = T[b].skill;
+    if (N.k === 'key') m.keys[N.key] = true;
+    else if (N.k === 'skillDmg') m.skillDmg[sid] = (m.skillDmg[sid] || 0) + N.v * n;
+    else if (N.k === 'skillCd') m.skillCd[sid] = (m.skillCd[sid] || 0) + N.v * n;
+    else m[N.k] += N.v * n;
+  }
+  return m;
+}
 export function heroStats(st) {
-  const C = CALLINGS[st.cls], L = st.lvl - 1;
+  const C = CALLINGS[st.cls], L = st.lvl - 1, m = mods(st);
   const g = st.gear;
-  const atk = C.base.atk + C.per.atk * L + gearValue('weapon', g.weapon) + gearValue('implant', g.implant) * 120;
-  const hpMax = C.base.hp + C.per.hp * L + gearValue('armor', g.armor);
-  const def = C.base.def + C.per.def * L + gearValue('charm', g.charm);
-  const crit = Math.min(0.6, C.base.crit + gearValue('implant', g.implant));
-  return { atk, hpMax: Math.round(hpMax), def, crit, critDmg: 1.6 };
+  const atk = (C.base.atk + C.per.atk * L + gearValue('weapon', g.weapon) + gearValue('implant', g.implant) * 120) * (1 + m.atkPct);
+  const hpMax = (C.base.hp + C.per.hp * L + gearValue('armor', g.armor)) * (1 + m.hpPct);
+  const def = (C.base.def + C.per.def * L + gearValue('charm', g.charm)) * (1 + m.defPct);
+  const crit = Math.min(0.7, C.base.crit + gearValue('implant', g.implant) + m.crit);
+  return { atk, hpMax: Math.round(hpMax), def, crit, critDmg: 1.6 + m.critDmg, mods: m };
 }
 export function power(st) { const s = heroStats(st); return Math.round(s.atk * 4 + s.hpMax * 0.6 + s.def * 3 + s.crit * 600 + echoPower(st)); }
 

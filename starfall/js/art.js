@@ -45,27 +45,37 @@ function eye(x, cx, cy, r, iris = '#0b1620', look = 0) {
 const SKIN = { light: '#f6d2b3', tan: '#d9a27c', deep: '#8a5638', dark: '#6b412b' };
 
 export function drawChar(x, o) {
-  const cx = 32;
+  const cx = 32, bw = o.bw || 13;
   x.save();
   if (o.back) o.back(x, cx);
   if (o.hairBack) o.hairBack(x, cx);
   const coat = o.coat, trim = o.trim;
-  ell(x, cx - 14, 47, 5, 7); fillStroke(x, shade(coat, -.15), 1.8);
-  ell(x, cx + 14, 47, 5, 7); fillStroke(x, shade(coat, -.15), 1.8);
-  rr(x, cx - 13, 38, 26, o.long ? 27 : 22, 9); fillStroke(x, lg(x, cx, 38, cx, 62, [[0, shade(coat, .12)], [1, shade(coat, -.25)]]), 2);
+  ell(x, cx - bw - 1, 47, 5, 7); fillStroke(x, shade(coat, -.15), 1.8);
+  ell(x, cx + bw + 1, 47, 5, 7); fillStroke(x, shade(coat, -.15), 1.8);
+  rr(x, cx - bw, 38, bw * 2, o.long ? 27 : 22, 9); fillStroke(x, lg(x, cx, 38, cx, 62, [[0, shade(coat, .12)], [1, shade(coat, -.25)]]), 2);
   if (o.chest) o.chest(x, cx);
-  x.beginPath(); x.moveTo(cx - 13, 52); x.lineTo(cx + 13, 52); x.lineWidth = 3; x.strokeStyle = trim; x.stroke();
-  ell(x, cx - 14, 51, 3.4, 3.4); fillStroke(x, o.skin, 1.4);
-  ell(x, cx + 14, 51, 3.4, 3.4); fillStroke(x, o.skin, 1.4);
+  x.beginPath(); x.moveTo(cx - bw, 52); x.lineTo(cx + bw, 52); x.lineWidth = 3; x.strokeStyle = trim; x.stroke();
+  ell(x, cx - bw - 1, 51, 3.4, 3.4); fillStroke(x, o.skin, 1.4);
+  ell(x, cx + bw + 1, 51, 3.4, 3.4); fillStroke(x, o.skin, 1.4);
   ell(x, cx, 24, 17, 16.5); fillStroke(x, lg(x, cx, 10, cx, 40, [[0, shade(o.skin, .08)], [1, shade(o.skin, -.12)]]), 2);
   ell(x, cx - 9.5, 30, 3, 1.8); x.fillStyle = 'rgba(255,120,120,.28)'; x.fill();
   ell(x, cx + 9.5, 30, 3, 1.8); x.fill();
-  eye(x, cx - 6, 25.5, 3.6, o.iris || '#22324a');
-  eye(x, cx + 6, 25.5, 3.6, o.iris || '#22324a');
-  x.beginPath(); x.moveTo(cx - 2, 32); x.quadraticCurveTo(cx, 33.6, cx + 2, 32); x.lineWidth = 1.3; x.strokeStyle = OL; x.stroke();
+  drawFace(x, cx, o);
   if (o.hair) o.hair(x, cx);
   if (o.front) o.front(x, cx);
   x.restore();
+}
+
+function drawFace(x, cx, o) {
+  const f = o.face || 0, iris = o.iris || '#22324a', brow = o.brow || OL, fem = o.sex === 'f';
+  const r = f === 2 ? 4.1 : f === 1 ? 3.3 : 3.6;
+  eye(x, cx - 6, 25.5, r, iris); eye(x, cx + 6, 25.5, r, iris);
+  if (f === 1) { for (const sg of [-1, 1]) { x.beginPath(); x.moveTo(cx + sg * 2.5, 21.4); x.lineTo(cx + sg * 9.5, 20); x.lineWidth = 1.9; x.strokeStyle = brow; x.stroke(); } }
+  if (f === 2) { for (const sg of [-1, 1]) { x.beginPath(); x.moveTo(cx + sg * 3, 20); x.quadraticCurveTo(cx + sg * 6, 18, cx + sg * 9, 19.6); x.lineWidth = 1.5; x.strokeStyle = brow; x.stroke(); } }
+  if (fem) for (const sg of [-1, 1]) { const ex = cx + sg * 6, ey = 25.5 - r * .8; x.beginPath(); x.moveTo(ex + sg * r * .5, ey + .6); x.lineTo(ex + sg * (r * .95), ey - 1.4); x.moveTo(ex + sg * r * .15, ey - .1); x.lineTo(ex + sg * r * .4, ey - 2); x.lineWidth = 1.1; x.strokeStyle = OL; x.stroke(); }
+  if (f === 1) { x.beginPath(); x.moveTo(cx - 2.6, 32.6); x.lineTo(cx + 2.6, 32.4); x.lineWidth = 1.3; x.strokeStyle = fem ? '#a0485a' : OL; x.stroke(); }
+  else if (f === 2) { x.beginPath(); x.moveTo(cx - 3.4, 31.6); x.quadraticCurveTo(cx, 35.6, cx + 3.4, 31.6); x.closePath(); x.fillStyle = '#5a1a24'; x.fill(); x.lineWidth = 1.1; x.strokeStyle = OL; x.stroke(); ell(x, cx, 33.6, 1.6, .8); x.fillStyle = '#e8707a'; x.fill(); }
+  else { x.beginPath(); x.moveTo(cx - 2, 32); x.quadraticCurveTo(cx, 33.6, cx + 2, 32); x.lineWidth = 1.3; x.strokeStyle = fem ? '#a0485a' : OL; x.stroke(); }
 }
 
 export const LOOKS = {
@@ -188,11 +198,77 @@ export const LOOKS = {
   }
 };
 function charCanvas(S, look) { return mk(64, 68, S, x => drawChar(x, look)); }
-export function portraitCanvas(look, size = 128) {
-  const k = size / 44;
+
+export const SKINS = [SKIN.light, SKIN.tan, SKIN.deep, SKIN.dark];
+export const HAIR_COLORS = ['#2a201c', '#6a3e1e', '#d9b060', '#b8502a', '#d8dce4'];
+export const BODY_W = [11, 13, 15.5];
+export const LOOK_NAMES = { head: { m: ['Crop', 'Swept', 'Spiky'], f: ['Ponytail', 'Long', 'Bun'] }, face: ['Steady', 'Fierce', 'Bright'], body: ['Lean', 'Standard', 'Heavy'] };
+const hairFill = (x, col, y0, y1) => lg(x, 0, y0, 0, y1, [[0, shade(col, .18)], [1, shade(col, -.22)]]);
+const HAIRS = {
+  m: [
+    { hair: (x, cx, c) => { x.beginPath(); x.moveTo(cx - 17, 23); x.quadraticCurveTo(cx - 18, 6, cx, 6); x.quadraticCurveTo(cx + 18, 6, cx + 17, 23); x.quadraticCurveTo(cx + 13, 14, cx + 5, 15); x.lineTo(cx, 13); x.lineTo(cx - 5, 15); x.quadraticCurveTo(cx - 13, 14, cx - 17, 23); x.closePath(); fillStroke(x, hairFill(x, c, 6, 23), 2); } },
+    { hair: (x, cx, c) => { x.beginPath(); x.moveTo(cx - 17, 24); x.quadraticCurveTo(cx - 19, 5, cx + 1, 5); x.quadraticCurveTo(cx + 19, 5, cx + 17, 21); x.quadraticCurveTo(cx + 8, 11, cx - 4, 17); x.quadraticCurveTo(cx - 11, 19, cx - 17, 24); x.closePath(); fillStroke(x, hairFill(x, c, 5, 24), 2);
+      x.beginPath(); x.moveTo(cx + 2, 8); x.quadraticCurveTo(cx + 12, 9, cx + 15, 17); x.lineWidth = 1.4; x.strokeStyle = shade(c, .4); x.stroke(); } },
+    { hair: (x, cx, c) => { x.beginPath(); x.moveTo(cx - 18, 24); x.lineTo(cx - 20, 13); x.lineTo(cx - 14, 11); x.lineTo(cx - 14, 3); x.lineTo(cx - 6, 7); x.lineTo(cx - 1, -1); x.lineTo(cx + 5, 6); x.lineTo(cx + 13, 1); x.lineTo(cx + 14, 10); x.lineTo(cx + 20, 13); x.lineTo(cx + 18, 24); x.quadraticCurveTo(cx + 12, 15, cx + 3, 16); x.lineTo(cx - 4, 13); x.quadraticCurveTo(cx - 12, 16, cx - 18, 24); x.closePath(); fillStroke(x, hairFill(x, c, 0, 24), 2); } }
+  ],
+  f: [
+    { hairBack: (x, cx, c) => { x.beginPath(); x.moveTo(cx + 9, 12); x.quadraticCurveTo(cx + 27, 16, cx + 22, 42); x.lineWidth = 8; x.strokeStyle = OL; x.stroke(); x.lineWidth = 5.6; x.strokeStyle = shade(c, -.05); x.stroke(); ell(x, cx + 12, 10, 3, 3); fillStroke(x, '#5ff2d0', 1); },
+      hair: (x, cx, c) => { x.beginPath(); x.moveTo(cx - 17, 24); x.quadraticCurveTo(cx - 18, 5, cx, 5); x.quadraticCurveTo(cx + 18, 5, cx + 17, 22); x.quadraticCurveTo(cx + 8, 11, cx - 3, 14); x.quadraticCurveTo(cx - 12, 16, cx - 17, 24); x.closePath(); fillStroke(x, hairFill(x, c, 5, 24), 2); } },
+    { hairBack: (x, cx, c) => { x.beginPath(); x.moveTo(cx - 19, 18); x.quadraticCurveTo(cx - 23, 40, cx - 17, 50); x.lineTo(cx + 17, 50); x.quadraticCurveTo(cx + 23, 40, cx + 19, 18); x.closePath(); fillStroke(x, hairFill(x, c, 18, 50), 2); },
+      hair: (x, cx, c) => { x.beginPath(); x.moveTo(cx - 19, 33); x.quadraticCurveTo(cx - 22, 3, cx, 3); x.quadraticCurveTo(cx + 22, 3, cx + 19, 33); x.quadraticCurveTo(cx + 15, 14, cx + 2, 14); x.quadraticCurveTo(cx - 13, 14, cx - 19, 33); x.closePath(); fillStroke(x, hairFill(x, c, 3, 33), 2); } },
+    { hairBack: (x, cx, c) => { ell(x, cx, 3, 9, 7.5); fillStroke(x, hairFill(x, c, -4, 11), 2); },
+      hair: (x, cx, c) => { x.beginPath(); x.moveTo(cx - 18, 27); x.quadraticCurveTo(cx - 19, 5, cx, 6); x.quadraticCurveTo(cx + 19, 5, cx + 18, 27); x.quadraticCurveTo(cx + 14, 15, cx + 5, 15); x.quadraticCurveTo(cx, 12, cx - 5, 15); x.quadraticCurveTo(cx - 14, 15, cx - 18, 27); x.closePath(); fillStroke(x, hairFill(x, c, 5, 27), 2); } }
+  ]
+};
+const GEAR = {
+  vanguard: { head: (x, cx) => { rr(x, cx - 15, 16, 30, 5, 2.5); fillStroke(x, '#5ff2ff', 1.4); glow(x, cx, 18, 16, '#5ff2ff', .35); poly(x, [cx - 3, 7, cx, 0, cx + 3, 7]); fillStroke(x, '#ff7a4a', 1.4); } },
+  railwarden: { head: (x, cx) => { ell(x, cx - 6, 13, 4.6, 4); fillStroke(x, '#ffb648', 1.6); ell(x, cx + 6, 13, 4.6, 4); fillStroke(x, '#ffb648', 1.6); ell(x, cx - 7, 12, 1.4, 1.2); x.fillStyle = '#fff6d0'; x.fill(); ell(x, cx + 5, 12, 1.4, 1.2); x.fill(); } },
+  psion: { head: (x, cx) => { x.beginPath(); x.moveTo(cx - 13, 16); x.quadraticCurveTo(cx, 11, cx + 13, 16); x.lineWidth = 2; x.strokeStyle = '#b46bff'; x.stroke(); poly(x, [cx, 11, cx + 3, 15, cx, 19, cx - 3, 15]); fillStroke(x, '#d9a8ff', 1.2); glow(x, cx, 15, 9, '#c58bff', .8); } },
+  shade: {
+    back: (x, cx) => { x.beginPath(); x.moveTo(cx - 22, 40); x.quadraticCurveTo(cx - 25, 8, cx - 8, 6); x.quadraticCurveTo(cx, 4, cx + 8, 6); x.quadraticCurveTo(cx + 25, 8, cx + 22, 40); x.closePath(); fillStroke(x, lg(x, cx, 4, cx, 40, [[0, '#3a3046'], [1, '#1a1420']]), 2);
+      x.beginPath(); x.moveTo(cx - 19, 30); x.quadraticCurveTo(cx - 22, 10, cx - 6, 8); x.moveTo(cx + 19, 30); x.quadraticCurveTo(cx + 22, 10, cx + 6, 8); x.lineWidth = 1.6; x.strokeStyle = '#ff5a9a'; x.stroke(); },
+    front: (x, cx) => { x.beginPath(); x.moveTo(cx - 13, 28.5); x.quadraticCurveTo(cx, 31, cx + 13, 28.5); x.quadraticCurveTo(cx + 12, 39, cx, 41); x.quadraticCurveTo(cx - 12, 39, cx - 13, 28.5); x.closePath(); fillStroke(x, lg(x, cx, 28, cx, 41, [[0, '#3a3046'], [1, '#18121e']]), 1.6);
+      x.beginPath(); x.moveTo(cx - 10, 33); x.lineTo(cx + 10, 33); x.lineWidth = 1.4; x.strokeStyle = '#ff5a9a'; x.stroke(); glow(x, cx, 33, 8, '#ff5a9a', .5); }
+  },
+  mender: { head: (x, cx) => { rr(x, cx + 1, 21.5, 12, 8, 3.5); x.fillStyle = 'rgba(95,242,208,.55)'; x.fill(); x.lineWidth = 1.4; x.strokeStyle = '#2fd0b8'; x.stroke(); glow(x, cx + 7, 25.5, 8, '#5ff2d0', .7); ell(x, cx + 17, 25, 3, 4); fillStroke(x, '#b9d8d2', 1.2); } },
+  duelist: { head: (x, cx) => { ell(x, cx, 12.5, 27, 6.5); fillStroke(x, lg(x, cx, 6, cx, 19, [[0, '#6a4a34'], [1, '#3a281c']]), 2);
+    x.beginPath(); x.moveTo(cx - 14, 12); x.quadraticCurveTo(cx - 13, -4, cx, -4); x.quadraticCurveTo(cx + 13, -4, cx + 14, 12); x.closePath(); fillStroke(x, lg(x, cx, -4, cx, 12, [[0, '#6a4a34'], [1, '#4a3424']]), 2);
+    rr(x, cx - 14, 7, 28, 4, 1.5); fillStroke(x, '#2a1c14', 1.2); poly(x, [cx, 5, cx + 3, 8.5, cx, 12, cx - 3, 8.5]); fillStroke(x, '#5ff2ff', 1); glow(x, cx, 8.5, 7, '#5ff2ff', .7); } }
+};
+export const DEFAULT_LOOKS = {
+  vanguard: { sex: 'm', head: 0, face: 0, body: 1, skin: 1, hairc: 2 },
+  railwarden: { sex: 'm', head: 1, face: 1, body: 0, skin: 0, hairc: 1 },
+  psion: { sex: 'f', head: 1, face: 2, body: 0, skin: 2, hairc: 4 },
+  shade: { sex: 'm', head: 1, face: 1, body: 0, skin: 0, hairc: 0 },
+  mender: { sex: 'm', head: 2, face: 0, body: 1, skin: 1, hairc: 0 },
+  duelist: { sex: 'm', head: 0, face: 2, body: 1, skin: 1, hairc: 1 }
+};
+export function composeLook(cls, look) {
+  const L = LOOKS[cls], lk = Object.assign({}, DEFAULT_LOOKS[cls] || DEFAULT_LOOKS.vanguard, look || {});
+  const H = HAIRS[lk.sex === 'f' ? 'f' : 'm'][lk.head % 3], G = lk.gear === false ? {} : (GEAR[cls] || {}), hc = HAIR_COLORS[lk.hairc % HAIR_COLORS.length];
+  return {
+    skin: SKINS[lk.skin % SKINS.length], coat: L.coat, trim: L.trim, iris: L.iris, long: L.long, chest: L.chest, bw: BODY_W[lk.body % 3], face: lk.face % 3, sex: lk.sex, brow: shade(hc, -.35),
+    back: G.back,
+    hairBack: H.hairBack ? (x, cx) => H.hairBack(x, cx, hc) : null,
+    hair: (x, cx) => { H.hair(x, cx, hc); if (G.head) G.head(x, cx); },
+    front: G.front
+  };
+}
+export function heroCanvas(S, cls, look) { return charCanvas(S, composeLook(cls, look)); }
+export const RANK_THEMES = {
+  recruit: { bg: ['#18384a', '#0a1622'] },
+  hunter: { bg: ['#1a4a40', '#081a16'], deco: (x, s) => { x.fillStyle = 'rgba(95,242,208,.12)'; for (let i = 0; i < 6; i++) { x.beginPath(); x.arc(s * (.15 + i * .14), s * .88, s * .05, 0, Math.PI * 2); x.fill(); } } },
+  veteran: { bg: ['#4a3418', '#160e06'], deco: (x, s) => { x.lineWidth = s * .03; x.strokeStyle = 'rgba(217,164,90,.55)'; x.beginPath(); x.arc(s / 2, s * .55, s * .46, Math.PI * 1.1, Math.PI * 1.9); x.stroke(); } },
+  warden: { bg: ['#122a5a', '#060a1a'], deco: (x, s) => { glow(x, s / 2, s * .95, s * .4, '#5ff2ff', .35); } },
+  ascendant: { bg: ['#2a1a4a', '#08060e'], deco: (x, s) => { x.lineWidth = s * .025; x.strokeStyle = 'rgba(255,207,90,.8)'; x.beginPath(); x.ellipse(s / 2, s * .16, s * .26, s * .07, 0, 0, Math.PI * 2); x.stroke(); glow(x, s / 2, s * .3, s * .45, '#5ff2ff', .25); } },
+  starborn: { bg: ['#0a0a2a', '#000004'], deco: (x, s) => { const R = rng(9); for (let i = 0; i < 40; i++) { x.fillStyle = `rgba(255,240,200,${.3 + R() * .6})`; x.fillRect(R() * s, R() * s * .7, 1.6, 1.6); } for (let i = 0; i < 5; i++) { const a = Math.PI * (1.15 + i * .175); star(x, s / 2 + Math.cos(a) * s * .3, s * .42 + Math.sin(a) * s * .3, s * .035, s * .014, 4); } } }
+};
+export function portraitCanvas(look, size = 128, theme) {
+  const k = size / 44, T = theme || { bg: ['#18384a', '#0a1622'] };
   const c = document.createElement('canvas'); c.width = size; c.height = size;
   const x = c.getContext('2d');
-  x.fillStyle = rg(x, size / 2, size * .45, size * .7, [[0, '#18384a'], [1, '#0a1622']]); x.fillRect(0, 0, size, size);
+  x.fillStyle = rg(x, size / 2, size * .45, size * .7, [[0, T.bg[0]], [1, T.bg[1]]]); x.fillRect(0, 0, size, size);
+  if (T.deco) { x.save(); x.fillStyle = '#ffffff'; T.deco(x, size); x.restore(); }
   x.save(); x.translate(size / 2 - 32 * k, -2 * k); x.scale(k, k); x.lineJoin = 'round'; x.lineCap = 'round'; drawChar(x, look); x.restore();
   return c;
 }

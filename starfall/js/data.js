@@ -513,3 +513,55 @@ export const IDLE = {
 };
 
 export const TOWER_LINES = ['The tower keeps your place. Try again when ready.', 'Knocked out at the knees, not in spirit.', 'Good climb. Bad landing. There is a difference.', 'The stairs are patient. They will wait.', 'You fell. The tower took notes.', 'Rest up. Ossivar is not going anywhere.'];
+
+export const RANKS = [
+  { id: 'recruit', n: 'I', name: 'Recruit', lvl: 1, perm: {}, permText: 'Where everyone starts', pb: { xp: .1 }, pbText: '+10% XP', color: '#8aa0aa' },
+  { id: 'hunter', n: 'II', name: 'Hunter', lvl: 10, perm: { hpPct: .04 }, permText: '+4% max HP', pb: { aspd: .05 }, pbText: '+5% attack speed', color: '#5ff2d0' },
+  { id: 'veteran', n: 'III', name: 'Veteran', lvl: 20, perm: { atkPct: .04 }, permText: '+4% attack', pb: { hpPct: .08 }, pbText: '+8% max HP', color: '#d9a45a' },
+  { id: 'warden', n: 'IV', name: 'Warden', lvl: 30, perm: { crit: .03 }, permText: '+3% crit chance', pb: { defPct: .12 }, pbText: '+12% defense', color: '#5ff2ff' },
+  { id: 'ascendant', n: 'V', name: 'Ascendant', lvl: 40, perm: { critDmg: .1 }, permText: '+10% crit damage', pb: { res: .15, echo: .1 }, pbText: '+15% Resonance gain, +10% Echo damage', color: '#ffcf5a' },
+  { id: 'starborn', n: 'VI', name: 'Starborn', lvl: 50, perm: { atkPct: .05, hpPct: .05 }, permText: '+5% attack and max HP', pb: { atkPct: .06, hpPct: .06 }, pbText: '+6% attack and max HP', color: '#ffffff' }
+];
+export const CALLING_PORTRAIT = { id: 'calling', name: 'Calling', pb: { skill: .06 }, pbText: '+6% skill power' };
+
+export const TREE_THEMES = {
+  might: [
+    { k: 'atkPct', v: .03, max: 5, name: 'Sharpened', icon: 'weapon', fmt: 'attack' },
+    { k: 'skillDmg', v: .12, max: 3, name: 'Honed', icon: 'S', fmt: 'power' },
+    { k: 'crit', v: .02, max: 3, name: 'Keen Eye', icon: 'deadeye', fmt: 'crit chance' },
+    { k: 'skillCd', v: .08, max: 3, name: 'Practiced', icon: 'S', fmt: 'cooldown' },
+    { k: 'critDmg', v: .08, max: 3, name: 'Cruel Edge', icon: 'cleave', fmt: 'crit damage' },
+    { k: 'key', key: 'execute', max: 1, name: 'Executioner', icon: 'starbreaker', desc: 'Deal 30% more damage to enemies below 30% HP.' }
+  ],
+  guard: [
+    { k: 'hpPct', v: .04, max: 5, name: 'Hardened', icon: 'armor', fmt: 'max HP' },
+    { k: 'skillDmg', v: .12, max: 3, name: 'Empowered', icon: 'S', fmt: 'power' },
+    { k: 'defPct', v: .05, max: 3, name: 'Plated', icon: 'bulwark', fmt: 'defense' },
+    { k: 'skillCd', v: .08, max: 3, name: 'Steady', icon: 'S', fmt: 'cooldown' },
+    { k: 'regen', v: .002, max: 3, name: 'Mending', icon: 'mend', fmt: 'regen' },
+    { k: 'key', key: 'secondWind', max: 1, name: 'Second Wind', icon: 'lifeline', desc: 'Once every 90 seconds, a killing blow leaves you at 30% HP instead.' }
+  ],
+  tempo: [
+    { k: 'aspd', v: .04, max: 5, name: 'Rhythm', icon: 'quickdraw', fmt: 'attack speed' },
+    { k: 'skillDmg', v: .12, max: 3, name: 'Charged', icon: 'S', fmt: 'power' },
+    { k: 'res', v: .1, max: 3, name: 'Resonant', icon: 'pulse', fmt: 'Resonance gain' },
+    { k: 'skillCd', v: .08, max: 3, name: 'Swift', icon: 'S', fmt: 'cooldown' },
+    { k: 'echo', v: .1, max: 3, name: 'Bonded', icon: 'echo', fmt: 'Echo damage' },
+    { k: 'key', key: 'overdrive', max: 1, name: 'Overdrive', icon: 'eclipse', desc: 'For 6 seconds after your Resonance ultimate, attack 30% faster and deal 20% more damage.' }
+  ]
+};
+export const TREE_ROW_REQ = [0, 3, 6, 9, 12, 15];
+export const TREES = {
+  vanguard: [{ theme: 'might', skill: 'cleave', name: 'Breaker', desc: 'Cut deep, finish fast.' }, { theme: 'guard', skill: 'bulwark', name: 'Bastion', desc: 'Nothing gets past you.' }, { theme: 'tempo', skill: 'slam', name: 'Tremor', desc: 'Hit the ground. Keep hitting it.' }],
+  railwarden: [{ theme: 'might', skill: 'pierce', name: 'Marksman', desc: 'One shot, one line, one less problem.' }, { theme: 'tempo', skill: 'volley', name: 'Skirmisher', desc: 'Keep the rifle hot.' }, { theme: 'guard', skill: 'drone', name: 'Overwatch', desc: 'Let the drone watch your back.' }],
+  psion: [{ theme: 'might', skill: 'llance', name: 'Lance', desc: 'Focus the Choir into a point.' }, { theme: 'tempo', skill: 'pulse', name: 'Resonance', desc: 'Ride the hum.' }, { theme: 'guard', skill: 'hush', name: 'Stillness', desc: 'Make the world slow down.' }],
+  shade: [{ theme: 'might', skill: 'blink', name: 'Assassin', desc: 'Be behind them first.' }, { theme: 'tempo', skill: 'fan', name: 'Flurry', desc: 'More knives, less talking.' }, { theme: 'guard', skill: 'veil', name: 'Phantom', desc: 'Never quite where they aim.' }],
+  mender: [{ theme: 'guard', skill: 'mend', name: 'Lifeward', desc: 'Nobody drops on your watch.' }, { theme: 'tempo', skill: 'medrone', name: 'Fieldcraft', desc: 'Two pairs of hands are better.' }, { theme: 'might', skill: 'stasis', name: 'Entropy', desc: 'Time is a weapon too.' }],
+  duelist: [{ theme: 'might', skill: 'quickdraw', name: 'Gunslinger', desc: 'Draw first. Draw again.' }, { theme: 'tempo', skill: 'ricochet', name: 'Trickshot', desc: 'Every wall is a second chance.' }, { theme: 'guard', skill: 'roll', name: 'Daredevil', desc: 'Dodge now, gloat later.' }]
+};
+
+export const NAMES = {
+  m: ['Rook', 'Dace', 'Tavish', 'Corran', 'Jessop', 'Halden', 'Marek', 'Orrin', 'Bram', 'Kito', 'Garrick', 'Wade'],
+  f: ['Wren', 'Sable', 'Isolde', 'Maren', 'Tamsin', 'Juno', 'Rhea', 'Nyla', 'Cass', 'Odessa', 'Lark', 'Vesna'],
+  n: ['Ash', 'Quill', 'Ember', 'Rue', 'Sparrow', 'Kestrin', 'Lumen', 'Morrow', 'Tally', 'Hollis', 'Reed', 'Onyx']
+};

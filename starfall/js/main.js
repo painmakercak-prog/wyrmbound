@@ -1,9 +1,10 @@
-import { CALLINGS, ART } from './data.js?v=4';
-import { fresh, load, save, offlineRewards } from './state.js?v=4';
-import { UI } from './ui.js?v=4';
-import { portraitCanvas, LOOKS } from './art.js?v=4';
-import { WorldScene } from './world.js?v=4';
-import { audioInit, audioResume, audioSuspend, sfx, playTrack, prefetchTrack } from './audio.js?v=4';
+import { CALLINGS, ART } from './data.js?v=5';
+import { fresh, load, save, offlineRewards } from './state.js?v=5';
+import { UI } from './ui.js?v=5';
+import { portraitCanvas, LOOKS, DEFAULT_LOOKS } from './art.js?v=5';
+import { creator } from './creator.js?v=5';
+import { WorldScene } from './world.js?v=5';
+import { audioInit, audioResume, audioSuspend, sfx, playTrack, prefetchTrack } from './audio.js?v=5';
 
 const $ = s => document.querySelector(s);
 let game = null, ui = null, st = null;
@@ -39,11 +40,11 @@ function stars() {
 function titleScreen() {
   const t = $('#title');
   const saved = load();
-  t.innerHTML = `<div class="home"><div><div class="logo">WYRMBOUND</div><div class="sub">STARFALL</div></div><div><div class="tag2">Bond an Echo. Hunt the bones of fallen stars.</div><button class="btn go">${saved ? 'Continue' : 'Begin'}</button></div></div><div class="foot">Build 4 · Act III: Memory of Water</div>`;
+  t.innerHTML = `<div class="home"><div><div class="logo">WYRMBOUND</div><div class="sub">STARFALL</div></div><div><div class="tag2">Bond an Echo. Hunt the bones of fallen stars.</div><button class="btn go">${saved ? 'Continue' : 'Begin'}</button></div></div><div class="foot">Build 5 · Character creator, Ascension and talents</div>`;
   stars();
   $('#title .go').onclick = () => {
     audioInit((saved || { settings: { sound: true, music: true } }).settings); audioResume(); sfx('quest'); playTrack('theme'); prefetchTrack(saved && saved.region === 'dunes' ? 'dunes' : 'verge');
-    if (saved) { st = saved; start(true); } else intro();
+    if (saved) { st = saved; if (!st.look) makeLook(true); else start(true); } else intro();
   };
 }
 
@@ -65,7 +66,15 @@ function pick() {
     c.onclick = () => { sel = k; for (const e of box.children) e.classList.toggle('sel', e.dataset.k === k); det.textContent = C.blurb; $('#title .go').textContent = 'Begin as ' + C.name; sfx('ui'); };
     box.appendChild(c);
   }
-  $('#title .go').onclick = () => { st = fresh(sel); save(st); start(false); };
+  $('#title .go').onclick = () => { sfx('ui'); makeLook(false, sel); };
+}
+
+function makeLook(existing, cls) {
+  let t = $('#title .in');
+  if (!t) { $('#title').classList.add('deep'); const h = $('#title .home'); if (h) h.remove(); t = document.createElement('div'); t.className = 'in'; $('#title').appendChild(t); }
+  t.classList.add('cre-wrap');
+  if (existing) creator(t, { cls: st.cls, look: DEFAULT_LOOKS[st.cls], name: st.name, mode: 'new', onDone: (look, name) => { st.look = look; st.name = name; save(st); start(true); } });
+  else creator(t, { cls, look: DEFAULT_LOOKS[cls], name: '', mode: 'new', onCancel: () => { t.classList.remove('cre-wrap'); pick(); }, onDone: (look, name) => { st = fresh(cls, look, name); save(st); start(false); } });
 }
 
 function start(returning) {

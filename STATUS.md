@@ -1,6 +1,6 @@
 # Wyrmbound: Starfall — Project Status
 
-Last updated: 2026-11-25 (build 4 shipped)
+Last updated: 2026-11-25 (build 5 shipped)
 
 Play it: https://painmakercak-prog.github.io/wyrmbound/starfall/
 Code: `starfall/` on `main`. Deploys go to the `gh-pages` branch under `/starfall/`.
@@ -18,6 +18,7 @@ Owner: Kasey. Code is written by Claude. Art comes from Grok, story from Muse, m
 | 2.1 | 2026-11-25 | Real music: title theme, Verge, Dunes and boss tracks with seamless loops |
 | 3 | 2026-11-25 | Shade, Mender and Duelist Callings; switching Calling at the Lodge; Ossivar's Spire endless tower; Ascendant Echoes; gear stars (Refine) |
 | 4 | 2026-11-25 | Act III, Sunken Lattice: Ilse, Bix, Pell; Skitters, Huskers, Leeches; the Choir Below boss; 16 quests; reef music (Glassy Depths); Vey's tower logs; idle lines; Ascendant Echo art; fix for bosses fully healing after a knockout |
+| 5 | 2026-11-25 | Character creator (name, body type, 3 heads, 3 faces, 3 bodies, skin, hair, gear toggle); rename and restyle any time; Ascension ranks I–VI (levels 1/10/20/30/40/50) with permanent bonuses, unlockable portraits with equipped bonuses, and frames; skill tree with 3 branches per Calling, 1 point per level, keystones (Executioner, Second Wind, Overdrive), reset for Lumen |
 
 ## In progress
 
@@ -25,9 +26,13 @@ Nothing yet. Next build is waiting on Kasey's playtest notes and a decision on w
 
 ## Waiting on Kasey
 
+- [ ] Grok: 16 portraits (opposite-sex Calling faces + Ascension rank portraits). Prompt in chat. Until then rank portraits are drawn from the player's own look.
+- [ ] Muse: Ascension rank lines, skill tree names, 60 random names, Act IV script. Prompt in chat.
+- [ ] Optional: have Grok or Muse playtest the live build in a browser (prompt in chat).
+
 - [ ] Play builds 3 and 4 on the iPhone (Act III, the tower, Ascend, Refine, new Callings) and report anything that feels slow or wrong. Real-device performance and sound are not yet confirmed.
 - [ ] Tell Claude if the tower or the Choir Below feels too easy or too hard.
-- [ ] Decide what's next: Act IV, more Echo species, or polish.
+- [ ] Decide what's next after build 5: Act IV (once Muse's script arrives), more Echo species, or polish.
 
 ## Assets received
 
@@ -37,9 +42,10 @@ Nothing yet. Next build is waiting on Kasey's playtest notes and a decision on w
 
 ## Next up
 
-1. Act IV: "the heart is coming ashore." Needs a Muse script, a Grok art batch and optionally a Suno track.
-2. More Echo species to hatch.
-3. A real-iPhone performance pass.
+1. Drop in Grok's portraits and Muse's names/rank lines as soon as they arrive.
+2. Act IV: "the heart is coming ashore." Needs Muse's script, then a Grok art batch and optionally a Suno track.
+3. More Echo species to hatch.
+4. A real-iPhone performance pass.
 
 ## How work flows
 
