@@ -38,7 +38,7 @@ function stars() {
 function titleScreen() {
   const t = $('#title');
   const saved = load();
-  t.innerHTML = `<div class="home"><div><div class="logo">WYRMBOUND</div><div class="sub">STARFALL</div></div><div><div class="tag2">Bond an Echo. Hunt the bones of fallen stars.</div><button class="btn go">${saved ? 'Continue' : 'Begin'}</button></div></div><div class="foot">Build 1 · Act I: Landfall</div>`;
+  t.innerHTML = `<div class="home"><div><div class="logo">WYRMBOUND</div><div class="sub">STARFALL</div></div><div><div class="tag2">Bond an Echo. Hunt the bones of fallen stars.</div><button class="btn go">${saved ? 'Continue' : 'Begin'}</button></div></div><div class="foot">Build 2 · Act II: The Singing Dark</div>`;
   stars();
   $('#title .go').onclick = () => {
     audioInit((saved || { settings: { sound: true, music: true } }).settings); audioResume(); sfx('quest');
@@ -78,8 +78,9 @@ function start(returning) {
   const fit = () => { const c = game.canvas; if (c) { c.style.width = v.W + 'px'; c.style.height = v.H + 'px'; } };
   game.events.once('ready', () => {
     fit();
+    let readyOnce = false;
     const onReady = w => {
-      window.__W = w;
+      window.__W = w; if (readyOnce) return; readyOnce = true;
       if (returning) { const r = offlineRewards(st); if (r) ui.offline(r, () => { st.lumen += r.lumen; w.gainXp(r.xp); ui.lumenBump(); save(st); }); }
       else { ui.banner('Landfall', 'Act I', 'Glasswood Verge'); }
     };

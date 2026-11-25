@@ -1,4 +1,4 @@
-import { CALLINGS, LOCKED_CALLINGS, ECHOES, HATCHABLE, SLOTS, RARITY, CODEX, QUESTS, NPCS, BOUNTIES, ACT_END, ART } from './data.js';
+import { CALLINGS, LOCKED_CALLINGS, ECHOES, HATCHABLE, SLOTS, RARITY, CODEX, QUESTS, NPCS, BOUNTIES, ACTS, ART, REGIONS, ENEMIES } from './data.js';
 import { portraitCanvas, LOOKS, iconCanvas, echoCanvas, lumenCanvas, shardIconCanvas, geodeCanvas } from './art.js';
 import { heroStats, power, xpNeed, gearLine, upgradeCost, echoStats, echoLevelCost, EVOLVE_COST, save, wipe } from './state.js';
 import { sfx, setMusic, audioResume } from './audio.js';
@@ -119,14 +119,14 @@ export class UI {
     if (!this.w) return;
     const st = this.st, q = QUESTS[st.q], b = $('#qt');
     if (q) {
-      $('.k', b).firstChild.textContent = 'Main · Act I ';
+      $('.k', b).firstChild.textContent = 'Main · Act ' + ['I', 'II', 'III', 'IV', 'V'][(q.act || 1) - 1] + ' ';
       $('.t', b).textContent = q.title;
       $('.g', b).innerHTML = esc(q.goal) + (q.count ? ` <b>${Math.min(st.qp, q.count)}/${q.count}</b>` : '');
       this.hintNav(q.kind === 'hatch' ? 'echoes' : q.kind === 'forge' ? 'forge' : null);
     } else if (st.bounty) {
       const bo = BOUNTIES.find(x => x.id === st.bounty.id);
       $('.k', b).firstChild.textContent = 'Lodge bounty ';
-      $('.t', b).textContent = 'Hunt ' + (bo.enemy === 'glowmoth' ? 'Glow-moths' : bo.enemy === 'crawler' ? 'Thorn-crawlers' : 'Shardlings');
+      $('.t', b).textContent = 'Hunt ' + ENEMIES[bo.enemy].name + 's';
       $('.g', b).innerHTML = `Reward ${bo.lumen} Lumen <b>${st.bounty.prog}/${bo.count}</b>`;
       this.hintNav(null);
     }
@@ -320,10 +320,10 @@ export class UI {
   p_lodge(bd) {
     const st = this.st, C = CALLINGS[st.cls];
     bd.appendChild(el('div', 'sec', 'Bounty board'));
-    if (!st.actDone) bd.appendChild(el('div', 'card small muted', 'Captain Marr posts bounties once you finish Act I.'));
+    if (!st.bounty || QUESTS[st.q]) bd.appendChild(el('div', 'card small muted', st.actDone ? 'Bounties open again once the main story is caught up. Follow the quest tracker for now.' : 'Captain Marr posts bounties once you finish Act I.'));
     else {
       const b = BOUNTIES.find(x => x.id === st.bounty.id);
-      const name = b.enemy === 'glowmoth' ? 'Glow-moths' : b.enemy === 'crawler' ? 'Thorn-crawlers' : 'Shardlings';
+      const name = ENEMIES[b.enemy].name + 's';
       bd.appendChild(el('div', 'card', `<b class="d">Hunt ${b.count} ${name}</b><div class="small muted">Reward: ${b.lumen} Lumen and ${b.shards} memory shards</div><div class="prog"><i style="width:${100 * st.bounty.prog / b.count}%"></i></div>`));
     }
     bd.appendChild(el('div', 'sec', 'Callings'));
@@ -337,14 +337,27 @@ export class UI {
     const rs = el('button', 'btn ghost', 'Start over'); rs.style.marginTop = '16px'; rs.style.width = '100%';
     rs.onclick = () => { if (rs.dataset.c) { wipe(); location.reload(); } else { rs.dataset.c = 1; rs.textContent = 'Tap again to erase your save'; rs.style.color = 'var(--red)'; } };
     bd.appendChild(rs);
-    bd.appendChild(el('div', 'small muted', 'Wyrmbound: Starfall · build 1. Engine: Phaser (MIT). Font: Chakra Petch (OFL). All art drawn in code.')).style.marginTop = '14px';
+    bd.appendChild(el('div', 'small muted', 'Wyrmbound: Starfall · build 2. Engine: Phaser (MIT). Font: Chakra Petch (OFL). All art drawn in code.')).style.marginTop = '14px';
   }
 
-  actEnd() {
-    const m = $('#modal');
-    m.innerHTML = `<div class="box"><div class="k">${esc(ACT_END.sub)}</div><h3>${esc(ACT_END.title)}</h3><p>${esc(ACT_END.text)}</p><p class="small muted">${esc(ACT_END.next)}</p><button class="btn gold">Keep hunting</button></div>`;
+  actEnd(n = 1) {
+    const m = $('#modal'), A = ACTS[n] || ACTS[1];
+    m.innerHTML = `<div class="box"><div class="k">${esc(A.sub)}</div><h3>${esc(A.title)}</h3><p>${esc(A.text)}</p><p class="small muted">${esc(A.next)}</p><button class="btn gold">${QUESTS[this.st.q] ? 'Continue' : 'Keep hunting'}</button></div>`;
     m.classList.add('on'); $('button', m).onclick = () => { m.classList.remove('on'); this.quest(); };
     sfx('level');
+  }
+  travelMenu() {
+    const st = this.st, m = $('#modal'), unlock = QUESTS.findIndex(q => q.id === 'ii_travel');
+    const box = el('div', 'box', `<div class="k">Spire sync</div><h3>Travel</h3><p class="small muted">Every Spire on Aurelis is grown from the same spine. Step in and step out somewhere else.</p>`);
+    for (const [id, R] of Object.entries(REGIONS)) {
+      const locked = id === 'dunes' && st.q < unlock, here = id === st.region;
+      const c = el('div', 'tcard' + (locked ? ' lock' : ''), `<img src="${ART.region[id]}" alt=""><div class="grow"><b class="d">${esc(R.name)}</b><div class="small muted">${esc(R.hub)} · levels ${esc(R.lvl)}</div></div>`);
+      const b = el('button', 'btn' + (here ? ' ghost' : ''), here ? 'Here' : locked ? 'Locked' : 'Sync');
+      b.disabled = here || locked; b.onclick = () => { m.classList.remove('on'); this.w.travel(id); };
+      c.appendChild(b); box.appendChild(c);
+    }
+    const x = el('button', 'btn ghost', 'Close'); x.style.marginTop = '12px'; x.onclick = () => { m.classList.remove('on'); if (this.w) this.w.paused = false; }; box.appendChild(x);
+    m.innerHTML = ''; m.appendChild(box); m.classList.add('on'); if (this.w) this.w.paused = true; sfx('ui');
   }
   offline(r, claim) {
     const m = $('#modal'); const h = Math.floor(r.secs / 3600), mi = Math.round((r.secs % 3600) / 60);

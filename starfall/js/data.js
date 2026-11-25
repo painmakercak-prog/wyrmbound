@@ -1,12 +1,13 @@
 export const WORLD = { w: 1800, h: 3000 };
 
 export const ART = {
-  portrait: { marr: 'art/p_marr.webp', sparks: 'art/p_sparks.webp', okafor: 'art/p_okafor.webp', skein: 'art/p_skein.webp' },
+  portrait: { marr: 'art/p_marr.webp', sparks: 'art/p_sparks.webp', okafor: 'art/p_okafor.webp', skein: 'art/p_skein.webp', kestrel: 'art/p_kestrel.webp', corvin: 'art/p_corvin.webp', hush: 'art/p_hush.webp' },
   calling: { vanguard: 'art/c_vanguard.webp', railwarden: 'art/c_railwarden.webp', psion: 'art/c_psion.webp', duelist: 'art/c_duelist.webp' },
   face: { vanguard: 'art/f_vanguard.webp', railwarden: 'art/f_railwarden.webp', psion: 'art/f_psion.webp', duelist: 'art/f_duelist.webp' },
   echo: { skein: 'art/e_skein.webp', glimmerkit: 'art/e_glimmerkit.webp', budlet: 'art/e_budlet.webp', rivet: 'art/e_rivet.webp', lumi: 'art/e_lumi.webp' },
-  boss: { thornmother: 'art/b_thornmother.webp' },
-  codex: { skein: 'art/e_skein.webp', thornmother: 'art/b_thornmother.webp', echoes: 'art/e_glimmerkit.webp' },
+  boss: { thornmother: 'art/b_thornmother.webp', marrowking: 'art/b_marrowking.webp' },
+  codex: { skein: 'art/e_skein.webp', thornmother: 'art/b_thornmother.webp', echoes: 'art/e_glimmerkit.webp', ribline: 'art/r_dunes.webp', driftborn: 'art/p_kestrel.webp', skimmer: 'art/m_skimmer.webp', hound: 'art/m_hound.webp', syndicate: 'art/p_corvin.webp', quiet: 'art/p_hush.webp', marrowking: 'art/b_marrowking.webp' },
+  region: { verge: 'art/title.webp', dunes: 'art/r_dunes.webp' },
   title: 'art/title.webp'
 };
 
@@ -59,31 +60,52 @@ export const ENEMIES = {
   shardling: { name: 'Shardling', lvl: [1, 3], hp: 40, atk: 6, spd: 62, xp: 12, lumen: [2, 4], range: 26, atkCd: 1.4, aggro: 110, radius: 16 },
   glowmoth: { name: 'Glow-moth', lvl: [4, 7], hp: 62, atk: 9, spd: 70, xp: 22, lumen: [3, 6], range: 120, atkCd: 1.9, aggro: 150, radius: 16, ranged: true },
   crawler: { name: 'Thorn-crawler', lvl: [7, 10], hp: 120, atk: 14, spd: 56, xp: 36, lumen: [5, 9], range: 30, atkCd: 1.5, aggro: 130, radius: 20 },
-  thornmother: { name: 'The Thornmother', lvl: [12, 12], hp: 3000, atk: 24, spd: 42, xp: 900, lumen: [220, 220], range: 70, atkCd: 1.7, aggro: 320, radius: 52, boss: true }
+  thornmother: { name: 'The Thornmother', lvl: [12, 12], hp: 3000, atk: 24, spd: 42, xp: 900, lumen: [220, 220], range: 70, atkCd: 1.7, aggro: 320, radius: 52, boss: true, sub: 'Guardian of the old roots' },
+  skimmer: { name: 'Sand-skimmer', lvl: [13, 16], hp: 80, atk: 16, spd: 92, xp: 40, lumen: [8, 13], range: 30, atkCd: 1.3, aggro: 150, radius: 20 },
+  hound: { name: 'Scrap-hound', lvl: [16, 19], hp: 130, atk: 20, spd: 66, xp: 55, lumen: [10, 16], range: 32, atkCd: 1.5, aggro: 140, radius: 22 },
+  sdrone: { name: 'Syndicate drone', lvl: [18, 21], hp: 90, atk: 16, spd: 60, xp: 60, lumen: [12, 18], range: 150, atkCd: 1.8, aggro: 170, radius: 18, ranged: true, shot: 'red' },
+  marrowking: { name: 'The Marrowking', lvl: [22, 22], hp: 9000, atk: 58, spd: 48, xp: 1300, lumen: [700, 700], range: 90, atkCd: 1.8, aggro: 340, radius: 64, boss: true, sub: 'Nest-warden of Kharos' }
 };
 
-export const SPAWNS = [
-  { type: 'shardling', x: 900, y: 2040, r: 300, count: 10 },
-  { type: 'glowmoth', x: 860, y: 1420, r: 330, count: 9 },
-  { type: 'crawler', x: 920, y: 860, r: 320, count: 9 }
-];
-
-export const PLACES = {
-  start: { x: 900, y: 2630 },
-  spire: { x: 900, y: 2380 },
-  marr: { x: 760, y: 2590 },
-  sparks: { x: 1050, y: 2600 },
-  okafor: { x: 1000, y: 2700 },
-  geode: { x: 1160, y: 2100 },
-  roots: { x: 900, y: 470 },
-  arena: { x: 900, y: 360 }
+export const REGIONS = {
+  verge: {
+    name: 'Glasswood Verge', hub: 'Landfall', lvl: '1 to 12', w: 1800, h: 3000, bg: '#0b2226', ground: 'ground', path: 'path', motes: [0x5ff2d0, 0xff8ab8, 0x9ff6ff],
+    paths: [[[900, 2930], [900, 2600], [900, 2380], [820, 2160], [770, 1950], [900, 1720], [1040, 1480], [960, 1200], [820, 960], [860, 700], [900, 470]]],
+    spawns: [
+      { type: 'shardling', x: 900, y: 2040, r: 300, count: 10 },
+      { type: 'glowmoth', x: 860, y: 1420, r: 330, count: 9 },
+      { type: 'crawler', x: 920, y: 860, r: 320, count: 9 }
+    ],
+    places: { start: { x: 900, y: 2630 }, arrive: { x: 900, y: 2440 }, spire: { x: 900, y: 2380 }, marr: { x: 760, y: 2590 }, sparks: { x: 1050, y: 2600 }, okafor: { x: 1000, y: 2700 }, geode: { x: 1160, y: 2100 }, roots: { x: 900, y: 470 }, arena: { x: 900, y: 360 } },
+    npcs: ['marr', 'sparks', 'okafor'],
+    boss: { type: 'thornmother', at: 'arena', quest: 'boss' }
+  },
+  dunes: {
+    name: 'Ribline Dunes', hub: 'Driftborn Camp', lvl: '13 to 22', w: 2000, h: 2800, bg: '#7a4a26', ground: 'sand', path: 'sandpath', motes: [0xffd9a0, 0xffe8c8, 0x5ff2d0],
+    paths: [[[1000, 2780], [1000, 2450], [1000, 2050], [1180, 1820], [1050, 1560], [820, 1420], [900, 1220], [1080, 1100], [1000, 820], [1000, 520]], [[820, 1420], [600, 1200], [380, 960]]],
+    spawns: [
+      { type: 'skimmer', x: 1000, y: 2020, r: 320, count: 10 },
+      { type: 'hound', x: 620, y: 1560, r: 280, count: 9 },
+      { type: 'sdrone', x: 1230, y: 1180, r: 240, count: 8 }
+    ],
+    places: { start: { x: 1000, y: 2560 }, arrive: { x: 1000, y: 2480 }, spire: { x: 1000, y: 2420 }, kestrel: { x: 885, y: 2545 }, corvin: { x: 940, y: 1250 }, hush: { x: 300, y: 860 }, wreck: { x: 1520, y: 1800 }, dig: { x: 1210, y: 1060 }, canyon: { x: 330, y: 930 }, hollow: { x: 1000, y: 560 }, arena: { x: 1000, y: 420 } },
+    npcs: ['kestrel', 'corvin', 'hush'],
+    silent: { x: 300, y: 900, r: 250 },
+    boss: { type: 'marrowking', at: 'arena', quest: 'ii_boss' }
+  }
 };
+
+export const SPAWNS = REGIONS.verge.spawns;
+export const PLACES = REGIONS.verge.places;
 
 export const NPCS = {
   marr: { name: 'Captain Ysolde Marr', short: 'Marr', title: 'Beacon Lodge', color: '#ffb14a' },
   sparks: { name: 'Tessa “Sparks” Ruiz', short: 'Sparks', title: 'Landfall Forge', color: '#ff8a5a' },
   okafor: { name: 'Dr. Amara Okafor', short: 'Okafor', title: 'Lodge Mender', color: '#5ff2d0' },
   skein: { name: 'Skein', short: 'Skein', title: '???', color: '#bfe8ff' },
+  kestrel: { name: 'Kestrel', short: 'Kestrel', title: 'Driftborn guide', color: '#ffb86a' },
+  corvin: { name: 'Corvin Hale', short: 'Corvin', title: 'Cindermark Syndicate', color: '#ff7a5a' },
+  hush: { name: 'Mother Hush', short: 'Hush', title: 'The Quiet', color: '#b9c7d2' },
   you: { name: 'You', short: 'You', title: '', color: '#e8f6ff' }
 };
 
@@ -126,6 +148,17 @@ export const CODEX = {
   crawler: { title: 'Thorn-crawler', src: 'Lodge field guide', text: 'Armored, slow, stubborn. Crawlers have been gathering near the old roots in the north for a month. Nobody has asked them why.' },
   thornmother: { title: 'The Thornmother', src: 'recovered Lodge log, Hunter Pell', text: 'It isn’t angry. That’s the part nobody tells you. It’s protecting something under the roots, and it looked at me like I should have known what.' },
   vael: { title: 'The Vael', src: 'Captain Marr', text: 'Living ships, recruit. Big as mountain ranges. Nine of them fell here twelve thousand years ago. We live in their bones and burn their memories for light, and most days I try not to think about that.' },
+  ribline: { title: 'The Ribline Dunes', src: 'Driftborn saying', text: 'Walk between the ribs, never under them. Sing when you cross the hollow one, so it knows you are still alive.' },
+  driftborn: { title: 'The Driftborn', src: 'Concord census note, struck through', text: 'Nomads of the dunes, descended from ark colonists who walked out of Landfall in the first decade. Population unknown. Do not count them; they find it rude.' },
+  skimmer: { title: 'Sand-skimmer', src: 'Lodge field guide', text: 'Glides an inch above the sand on bone-white fins. Curious, fast, territorial. A skimmer that circles you twice has already decided you are a problem.' },
+  hound: { title: 'Scrap-hound', src: 'Lodge field guide', text: 'Old salvage drones that went feral and kept working. They still collect Lumen. Nobody remembers telling them where to bring it.' },
+  syndicate: { title: 'The Cindermark Syndicate', src: 'Syndicate recruitment flyer', text: 'Cheap power for every home on Aurelis. Good wages, hot meals, and the proudest work on the planet. Ask about our family housing in the dig towns.' },
+  sdrone: { title: 'Syndicate drone', src: 'Syndicate equipment tag', text: 'Model C-9 perimeter unit. Property of Cindermark. Authorized to respond to trespass. Do not feed.' },
+  lumenmemory: { title: 'Lumen (unprinted)', src: 'your own notes, the dig', text: 'Lumen is memory. The extractor pulled light out of Kharos and an Echo faded as the crate filled. Every lamp in Landfall burns someone\u2019s life.' },
+  silentzone: { title: 'Silent zone', src: 'Dr. Okafor, field notes', text: 'Three hunters back from the quiet canyon. No injuries. Cannot remember their own children\u2019s names. Their Echoes will not come near them.' },
+  quiet: { title: 'The Quiet', src: 'Mother Hush', text: 'Out there the Choir sings to you. In here you can hear yourself think. Ask yourself who taught the Vael to sing.' },
+  hollowrib: { title: 'The hollow rib', src: 'Kestrel', text: 'Driftborn kids learn where it is before they can walk, and they learn never to go inside. Turns out something was living in there the whole time.' },
+  marrowking: { title: 'The Marrowking', src: 'Kestrel', text: 'It wasn\u2019t stealing the Lumen. It was burying it, deep in Kharos\u2019s spine, as far from that canyon as it could get.' },
   bridge: { title: 'Meridian bridge deck', src: 'maintenance tag, Sparks', text: 'DO NOT OPEN. I mean it. It’s humming again.' }
 };
 
@@ -182,24 +215,94 @@ export const QUESTS = [
       D('skein', 'let her see you.')
     ] },
   { id: 'boss', title: 'The Thornmother', goal: 'Defeat the Thornmother', kind: 'boss', enemy: 'thornmother', count: 1, reward: { xp: 600, lumen: 300, geode: 1 }, codex: ['thornmother'] },
-  { id: 'guarded', title: 'What Was She Guarding?', goal: 'Inspect the roots', kind: 'inspect', place: 'roots', reward: { xp: 120, lumen: 120 }, codex: ['bridge'],
+  { id: 'guarded', title: 'What Was She Guarding?', goal: 'Inspect the roots', kind: 'inspect', place: 'roots', reward: { xp: 120, lumen: 120 }, codex: ['bridge'], actEnd: 1,
     talk: [
       D('you', 'Under the roots there’s a door. Metal. Concord markings. This is part of the Meridian.'),
       D('you', 'This piece of the ark is a kilometer from where the ark landed. Nobody ever said it broke up.'),
       D('skein', 'it did not break. it was opened.'),
       D('skein', 'you were not the first we called. you are the first who answered.')
+    ] },
+
+  { id: 'ii_brief', act: 2, region: 'verge', title: 'The Missing Convoys', goal: 'Talk to Captain Marr', kind: 'talk', npc: 'marr', reward: { xp: 200, lumen: 100 },
+    talk: [
+      D('marr', 'You came back. Good. I sealed that door under the roots and told the Concord it was a collapsed storage bay. Don\u2019t make me a liar.'),
+      D('marr', 'Different problem. Lumen convoys out of the Ribline Dunes have gone missing. Three this month. No wreckage, no survivors, no calls for help.'),
+      D('marr', 'The dunes Spire is synced to ours now. A Driftborn guide named Kestrel will meet you at her camp. Be polite. The Driftborn remember who wasn\u2019t.'),
+      D('skein', 'the sand remembers a heart. it is still beating, somewhere.')
+    ] },
+  { id: 'ii_travel', act: 2, region: 'dunes', title: 'Spire Sync', goal: 'Sync to the Ribline Dunes at the Spire', kind: 'travel', reward: { xp: 100 }, codex: ['ribline'] },
+  { id: 'ii_kestrel', act: 2, region: 'dunes', title: 'The Driftborn Guide', goal: 'Find Kestrel at the camp', kind: 'talk', npc: 'kestrel', reward: { xp: 200, lumen: 80 }, codex: ['driftborn'],
+    talk: [
+      D('kestrel', 'So you\u2019re the Lodge\u2019s new recruit. Huh. Your Echo is staring at me.'),
+      D('kestrel', 'It can see my eyes, can\u2019t it. Don\u2019t worry about my eyes.'),
+      D('kestrel', 'Skimmers have been circling camp since the convoys vanished. Something out there spooked them. Thin the flock and I\u2019ll show you the last convoy.'),
+      D('skein', 'she hears us. she has always heard us.')
+    ] },
+  { id: 'ii_skim', act: 2, region: 'dunes', title: 'Thin the Flock', goal: 'Hunt Sand-skimmers', kind: 'hunt', enemy: 'skimmer', count: 12, reward: { xp: 600, lumen: 160, shards: 6 }, codex: ['skimmer'],
+    done: [D('kestrel', 'Not bad, Lodge. The last convoy went down east of here, past the flats. Come on.')] },
+  { id: 'ii_wreck', act: 2, region: 'dunes', title: 'The Last Convoy', goal: 'Inspect the wrecked convoy', kind: 'inspect', place: 'wreck', reward: { xp: 300, gear: 'armor', gearRar: 2 },
+    talk: [
+      D('you', 'The convoy. Tipped on its side, half buried. Every cargo crate is open and empty.'),
+      D('kestrel', 'Skimmers don\u2019t open crates. Look, scrap-hound tracks all around the cargo. They carried it off.'),
+      D('kestrel', 'And these are tread marks. Syndicate crawler treads, heading north toward their dig.')
+    ] },
+  { id: 'ii_hounds', act: 2, region: 'dunes', title: 'Follow the Hounds', goal: 'Hunt Scrap-hounds', kind: 'hunt', enemy: 'hound', count: 12, reward: { xp: 800, lumen: 220, shards: 6, gear: 'weapon', gearRar: 2 }, codex: ['hound'],
+    done: [D('kestrel', 'They\u2019re hauling shards north. Toward the dig, and toward that man who runs it.')] },
+  { id: 'ii_corvin', act: 2, region: 'dunes', title: 'The Man Who Smiles', goal: 'Talk to Corvin Hale at the dig', kind: 'talk', npc: 'corvin', reward: { xp: 250, lumen: 120 }, codex: ['syndicate'],
+    talk: [
+      D('corvin', 'A Lodge hunter, all the way out here! And a Driftborn. Kestrel, isn\u2019t it? Your mother sold me water once. Excellent water.'),
+      D('corvin', 'Missing convoys? Terrible business. We\u2019ve lost shipments too. Hounds, sand, bad luck. The dunes are hungry this year.'),
+      D('corvin', 'Tell Captain Marr the Syndicate is doing everything it can. And please don\u2019t wander into the dig. It\u2019s dangerous, and frankly the paperwork is worse.'),
+      D('kestrel', 'He smiled the whole time. Nobody smiles that much out here.')
+    ] },
+  { id: 'ii_drones', act: 2, region: 'dunes', title: 'Paperwork', goal: 'Get past the dig\u2019s security drones', kind: 'hunt', enemy: 'sdrone', count: 10, reward: { xp: 800, lumen: 240, shards: 6 }, codex: ['sdrone'],
+    done: [D('kestrel', 'Security drones, firing on a Lodge hunter. \u201cPaperwork,\u201d he said. The way in is open.')] },
+  { id: 'ii_dig', act: 2, region: 'dunes', title: 'What the Dig Drinks', goal: 'Inspect the Syndicate extractor', kind: 'inspect', place: 'dig', reward: { xp: 400, shards: 10 }, codex: ['lumenmemory'],
+    talk: [
+      D('you', 'A drill sunk straight down into bone. Kharos\u2019s heart, maybe. Lumen is pouring up the pipes and into crates.'),
+      D('you', 'There\u2019s an Echo chained to the extractor. It\u2019s flickering.'),
+      D('skein', 'they are drinking it. every shard is a memory. every memory was someone.'),
+      D('you', 'The Echo fades a little more every time a crate fills. Lumen isn\u2019t fuel. It\u2019s what the Vael remember.'),
+      D('kestrel', 'Then every lamp in Landfall is burning somebody\u2019s life.'),
+      D('skein', 'yes.')
+    ] },
+  { id: 'ii_canyon', act: 2, region: 'dunes', title: 'The Quiet Canyon', goal: 'Follow the crate trail west', kind: 'goto', place: 'canyon', reward: { xp: 400 }, codex: ['silentzone', 'quiet'],
+    talk: [
+      D('you', 'It\u2019s quiet here. Not peaceful. Quiet. My implant has gone silent, and my Echo won\u2019t follow me in.'),
+      D('kestrel', 'Even my eyes go dark here. The hounds dragged the crates this way, then turned back.'),
+      D('hush', 'Turn back, little hunter. You have found the only honest place on Aurelis.'),
+      D('hush', 'Out there the Choir sings to you. In here you can hear yourself think. Ask yourself who taught the Vael to sing.'),
+      D('kestrel', 'She\u2019s gone. Who was that?'),
+      D('skein', '\u2026the quiet hurts. please. go back.')
+    ] },
+  { id: 'ii_hollow', act: 2, region: 'dunes', title: 'The Hollow Rib', goal: 'Go to the hollow rib in the north', kind: 'goto', place: 'hollow', reward: { xp: 300 }, codex: ['hollowrib'],
+    talk: [
+      D('kestrel', 'The hollow rib. We sing when we cross it, so it knows we\u2019re still alive.'),
+      D('kestrel', 'The tracks go inside. Crates, hounds, all of it. Something big has been nesting in Kharos\u2019s spine.'),
+      D('skein', 'it is not hungry. it is hiding the light from the quiet.')
+    ] },
+  { id: 'ii_boss', act: 2, region: 'dunes', title: 'The Marrowking', goal: 'Defeat the Marrowking', kind: 'boss', enemy: 'marrowking', count: 1, reward: { xp: 2000, lumen: 600, geode: 1 }, codex: ['marrowking'] },
+  { id: 'ii_after', act: 2, region: 'dunes', title: 'Buried Light', goal: 'Talk to Kestrel at the camp', kind: 'talk', npc: 'kestrel', reward: { xp: 600, lumen: 400, geode: 1 }, actEnd: 2,
+    talk: [
+      D('kestrel', 'The Marrowking wasn\u2019t stealing the Lumen. It was burying it. Keeping it away from that canyon.'),
+      D('kestrel', 'Something in the quiet wants memories. The Syndicate is digging them up. And somebody is buying.'),
+      D('you', 'Corvin\u2019s crates went west, toward the silence. He\u2019s not losing shipments. He\u2019s delivering them.'),
+      D('kestrel', 'Then I\u2019m coming with you. The Driftborn owe the Lodge a favor, and I owe that smiling man a punch.'),
+      D('skein', 'the water remembers more. go to the water.')
     ] }
 ];
 
-export const ACT_END = {
-  title: 'Act I complete',
-  sub: 'Landfall',
-  text: 'The Thornmother was guarding a piece of the Meridian that should not exist. Captain Marr has questions. So does Skein.',
-  next: 'Act II: The Singing Dark — coming in the next build. Bounties stay open; keep hunting and growing your Echoes.'
+export const ACTS = {
+  1: { title: 'Act I complete', sub: 'Landfall', text: 'The Thornmother was guarding a piece of the Meridian that should not exist. Captain Marr has questions. So does Skein.', next: 'Act II: The Singing Dark begins now. Captain Marr has news from the dunes.' },
+  2: { title: 'Act II complete', sub: 'The Singing Dark', text: 'Lumen is memory. Something in the quiet canyon is hungry for it, the Syndicate is digging it up, and Mother Hush knows more than she says. Kestrel has joined the Lodge.', next: 'Act III: Memory of Water (the Sunken Lattice) is coming in the next build. Bounties are open in both regions.' }
 };
+export const ACT_END = ACTS[1];
 
 export const BOUNTIES = [
   { id: 'b1', enemy: 'shardling', count: 15, lumen: 60, shards: 2, minLvl: 1 },
   { id: 'b2', enemy: 'glowmoth', count: 15, lumen: 110, shards: 3, minLvl: 4 },
-  { id: 'b3', enemy: 'crawler', count: 15, lumen: 180, shards: 4, minLvl: 8 }
+  { id: 'b3', enemy: 'crawler', count: 15, lumen: 180, shards: 4, minLvl: 8 },
+  { id: 'b4', enemy: 'skimmer', count: 15, lumen: 320, shards: 5, minLvl: 13, region: 'dunes' },
+  { id: 'b5', enemy: 'hound', count: 15, lumen: 420, shards: 6, minLvl: 16, region: 'dunes' },
+  { id: 'b6', enemy: 'sdrone', count: 15, lumen: 520, shards: 7, minLvl: 18, region: 'dunes' }
 ];

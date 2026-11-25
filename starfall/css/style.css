@@ -13,7 +13,9 @@
 html, body { margin: 0; height: 100%; background: var(--bg); color: var(--text); font: 14px/1.4 system-ui, -apple-system, 'Segoe UI', sans-serif; overflow: hidden; overscroll-behavior: none; user-select: none; -webkit-user-select: none; touch-action: none; }
 button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; touch-action: manipulation; }
 #game { position: fixed; inset: 0; }
-#game canvas { display: block; }
+#game canvas { display: block; transition: filter .9s; }
+body.silent #game canvas { filter: grayscale(.92) brightness(.78) contrast(.95); }
+body.silent #vignette { background: radial-gradient(ellipse at 50% 45%, transparent 35%, rgba(10, 12, 16, .8) 100%); }
 #vignette { position: fixed; inset: 0; pointer-events: none; background: radial-gradient(ellipse at 50% 45%, transparent 55%, rgba(2, 8, 12, .55) 100%); }
 #hurtfx { position: fixed; inset: 0; pointer-events: none; opacity: 0; background: radial-gradient(ellipse at center, transparent 55%, rgba(255, 40, 70, .32) 100%); transition: opacity .35s; }
 #hurtfx.on { opacity: 1; transition: none; }
@@ -227,4 +229,7 @@ body.sheet-open #toasts { top: calc(var(--st) + 12px); }
 .hatch-art img { width: 86%; height: 86%; object-fit: cover; border-radius: 50%; box-shadow: 0 0 40px rgba(95, 242, 208, .35); }
 .shake { animation: shake .5s infinite; }
 @keyframes shake { 25% { transform: rotate(-6deg); } 75% { transform: rotate(6deg); } }
+.tcard { display: flex; align-items: center; gap: 12px; text-align: left; padding: 10px; border-radius: 14px; background: var(--panel2); border: 1px solid var(--line); margin-top: 10px; }
+.tcard img { width: 56px; height: 72px; object-fit: cover; border-radius: 10px; flex: none; }
+.tcard.lock { opacity: .55; }
 .pop { animation: bin .45s cubic-bezier(.2, 1.6, .4, 1); }

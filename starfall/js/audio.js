@@ -12,7 +12,9 @@ export function audioInit(settings) {
   } catch (e) { ctx = null; }
 }
 export function audioResume() { if (ctx && ctx.state === 'suspended') ctx.resume(); }
-export function setMusic(v) { on.music = v; if (musicGain) musicGain.gain.setTargetAtTime(v ? .16 : 0, ctx.currentTime, .6); }
+let ducked = false;
+export function duck(v) { ducked = v; if (musicGain) musicGain.gain.setTargetAtTime(on.music && !v ? .16 : 0, ctx.currentTime, .8); }
+export function setMusic(v) { on.music = v; if (musicGain) musicGain.gain.setTargetAtTime(v && !ducked ? .16 : 0, ctx.currentTime, .6); }
 
 function startMusic() {
   const notes = [146.83, 174.61, 220, 261.63, 196, 220];
