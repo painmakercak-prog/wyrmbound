@@ -1,9 +1,9 @@
-import { CALLINGS, ECHOES, HATCHABLE, SLOTS, RARITY, CODEX, QUESTS, NPCS, BOUNTIES, ACTS, ART, REGIONS, ENEMIES, TOWER_LINES, RANKS, CALLING_PORTRAIT, TREES, TREE_THEMES, TREE_ROW_REQ, ORDERS } from './data.js?v=7.1.1';
-import { portraitCanvas, LOOKS, iconCanvas, echoCanvas, lumenCanvas, shardIconCanvas, geodeCanvas, composeLook, RANK_THEMES } from './art.js?v=7.1.1';
-import { heroStats, power, xpNeed, gearLine, upgradeCost, echoStats, echoLevelCost, EVOLVE_COST, ASCEND_COST, STAR_MAX, refineCost, refineNeed, save, wipe, rankIndex, portraitDef, portraitUnlocked, treeOf, treePoints, branchSpent, nodeDef, canLearn, respecCost, autoSpend, lockSaves, rollDaily, orderReward, ORDER_BONUS, ordersClaimable } from './state.js?v=7.1.1';
-import { sfx, setMusic, audioResume } from './audio.js?v=7.1.1';
-import { creator } from './creator.js?v=7.1.1';
-import { copyModal, pasteModal } from './transfer.js?v=7.1.1';
+import { CALLINGS, ECHOES, HATCHABLE, SLOTS, RARITY, CODEX, QUESTS, NPCS, BOUNTIES, ACTS, ART, REGIONS, ENEMIES, TOWER_LINES, RANKS, CALLING_PORTRAIT, TREES, TREE_THEMES, TREE_ROW_REQ, ORDERS } from './data.js?v=7.2';
+import { portraitCanvas, LOOKS, iconCanvas, echoCanvas, lumenCanvas, shardIconCanvas, geodeCanvas, composeLook, RANK_THEMES } from './art.js?v=7.2';
+import { heroStats, power, xpNeed, gearLine, upgradeCost, echoStats, echoLevelCost, EVOLVE_COST, ASCEND_COST, STAR_MAX, refineCost, refineNeed, save, wipe, rankIndex, portraitDef, portraitUnlocked, treeOf, treePoints, branchSpent, nodeDef, canLearn, respecCost, autoSpend, lockSaves, rollDaily, orderReward, ORDER_BONUS, ordersClaimable } from './state.js?v=7.2';
+import { sfx, setMusic, audioResume } from './audio.js?v=7.2';
+import { creator } from './creator.js?v=7.2';
+import { copyModal, pasteModal } from './transfer.js?v=7.2';
 
 const $ = (s, r = document) => r.querySelector(s);
 const el = (tag, cls, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; };
@@ -121,7 +121,7 @@ export class UI {
   buildHud() {
     const hud = el('div'); hud.id = 'hud'; hud.hidden = true;
     hud.innerHTML = `
-      <div id="pc"><div class="av"><img alt=""></div><div class="lv">1</div><div class="bars"><div class="nm"></div><div class="bar hp" style="margin-top:4px"><b></b><i></i></div><div class="sub"><span class="hpn"></span><span class="pw">POWER <b>0</b></span></div></div></div>
+      <div id="pc"><div class="av"><img alt=""></div><div class="lv">1</div><div class="bars"><div class="nm"></div><div class="bar hp" style="margin-top:4px"><b></b><i></i></div><div class="sub"><span class="hpn"></span><span class="pw">POWER <b>0</b></span></div></div><i class="hpd"></i><i class="shd"></i></div>
       <div id="res"><div class="pill" id="lumen"><img src="${this.lumenIcon}" alt="">0</div><div class="pill" id="shards"><img src="${this.shardIcon}" alt="">0</div></div>
       <button id="mm" aria-label="Map and travel"><div class="disc"><canvas width="184" height="184"></canvas></div><div class="rn"></div></button>
       <div id="goal"><i><svg viewBox="0 0 30 30"><path d="M23 15 10 7.5 13 15 10 22.5z"/></svg></i><span></span></div>
@@ -182,7 +182,7 @@ export class UI {
   hudId() {
     const st = this.st, fr = RANKS.find(r => r.id === st.frame) || RANKS[0];
     $('#pc .av img').src = this.portrait('you'); $('#pc .nm').textContent = st.name || CALLINGS[st.cls].name;
-    const av = $('#pc .av'); av.style.borderColor = fr.color; av.style.boxShadow = `0 0 10px ${fr.color}66`;
+    $('#pc .nm').style.color = fr.color;
   }
   lookKey() { const l = this.st.look || {}; return this.st.cls + [l.sex, l.head, l.face, l.body, l.skin, l.hairc, l.gear === false ? 0 : 1].join(''); }
   portraitImg(id) {
@@ -203,8 +203,9 @@ export class UI {
     if (!this.w) return;
     const h = this.w.hero, st = this.st;
     $('#pc .lv').textContent = st.lvl;
-    $('#pc .hp i').style.width = (100 * Math.max(0, h.hp) / h.hpMax) + '%';
-    $('#pc .hp b').style.width = (100 * Math.min(1, (Math.max(0, h.hp) + this.w.shield) / h.hpMax)) + '%';
+    const hf = Math.max(0, Math.min(1, h.hp / h.hpMax)), sf = Math.min(1 - hf, (this.w.shield || 0) / h.hpMax);
+    $('#pc .hpd').style.width = (61.78 * (1 - hf)) + '%';
+    const sd = $('#pc .shd'); sd.style.left = (30.52 + 61.78 * hf) + '%'; sd.style.width = (61.78 * sf) + '%';
     $('#pc .hpn').textContent = `${Math.max(0, Math.ceil(h.hp))} / ${h.hpMax}`;
     $('#xpb i').style.width = (100 * st.xp / xpNeed(st.lvl)) + '%';
     $('#lumen').lastChild.textContent = fmt(st.lumen);
@@ -620,7 +621,7 @@ export class UI {
     const rs = el('button', 'btn ghost', 'Start over'); rs.style.marginTop = '16px'; rs.style.width = '100%';
     rs.onclick = () => { if (rs.dataset.c) { wipe(); location.reload(); } else { rs.dataset.c = 1; rs.textContent = 'Tap again to erase your save'; rs.style.color = 'var(--red)'; } };
     bd.appendChild(rs);
-    bd.appendChild(el('div', 'small muted', 'Wyrmbound: Starfall · build 7.1. Engine: Phaser (MIT). Font: Chakra Petch (OFL). Art: Grok and drawn in code. Music: made with Suno.')).style.marginTop = '14px';
+    bd.appendChild(el('div', 'small muted', 'Wyrmbound: Starfall · build 7.2. Engine: Phaser (MIT). Font: Chakra Petch (OFL). Art: Grok, drawn in code, and the Sci Fi Game UI collection by SunGraphica (GameDev Market). Music: made with Suno.')).style.marginTop = '14px';
   }
 
   actEnd(n = 1) {

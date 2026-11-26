@@ -1,6 +1,6 @@
 # Wyrmbound: Starfall — Project Status
 
-Last updated: 2026-11-26 (build 7.1.1 shipped)
+Last updated: 2026-11-26 (build 7.2 shipped)
 
 Play it: https://painmakercak-prog.github.io/wyrmbound/starfall/
 Code: `starfall/` on `main`. Deploys go to the `gh-pages` branch under `/starfall/`.
@@ -25,6 +25,7 @@ Owner: Kasey. Code is written by Claude. Art comes from Grok, story from Muse, m
 | 7 | 2026-11-25 | HUD rework: live minimap (enemies, NPCs, quest goal; tap it to travel), region name, edge arrow with distance to the current objective, power in the player card, full-width XP bar, solid bottom bar. Daily Orders: 3 jobs a day from the Lodge board (new Orders tab), Lumen and memory rewards, a bonus geode for all three, resets at local midnight. Fixes: panels open scrolled to the top, title shows your save, hero XP progress |
 | 7.1 | 2026-11-26 | From Kasey's iPhone screenshots of the Hero panel: talents show names and PWR/CD tags, the talent detail and Learn button stay pinned on screen, "Spend for me" auto-assigns points into a branch; Recruit no longer uses the cartoon portrait; Appearance has a pinned Save and no duplicate title; menus size to Safari's visible screen; title tip for Add to Home Screen; save codes (Lodge, Settings) to move progress between Safari and the Home Screen app |
 | 7.1.1 | 2026-11-26 | "Copy save code" button right on the title screen, so moving to the Home Screen app doesn't need the Lodge |
+| 7.2 | 2026-11-26 | New interface from Kasey's sci-fi UI kit (SunGraphica "Sci Fi Game UI collection", free, commercial use allowed): nameplate player card with segmented HP, angled quest tracker, segmented boss bar, octagon frames on skills, Echo and talents, kit panels on every card, menu and dialogue box, chamfered buttons, tabs and pills, kit close and lock icons |
 
 ## In progress
 
@@ -44,6 +45,8 @@ Nothing. Build 7.1 is live. Open question for Kasey: art direction for the in-ga
 - [ ] Optional: Muse can write flavour names and lines for the Daily Orders (currently plain names like "Clear the field").
 
 ## Assets received
+
+- UI kit: SunGraphica "Sci Fi Game UI collection FREE version" (GameDev Market). Recolored to the game palette, credited in Lodge settings.
 
 - Art (Grok): Act I set, Act II Ribline set, Shade/Mender/tower set, Act III reef set, Ascendant Echoes, opposite-sex Calling faces, Ascension rank portraits and the Act IV Heartstrand set. All in the game.
 - Music (Suno): First Light Beyond (title, tower), Glassy Horizons (Verge), Sun-bleached Frontier (Dunes), Glassy Depths (Sunken Lattice), Defending the Core (bosses). All in the game.
