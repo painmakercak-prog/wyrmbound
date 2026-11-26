@@ -1,6 +1,6 @@
 # Wyrmbound: Starfall — Project Status
 
-Last updated: 2026-11-25 (build 7 shipped)
+Last updated: 2026-11-26 (build 7.1 shipped)
 
 Play it: https://painmakercak-prog.github.io/wyrmbound/starfall/
 Code: `starfall/` on `main`. Deploys go to the `gh-pages` branch under `/starfall/`.
@@ -23,10 +23,11 @@ Owner: Kasey. Code is written by Claude. Art comes from Grok, story from Muse, m
 | 6 | 2026-11-25 | Act IV, The Heartstrand: Tovin Hale, Nessa Quill; Saltback Maulers (charge), Hollow Archivists (ranged), Memory Dredgers (steal buffs); The First Captain boss (pulse-shout, rifle line, recall beacons); 16 quests; Skein's portrait changes after "Skein Stays"; First Captain is now the floor-40 tower guardian |
 | 6.1 | 2026-11-25 | iPhone fix: the game view no longer gets stuck at half height when the keyboard was open (found in Kasey's first real-device playtest) |
 | 7 | 2026-11-25 | HUD rework: live minimap (enemies, NPCs, quest goal; tap it to travel), region name, edge arrow with distance to the current objective, power in the player card, full-width XP bar, solid bottom bar. Daily Orders: 3 jobs a day from the Lodge board (new Orders tab), Lumen and memory rewards, a bonus geode for all three, resets at local midnight. Fixes: panels open scrolled to the top, title shows your save, hero XP progress |
+| 7.1 | 2026-11-26 | From Kasey's iPhone screenshots of the Hero panel: talents show names and PWR/CD tags, the talent detail and Learn button stay pinned on screen, "Spend for me" auto-assigns points into a branch; Recruit no longer uses the cartoon portrait; Appearance has a pinned Save and no duplicate title; menus size to Safari's visible screen; title tip for Add to Home Screen; save codes (Lodge, Settings) to move progress between Safari and the Home Screen app |
 
 ## In progress
 
-Nothing. Build 7 is live; next build is waiting on Kasey's playtest notes on the new HUD and Orders.
+Nothing. Build 7.1 is live. Open question for Kasey: art direction for the in-game characters (cartoon sprites vs the painted portraits).
 
 ## Waiting on Kasey
 
@@ -36,6 +37,8 @@ Nothing. Build 7 is live; next build is waiting on Kasey's playtest notes on the
 
 - [ ] Keep playtesting on the iPhone and report anything that feels slow, broken or unfinished. First real-device test found the half-screen bug (fixed in 6.1).
 - [ ] Tell Claude if the tower or the Choir Below feels too easy or too hard.
+- [ ] Decide: keep the cartoon in-game characters and polish them, or move toward the painted look (needs Grok).
+- [ ] Grok: Recruit rank portraits (male and female) so Rank I matches the others.
 - [ ] Try build 7 on the iPhone: does the minimap, the objective arrow and the Orders tab feel right? Are the daily rewards too small or too big?
 - [ ] Optional: Muse can write flavour names and lines for the Daily Orders (currently plain names like "Clear the field").
 
