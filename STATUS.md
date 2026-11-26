@@ -1,6 +1,6 @@
 # Wyrmbound: Starfall — Project Status
 
-Last updated: 2026-11-26 (build 7.2.1 shipped)
+Last updated: 2026-11-26 (build 7.3 shipped)
 
 Play it: https://painmakercak-prog.github.io/wyrmbound/starfall/
 Code: `starfall/` on `main`. Deploys go to the `gh-pages` branch under `/starfall/`.
@@ -27,6 +27,7 @@ Owner: Kasey. Code is written by Claude. Art comes from Grok, story from Muse, m
 | 7.1.1 | 2026-11-26 | "Copy save code" button right on the title screen, so moving to the Home Screen app doesn't need the Lodge |
 | 7.2 | 2026-11-26 | New interface from Kasey's sci-fi UI kit (SunGraphica "Sci Fi Game UI collection", free, commercial use allowed): nameplate player card with segmented HP, angled quest tracker, segmented boss bar, octagon frames on skills, Echo and talents, kit panels on every card, menu and dialogue box, chamfered buttons, tabs and pills, kit close and lock icons |
 | 7.2.1 | 2026-11-26 | Fix: Start over now really erases the save (the exit autosave was writing it back) |
+| 7.3 | 2026-11-26 | Lighting pass (graphic overhaul step 1): per-region ambient light with real light pools from lamps, fires, crystals, the Spire, the Heart and ship portholes; your hero, Echo, projectiles and skill blasts light their surroundings; soft ground shadows under props; floating glow particles; edge vignette |
 
 ## In progress
 
@@ -40,7 +41,7 @@ Nothing. Build 7.1 is live. Open question for Kasey: art direction for the in-ga
 
 - [ ] Keep playtesting on the iPhone and report anything that feels slow, broken or unfinished. First real-device test found the half-screen bug (fixed in 6.1).
 - [ ] Tell Claude if the tower or the Choir Below feels too easy or too hard.
-- [ ] Decide: keep the cartoon in-game characters and polish them, or move toward the painted look (needs Grok).
+- [ ] Graphic overhaul slice (Glasswood Verge, Railwarden, Shardling, Glow-moth, Thorn-crawler): Grok paints the characters as puppet parts, Muse paints the Verge ground, props and Railwarden effects. Prompts given 2026-11-26.
 - [ ] Grok: Recruit rank portraits (male and female) so Rank I matches the others.
 - [ ] Try build 7 on the iPhone: does the minimap, the objective arrow and the Orders tab feel right? Are the daily rewards too small or too big?
 - [ ] Optional: Muse can write flavour names and lines for the Daily Orders (currently plain names like "Clear the field").

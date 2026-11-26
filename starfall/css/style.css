@@ -14,6 +14,7 @@ html, body { margin: 0; height: 100%; background: var(--bg); color: var(--text);
 button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; touch-action: manipulation; }
 #game { position: fixed; inset: 0; }
 #game canvas { display: block; transition: filter .9s; }
+#game::after { content: ''; position: absolute; inset: 0; pointer-events: none; background: radial-gradient(ellipse 80% 62% at 50% 46%, transparent 58%, rgba(2, 6, 10, .42) 100%); }
 body.silent #game canvas { filter: grayscale(.92) brightness(.78) contrast(.95); }
 body.silent #vignette { background: radial-gradient(ellipse at 50% 45%, transparent 35%, rgba(10, 12, 16, .8) 100%); }
 #vignette { position: fixed; inset: 0; pointer-events: none; background: radial-gradient(ellipse at 50% 45%, transparent 55%, rgba(2, 8, 12, .55) 100%); }
