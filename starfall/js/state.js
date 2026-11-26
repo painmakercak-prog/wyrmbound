@@ -1,4 +1,4 @@
-import { CALLINGS, ECHOES, SLOTS, RARITY, GEAR_NAMES, QUESTS, RANKS, CALLING_PORTRAIT, TREES, TREE_THEMES, TREE_ROW_REQ, ORDERS } from './data.js?v=7.2';
+import { CALLINGS, ECHOES, SLOTS, RARITY, GEAR_NAMES, QUESTS, RANKS, CALLING_PORTRAIT, TREES, TREE_THEMES, TREE_ROW_REQ, ORDERS } from './data.js?v=7.2.1';
 
 const KEY = 'starfall.save.v1';
 
@@ -19,7 +19,7 @@ export function load() {
 let saveLocked = false;
 export const lockSaves = () => { saveLocked = true; };
 export function save(st) { if (saveLocked) return; try { st.lastSeen = Date.now(); localStorage.setItem(KEY, JSON.stringify(st)); } catch (e) {} }
-export function wipe() { try { localStorage.removeItem(KEY); } catch (e) {} }
+export function wipe() { saveLocked = true; try { localStorage.removeItem(KEY); } catch (e) {} }
 
 export const dayKey = (d = new Date()) => d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate();
 export function rollDaily(st) {
