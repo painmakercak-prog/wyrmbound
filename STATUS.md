@@ -1,6 +1,6 @@
 # Wyrmbound: Starfall — Project Status
 
-Last updated: 2026-11-26 (build 7.1 shipped)
+Last updated: 2026-11-26 (build 7.1.1 shipped)
 
 Play it: https://painmakercak-prog.github.io/wyrmbound/starfall/
 Code: `starfall/` on `main`. Deploys go to the `gh-pages` branch under `/starfall/`.
@@ -24,6 +24,7 @@ Owner: Kasey. Code is written by Claude. Art comes from Grok, story from Muse, m
 | 6.1 | 2026-11-25 | iPhone fix: the game view no longer gets stuck at half height when the keyboard was open (found in Kasey's first real-device playtest) |
 | 7 | 2026-11-25 | HUD rework: live minimap (enemies, NPCs, quest goal; tap it to travel), region name, edge arrow with distance to the current objective, power in the player card, full-width XP bar, solid bottom bar. Daily Orders: 3 jobs a day from the Lodge board (new Orders tab), Lumen and memory rewards, a bonus geode for all three, resets at local midnight. Fixes: panels open scrolled to the top, title shows your save, hero XP progress |
 | 7.1 | 2026-11-26 | From Kasey's iPhone screenshots of the Hero panel: talents show names and PWR/CD tags, the talent detail and Learn button stay pinned on screen, "Spend for me" auto-assigns points into a branch; Recruit no longer uses the cartoon portrait; Appearance has a pinned Save and no duplicate title; menus size to Safari's visible screen; title tip for Add to Home Screen; save codes (Lodge, Settings) to move progress between Safari and the Home Screen app |
+| 7.1.1 | 2026-11-26 | "Copy save code" button right on the title screen, so moving to the Home Screen app doesn't need the Lodge |
 
 ## In progress
 

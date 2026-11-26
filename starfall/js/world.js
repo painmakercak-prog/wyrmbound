@@ -1,7 +1,7 @@
-import { CALLINGS, ENEMIES, REGIONS, NPCS, ECHOES, QUESTS, SLOTS, RARITY, CODEX, BOUNTIES, TOWER_POOL, TOWER_GUARDS, GEAR_NAMES, IDLE } from './data.js?v=7.1';
-import { buildArt, ANCHORS, heroCanvas } from './art.js?v=7.1';
-import { heroStats, echoStats, xpNeed, makeGear, rollRarity, gearValue, save, rankIndex } from './state.js?v=7.1';
-import { sfx, duck, playTrack } from './audio.js?v=7.1';
+import { CALLINGS, ENEMIES, REGIONS, NPCS, ECHOES, QUESTS, SLOTS, RARITY, CODEX, BOUNTIES, TOWER_POOL, TOWER_GUARDS, GEAR_NAMES, IDLE } from './data.js?v=7.1.1';
+import { buildArt, ANCHORS, heroCanvas } from './art.js?v=7.1.1';
+import { heroStats, echoStats, xpNeed, makeGear, rollRarity, gearValue, save, rankIndex } from './state.js?v=7.1.1';
+import { sfx, duck, playTrack } from './audio.js?v=7.1.1';
 
 const dist = (a, b, c, d) => Math.hypot(c - a, d - b);
 const rnd = (a, b) => a + Math.random() * (b - a);
