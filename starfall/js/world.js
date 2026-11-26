@@ -1,9 +1,9 @@
-import { CALLINGS, ENEMIES, REGIONS, NPCS, ECHOES, QUESTS, SLOTS, RARITY, CODEX, BOUNTIES, TOWER_POOL, TOWER_GUARDS, GEAR_NAMES, IDLE } from './data.js?v=8';
-import { buildArt, ANCHORS, heroCanvas, HAIR_COLORS, DEFAULT_LOOKS } from './art.js?v=8';
-import { PA, RIG, PKEYS, PV } from './painted.js?v=8';
-import { heroStats, echoStats, xpNeed, makeGear, rollRarity, gearValue, save, rankIndex } from './state.js?v=8';
-import { sfx, duck, playTrack } from './audio.js?v=8';
-import { Lighting } from './lighting.js?v=8';
+import { CALLINGS, ENEMIES, REGIONS, NPCS, ECHOES, QUESTS, SLOTS, RARITY, CODEX, BOUNTIES, TOWER_POOL, TOWER_GUARDS, GEAR_NAMES, IDLE } from './data.js?v=8.1';
+import { buildArt, ANCHORS, heroCanvas, HAIR_COLORS, DEFAULT_LOOKS } from './art.js?v=8.1';
+import { PA, RIG, PKEYS, PV } from './painted.js?v=8.1';
+import { heroStats, echoStats, xpNeed, makeGear, rollRarity, gearValue, save, rankIndex } from './state.js?v=8.1';
+import { sfx, duck, playTrack } from './audio.js?v=8.1';
+import { Lighting } from './lighting.js?v=8.1';
 
 const dist = (a, b, c, d) => Math.hypot(c - a, d - b);
 const rnd = (a, b) => a + Math.random() * (b - a);
@@ -601,6 +601,7 @@ export class WorldScene extends Phaser.Scene {
     if (h.dead) return;
     const C = CALLINGS[this.st.cls];
     this.atkCd -= dt; for (let i = 0; i < 3; i++) this.cds[i] = Math.max(0, this.cds[i] - dt);
+    if (this.st.god) { this.res = Math.min(100, this.res + dt * 60); if (h.hp < h.hpMax) { h.hp = h.hpMax; this.ui.stats(); } }
     if (this.shieldT > 0) { this.shieldT -= dt; if (this.shieldT <= 0) this.shield = 0; }
     this.iframeT = Math.max(0, this.iframeT - dt); this.overT = Math.max(0, this.overT - dt);
     const HM = h.mods; if (HM && HM.regen && h.hp < h.hpMax) { h.hp = Math.min(h.hpMax, h.hp + h.hpMax * HM.regen * dt); this.regenUi -= dt; if (this.regenUi <= 0) { this.regenUi = .5; this.ui.stats(); } }
@@ -750,6 +751,7 @@ export class WorldScene extends Phaser.Scene {
     this.gainRes(kind === 'basic' ? 3.5 : 6);
   }
   damageEnemy(e, dmg, crit, color) {
+    if (this.st.ohk) dmg = Math.max(dmg, Math.ceil(e.hp));
     e.hp -= dmg; e.flash = .08; if (!this.hero.dead) { e.aggro = true; if (e.state === 'idle' || e.state === 'return') e.state = 'chase'; }
     this.num(e.x + rnd(-8, 8), e.y - topY(e), crit ? dmg + '!' : '' + dmg, crit ? '#ffcf5a' : (color || '#ffffff'), crit ? 22 : 16, crit);
     this.burstE.setParticleTint(crit ? 0xffcf5a : 0x9ff6ff); this.burstE.explode(crit ? 10 : 5, e.x, e.y - hy(e));
@@ -767,7 +769,7 @@ export class WorldScene extends Phaser.Scene {
   gainRes(n) { this.res = Math.min(100, this.res + n * (1 + (this.hero.mods ? this.hero.mods.res : 0))); }
 
   hurtHero(amount, src) {
-    const h = this.hero; if (h.dead || this.iframeT > 0) return;
+    const h = this.hero; if (h.dead || this.iframeT > 0 || this.st.god) return;
     if (this.veilT > 0) amount *= .4;
     let dmg = Math.max(1, Math.round(amount * (60 / (60 + h.def)) * rnd(.9, 1.1)));
     if (this.shield <= 0 && h.hp - dmg <= 0 && h.mods && h.mods.keys.secondWind && this.now >= this.swReady) {
@@ -878,6 +880,11 @@ export class WorldScene extends Phaser.Scene {
     this.pickups = this.pickups.filter(p => !p.done);
   }
 
+  addLevels(n) {
+    const st = this.st, m = 1 + (this.hero.mods ? this.hero.mods.xp : 0); let x = xpNeed(st.lvl) - st.xp;
+    for (let i = 1; i < n; i++) x += xpNeed(st.lvl + i);
+    this.gainXp(x / m + 1);
+  }
   gainXp(n) {
     const st = this.st; st.xp += Math.round(n * (1 + (this.hero.mods ? this.hero.mods.xp : 0)));
     let up = false;
@@ -927,7 +934,7 @@ export class WorldScene extends Phaser.Scene {
       else { const a = Math.atan2(ty - p.y, tx - p.x); p.vx = Math.cos(a) * p.spd; p.vy = Math.sin(a) * p.spd; p.x += p.vx * dt; p.y += p.vy * dt; }
       p.s.setPosition(p.x, p.y); p.s.rotation = Math.atan2(p.vy || 0, p.vx || 1);
       if (Math.random() < .5) { const tr = this.add.image(p.x, p.y, 'dot').setScale(this.sx('dot') * .8).setTint(p.tint || 0xffffff).setBlendMode('ADD').setDepth(5e5 - 1).setAlpha(.6); this.tweens.add({ targets: tr, alpha: 0, scale: 0, duration: 260, onComplete: () => tr.destroy() }); }
-      if (p.toHero) { if (dist(p.x, p.y, tx, ty) < 14) { p.done = true; this.hurtHero(p.dmg); if (p.drain) this.res = Math.max(0, this.res - p.drain); this.burstE.setParticleTint(0xff6ab0); this.burstE.explode(6, p.x, p.y); } }
+      if (p.toHero) { if (dist(p.x, p.y, tx, ty) < 14) { p.done = true; this.hurtHero(p.dmg); if (p.drain && !this.st.god) this.res = Math.max(0, this.res - p.drain); this.burstE.setParticleTint(0xff6ab0); this.burstE.explode(6, p.x, p.y); } }
       else if (p.pierce) { for (const e of this.enemies) if (!e.dead && !p.hitSet.has(e) && dist(p.x, p.y, e.x, e.y - hy(e)) < 26 + (e.D.boss ? 40 : 0)) { p.hitSet.add(e); this.hit(e, p.mult, 'skill'); } }
       else { const e = p.tgt || this.enemies.find(e => !e.dead && dist(p.x, p.y, e.x, e.y - 16) < 22); if (e && dist(p.x, p.y, e.x, e.y - hy(e)) < 20 + (e.D.boss ? 40 : 0)) { p.done = true; this.hit(e, p.mult, 'basic'); if (p.heal) this.heal(this.hero.hpMax * p.heal, '', true); if (p.splash) for (const o of this.enemiesIn(e.x, e.y, p.splash)) if (o !== e) this.hit(o, p.mult * .5, 'basic'); this.burstE.setParticleTint(p.tint || 0xffffff); this.burstE.explode(6, p.x, p.y); } }
       if (p.life <= 0) p.done = true;
@@ -945,7 +952,7 @@ export class WorldScene extends Phaser.Scene {
     const needsTarget = !['bulwark', 'pulse', 'slam', 'veil', 'mend', 'medrone', 'stasis', 'roll'].includes(S.id);
     if (needsTarget && !t) { this.ui.toast('No target in range'); return false; }
     const M = h.mods || { skillDmg: {}, skillCd: {}, skill: 0 }, P = 1 + (M.skillDmg[S.id] || 0) + (M.skill || 0);
-    this.cds[i] = S.cd * (1 - (M.skillCd[S.id] || 0)); h.swing = 1; sfx('skill');
+    this.cds[i] = this.st.god ? .4 : S.cd * (1 - (M.skillCd[S.id] || 0)); h.swing = 1; sfx('skill');
     if (t) this.faceTo(t.x);
     const mz = this.muzzle(), ax = h.painted ? mz.x : h.x, ay = h.painted ? mz.y : h.y - 20;
     switch (S.id) {

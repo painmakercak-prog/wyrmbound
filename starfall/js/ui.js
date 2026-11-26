@@ -1,9 +1,9 @@
-import { CALLINGS, ECHOES, HATCHABLE, SLOTS, RARITY, CODEX, QUESTS, NPCS, BOUNTIES, ACTS, ART, REGIONS, ENEMIES, TOWER_LINES, RANKS, CALLING_PORTRAIT, TREES, TREE_THEMES, TREE_ROW_REQ, ORDERS } from './data.js?v=8';
-import { portraitCanvas, LOOKS, iconCanvas, echoCanvas, lumenCanvas, shardIconCanvas, geodeCanvas, composeLook, RANK_THEMES } from './art.js?v=8';
-import { heroStats, power, xpNeed, gearLine, upgradeCost, echoStats, echoLevelCost, EVOLVE_COST, ASCEND_COST, STAR_MAX, refineCost, refineNeed, save, wipe, rankIndex, portraitDef, portraitUnlocked, treeOf, treePoints, branchSpent, nodeDef, canLearn, respecCost, autoSpend, lockSaves, rollDaily, orderReward, ORDER_BONUS, ordersClaimable } from './state.js?v=8';
-import { sfx, setMusic, audioResume } from './audio.js?v=8';
-import { creator } from './creator.js?v=8';
-import { copyModal, pasteModal } from './transfer.js?v=8';
+import { CALLINGS, ECHOES, HATCHABLE, SLOTS, RARITY, CODEX, QUESTS, NPCS, BOUNTIES, ACTS, ART, REGIONS, ENEMIES, TOWER_LINES, RANKS, CALLING_PORTRAIT, TREES, TREE_THEMES, TREE_ROW_REQ, ORDERS } from './data.js?v=8.1';
+import { portraitCanvas, LOOKS, iconCanvas, echoCanvas, lumenCanvas, shardIconCanvas, geodeCanvas, composeLook, RANK_THEMES } from './art.js?v=8.1';
+import { heroStats, power, xpNeed, gearLine, upgradeCost, echoStats, echoLevelCost, EVOLVE_COST, ASCEND_COST, STAR_MAX, refineCost, refineNeed, save, wipe, rankIndex, portraitDef, portraitUnlocked, treeOf, treePoints, branchSpent, nodeDef, canLearn, respecCost, autoSpend, lockSaves, rollDaily, orderReward, ORDER_BONUS, ordersClaimable } from './state.js?v=8.1';
+import { sfx, setMusic, audioResume } from './audio.js?v=8.1';
+import { creator } from './creator.js?v=8.1';
+import { copyModal, pasteModal } from './transfer.js?v=8.1';
 
 const $ = (s, r = document) => r.querySelector(s);
 const el = (tag, cls, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; };
@@ -121,7 +121,7 @@ export class UI {
   buildHud() {
     const hud = el('div'); hud.id = 'hud'; hud.hidden = true;
     hud.innerHTML = `
-      <div id="pc"><div class="av"><img alt=""></div><div class="lv">1</div><div class="bars"><div class="nm"></div><div class="bar hp" style="margin-top:4px"><b></b><i></i></div><div class="sub"><span class="hpn"></span><span class="pw">POWER <b>0</b></span></div></div><i class="hpd"></i><i class="shd"></i></div>
+      <div id="pc"><div class="av"><img alt=""></div><div class="lv">1</div><div class="bars"><div class="nm"></div><div class="bar hp" style="margin-top:4px"><b></b><i></i></div><div class="sub"><span class="hpn"></span><span class="pw">POWER <b>0</b></span></div></div><i class="hpd"></i><i class="shd"></i><i class="godt"></i></div>
       <div id="res"><div class="pill" id="lumen"><img src="${this.lumenIcon}" alt="">0</div><div class="pill" id="shards"><img src="${this.shardIcon}" alt="">0</div></div>
       <button id="mm" aria-label="Map and travel"><div class="disc"><canvas width="184" height="184"></canvas></div><div class="rn"></div></button>
       <div id="goal"><i><svg viewBox="0 0 30 30"><path d="M23 15 10 7.5 13 15 10 22.5z"/></svg></i><span></span></div>
@@ -203,6 +203,7 @@ export class UI {
     if (!this.w) return;
     const h = this.w.hero, st = this.st;
     $('#pc .lv').textContent = st.lvl;
+    $('#pc').classList.toggle('god', !!(st.god || st.ohk)); $('#pc .godt').textContent = st.god ? (st.ohk ? 'GOD · 1-HIT' : 'GOD') : '1-HIT';
     const hf = Math.max(0, Math.min(1, h.hp / h.hpMax)), sf = Math.min(1 - hf, (this.w.shield || 0) / h.hpMax);
     $('#pc .hpd').style.width = (61.78 * (1 - hf)) + '%';
     const sd = $('#pc .shd'); sd.style.left = (30.52 + 61.78 * hf) + '%'; sd.style.width = (61.78 * sf) + '%';
@@ -612,6 +613,15 @@ export class UI {
     sw('Sound effects', () => st.settings.sound, v => st.settings.sound = v);
     sw('Music', () => st.settings.music, v => { st.settings.music = v; setMusic(v); });
     sw('Auto skills', () => st.settings.autoSkill, v => { st.settings.autoSkill = v; this.autoBtn(); });
+    bd.appendChild(el('div', 'sec', 'Test mode'));
+    bd.appendChild(el('div', 'small muted', 'For the test phase. God mode: you take no damage, health stays full, skills recharge in 0.4s and Resonance refills on its own.'));
+    sw('God mode', () => !!st.god, v => { st.god = v; this.stats(); save(st); });
+    sw('One-hit kills', () => !!st.ohk, v => { st.ohk = v; this.stats(); save(st); });
+    const tg = el('div', 'tgrid');
+    for (const [label, fn] of [['+100K Lumen', () => { st.lumen += 100000; this.lumenBump(); }], ['+1K Memory', () => { st.shards += 1000; }], ['+10 Geodes', () => { st.geodes += 10; }], ['+5 Levels', () => this.w.addLevels(5)], ['Skip quest', () => { this.close(); this.w.completeQuest(); }], ['Full heal', () => { this.w.heal(this.w.hero.hpMax, '', true); }]]) {
+      const b = el('button', 'btn ghost', label); b.onclick = () => { sfx('ui'); fn(); this.stats(); save(st); b.classList.remove('bump'); void b.offsetWidth; b.classList.add('bump'); }; tg.appendChild(b);
+    }
+    bd.appendChild(tg);
     bd.appendChild(el('div', 'sec', 'Move your save'));
     bd.appendChild(el('div', 'small muted', 'Safari and the Home Screen app keep separate saves. Copy a code here, then load it in the other one.'));
     const tr = el('div', 'row'); tr.style.gap = '10px'; tr.style.marginTop = '10px';
@@ -621,7 +631,7 @@ export class UI {
     const rs = el('button', 'btn ghost', 'Start over'); rs.style.marginTop = '16px'; rs.style.width = '100%';
     rs.onclick = () => { if (rs.dataset.c) { wipe(); location.reload(); } else { rs.dataset.c = 1; rs.textContent = 'Tap again to erase your save'; rs.style.color = 'var(--red)'; } };
     bd.appendChild(rs);
-    bd.appendChild(el('div', 'small muted', 'Wyrmbound: Starfall · build 8. Engine: Phaser (MIT). Font: Chakra Petch (OFL). Art: Grok, drawn in code, and the Sci Fi Game UI collection by SunGraphica (GameDev Market). Music: made with Suno.')).style.marginTop = '14px';
+    bd.appendChild(el('div', 'small muted', 'Wyrmbound: Starfall · build 8.1. Engine: Phaser (MIT). Font: Chakra Petch (OFL). Art: Grok, drawn in code, and the Sci Fi Game UI collection by SunGraphica (GameDev Market). Music: made with Suno.')).style.marginTop = '14px';
   }
 
   actEnd(n = 1) {

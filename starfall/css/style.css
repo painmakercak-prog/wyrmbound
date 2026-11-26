@@ -441,3 +441,10 @@ body.sheet-open #toasts { top: calc(var(--st) + 12px); }
 #title .a2hs { border-radius: 0; background: none; border: 0 solid transparent; border-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Cpath d='M9.5 .5H39.5V30.5L30.5 39.5H.5V9.5Z' fill='%23091723' fill-opacity='0.9' stroke='rgba(95,242,255,0.45)'/%3E%3C/svg%3E") 12 fill / 10px; }
 #title .go { border-radius: 0; clip-path: polygon(14px 0, 100% 0, 100% calc(100% - 14px), calc(100% - 14px) 100%, 0 100%, 0 14px); }
 #banner .b.boss img { border-radius: 0; clip-path: polygon(14% 0, 100% 0, 100% 86%, 86% 100%, 0 100%, 0 14%); }
+
+#pc .godt { display: none; position: absolute; left: 0; top: -9%; padding: 0 7px; height: 16px; border-radius: 8px; background: #3a0d16; border: 1.5px solid #ff6a7a; color: #ffc2c8; font: 700 10px/13px var(--display); letter-spacing: .08em; white-space: nowrap; z-index: 3; }
+#pc.god .godt { display: block; }
+.tgrid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 10px; }
+.tgrid .btn { padding: 10px 4px; font-size: 13px; min-height: 0; }
+.tgrid .btn.bump { animation: tbump .25s ease-out; }
+@keyframes tbump { 0% { transform: scale(.92); } 100% { transform: scale(1); } }
