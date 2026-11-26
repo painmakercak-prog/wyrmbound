@@ -1,6 +1,6 @@
 # Wyrmbound: Starfall — Project Status
 
-Last updated: 2026-11-25 (build 6 shipped)
+Last updated: 2026-11-25 (build 6.1 shipped)
 
 Play it: https://painmakercak-prog.github.io/wyrmbound/starfall/
 Code: `starfall/` on `main`. Deploys go to the `gh-pages` branch under `/starfall/`.
@@ -21,6 +21,7 @@ Owner: Kasey. Code is written by Claude. Art comes from Grok, story from Muse, m
 | 5 | 2026-11-25 | Character creator (name, body type, 3 heads, 3 faces, 3 bodies, skin, hair, gear toggle); rename and restyle any time; Ascension ranks I–VI (levels 1/10/20/30/40/50) with permanent bonuses, unlockable portraits with equipped bonuses, and frames; skill tree with 3 branches per Calling, 1 point per level, keystones (Executioner, Second Wind, Overdrive), reset for Lumen |
 | 5.1 | 2026-11-25 | Grok portraits: female/male versions of every Calling face, and painted Ascension rank portraits (Hunter to Starborn, male and female) |
 | 6 | 2026-11-25 | Act IV, The Heartstrand: Tovin Hale, Nessa Quill; Saltback Maulers (charge), Hollow Archivists (ranged), Memory Dredgers (steal buffs); The First Captain boss (pulse-shout, rifle line, recall beacons); 16 quests; Skein's portrait changes after "Skein Stays"; First Captain is now the floor-40 tower guardian |
+| 6.1 | 2026-11-25 | iPhone fix: the game view no longer gets stuck at half height when the keyboard was open (found in Kasey's first real-device playtest) |
 
 ## In progress
 
@@ -32,7 +33,7 @@ Nothing yet. Next build is waiting on Kasey's playtest notes and a decision on w
 - [ ] Optional: Suno track "The Heart Ashore" for the Heartstrand (prompt in chat). Until then it reuses Glassy Depths.
 - [ ] Optional: have Grok or Muse playtest the live build in a browser (prompt in chat).
 
-- [ ] Play builds 3 and 4 on the iPhone (Act III, the tower, Ascend, Refine, new Callings) and report anything that feels slow or wrong. Real-device performance and sound are not yet confirmed.
+- [ ] Keep playtesting on the iPhone and report anything that feels slow, broken or unfinished. First real-device test found the half-screen bug (fixed in 6.1).
 - [ ] Tell Claude if the tower or the Choir Below feels too easy or too hard.
 - [ ] Decide what's next after build 5: Act IV (once Muse's script arrives), more Echo species, or polish.
 
