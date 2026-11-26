@@ -1,6 +1,6 @@
 # Wyrmbound: Starfall — Project Status
 
-Last updated: 2026-11-26 (build 7.2 shipped)
+Last updated: 2026-11-26 (build 7.2.1 shipped)
 
 Play it: https://painmakercak-prog.github.io/wyrmbound/starfall/
 Code: `starfall/` on `main`. Deploys go to the `gh-pages` branch under `/starfall/`.
@@ -26,6 +26,7 @@ Owner: Kasey. Code is written by Claude. Art comes from Grok, story from Muse, m
 | 7.1 | 2026-11-26 | From Kasey's iPhone screenshots of the Hero panel: talents show names and PWR/CD tags, the talent detail and Learn button stay pinned on screen, "Spend for me" auto-assigns points into a branch; Recruit no longer uses the cartoon portrait; Appearance has a pinned Save and no duplicate title; menus size to Safari's visible screen; title tip for Add to Home Screen; save codes (Lodge, Settings) to move progress between Safari and the Home Screen app |
 | 7.1.1 | 2026-11-26 | "Copy save code" button right on the title screen, so moving to the Home Screen app doesn't need the Lodge |
 | 7.2 | 2026-11-26 | New interface from Kasey's sci-fi UI kit (SunGraphica "Sci Fi Game UI collection", free, commercial use allowed): nameplate player card with segmented HP, angled quest tracker, segmented boss bar, octagon frames on skills, Echo and talents, kit panels on every card, menu and dialogue box, chamfered buttons, tabs and pills, kit close and lock icons |
+| 7.2.1 | 2026-11-26 | Fix: Start over now really erases the save (the exit autosave was writing it back) |
 
 ## In progress
 
