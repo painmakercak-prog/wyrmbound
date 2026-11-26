@@ -1,16 +1,16 @@
 export const WORLD = { w: 1800, h: 3000 };
 
 export const ART = {
-  portrait: { marr: 'art/p_marr.webp', sparks: 'art/p_sparks.webp', okafor: 'art/p_okafor.webp', skein: 'art/p_skein.webp', kestrel: 'art/p_kestrel.webp', corvin: 'art/p_corvin.webp', hush: 'art/p_hush.webp', ilse: 'art/p_ilse.webp', bix: 'art/p_bix.webp', pell: 'art/p_pell.webp' },
+  portrait: { marr: 'art/p_marr.webp', sparks: 'art/p_sparks.webp', okafor: 'art/p_okafor.webp', skein: 'art/p_skein.webp', kestrel: 'art/p_kestrel.webp', corvin: 'art/p_corvin.webp', hush: 'art/p_hush.webp', ilse: 'art/p_ilse.webp', bix: 'art/p_bix.webp', pell: 'art/p_pell.webp', tovin: 'art/p_tovin.webp', nessa: 'art/p_nessa.webp' },
   calling: { vanguard: 'art/c_vanguard.webp', railwarden: 'art/c_railwarden.webp', psion: 'art/c_psion.webp', duelist: 'art/c_duelist.webp', shade: 'art/c_shade.webp', mender: 'art/c_mender.webp' },
   face: { vanguard: 'art/f_vanguard.webp', railwarden: 'art/f_railwarden.webp', psion: 'art/f_psion.webp', duelist: 'art/f_duelist.webp', shade: 'art/f_shade.webp', mender: 'art/f_mender.webp' },
   echo: { skein: 'art/e_skein.webp', glimmerkit: 'art/e_glimmerkit.webp', budlet: 'art/e_budlet.webp', rivet: 'art/e_rivet.webp', lumi: 'art/e_lumi.webp' },
   faceAlt: { vanguard_f: 'art/f_vanguard_f.webp', railwarden_f: 'art/f_railwarden_f.webp', psion_m: 'art/f_psion_m.webp', shade_f: 'art/f_shade_f.webp', mender_f: 'art/f_mender_f.webp', duelist_f: 'art/f_duelist_f.webp' },
   avatar: { hunter_m: 'art/av_hunter_m.webp', hunter_f: 'art/av_hunter_f.webp', veteran_m: 'art/av_veteran_m.webp', veteran_f: 'art/av_veteran_f.webp', warden_m: 'art/av_warden_m.webp', warden_f: 'art/av_warden_f.webp', ascendant_m: 'art/av_ascendant_m.webp', ascendant_f: 'art/av_ascendant_f.webp', starborn_m: 'art/av_starborn_m.webp', starborn_f: 'art/av_starborn_f.webp' },
   echoAsc: { skein: 'art/e_skein_asc.webp', glimmerkit: 'art/e_glimmerkit_asc.webp', budlet: 'art/e_budlet_asc.webp', rivet: 'art/e_rivet_asc.webp', lumi: 'art/e_lumi_asc.webp' },
-  boss: { thornmother: 'art/b_thornmother.webp', marrowking: 'art/b_marrowking.webp', choir: 'art/b_choir.webp' },
-  codex: { skein: 'art/e_skein.webp', thornmother: 'art/b_thornmother.webp', echoes: 'art/e_glimmerkit.webp', ribline: 'art/r_dunes.webp', driftborn: 'art/p_kestrel.webp', skimmer: 'art/m_skimmer.webp', hound: 'art/m_hound.webp', syndicate: 'art/p_corvin.webp', quiet: 'art/p_hush.webp', marrowking: 'art/b_marrowking.webp', lattice: 'art/r_lattice.webp', skitter: 'art/m_skitter.webp', husker: 'art/m_husker.webp', leech: 'art/m_leech.webp', choir: 'art/b_choir.webp', hushfile: 'art/p_hush.webp', ledger: 'art/p_corvin.webp', drown: 'art/p_ilse.webp', echoorigin: 'art/e_skein_asc.webp', ossivar: 'art/r_tower.webp' },
-  region: { verge: 'art/title.webp', dunes: 'art/r_dunes.webp', lattice: 'art/r_lattice.webp', tower: 'art/r_tower.webp' },
+  boss: { thornmother: 'art/b_thornmother.webp', marrowking: 'art/b_marrowking.webp', choir: 'art/b_choir.webp', firstcaptain: 'art/b_firstcaptain.webp' },
+  codex: { skein: 'art/e_skein.webp', thornmother: 'art/b_thornmother.webp', echoes: 'art/e_glimmerkit.webp', ribline: 'art/r_dunes.webp', driftborn: 'art/p_kestrel.webp', skimmer: 'art/m_skimmer.webp', hound: 'art/m_hound.webp', syndicate: 'art/p_corvin.webp', quiet: 'art/p_hush.webp', marrowking: 'art/b_marrowking.webp', lattice: 'art/r_lattice.webp', skitter: 'art/m_skitter.webp', husker: 'art/m_husker.webp', leech: 'art/m_leech.webp', choir: 'art/b_choir.webp', hushfile: 'art/p_hush.webp', ledger: 'art/p_corvin.webp', drown: 'art/p_ilse.webp', echoorigin: 'art/e_skein_asc.webp', ossivar: 'art/r_tower.webp', heartstrand: 'art/r_heartstrand.webp', mauler: 'art/m_mauler.webp', archivist: 'art/m_archivist.webp', dredger: 'art/m_dredger.webp', firstcaptain: 'art/b_firstcaptain.webp', firstlanding: 'art/p_tovin.webp', why: 'art/p_hush.webp', relaunch: 'art/p_marr.webp', calf: 'art/p_pell.webp', signature: 'art/r_tower.webp' },
+  region: { verge: 'art/title.webp', dunes: 'art/r_dunes.webp', lattice: 'art/r_lattice.webp', heartstrand: 'art/r_heartstrand.webp', tower: 'art/r_tower.webp' },
   title: 'art/title.webp'
 };
 
@@ -104,6 +104,11 @@ export const ENEMIES = {
   skitter: { name: 'Lattice Skitter', lvl: [23, 26], hp: 150, atk: 24, spd: 86, xp: 70, lumen: [14, 20], range: 30, atkCd: 1.3, aggro: 150, radius: 20 },
   husker: { name: 'Drowned Husker', lvl: [26, 29], hp: 260, atk: 33, spd: 44, xp: 90, lumen: [16, 24], range: 34, atkCd: 2, aggro: 130, radius: 22 },
   leech: { name: 'Memory Leech', lvl: [28, 31], hp: 150, atk: 25, spd: 66, xp: 95, lumen: [18, 26], range: 150, atkCd: 2, aggro: 170, radius: 20, ranged: true, shot: 'blue' },
+  mauler: { name: 'Saltback Mauler', lvl: [33, 36], hp: 340, atk: 40, spd: 60, xp: 110, lumen: [20, 28], range: 36, atkCd: 1.8, aggro: 160, radius: 26, charge: true },
+  archivist: { name: 'Hollow Archivist', lvl: [36, 39], hp: 230, atk: 34, spd: 50, xp: 120, lumen: [22, 30], range: 165, atkCd: 2, aggro: 175, radius: 22, ranged: true, shot: 'page' },
+  dredger: { name: 'Memory Dredger', lvl: [38, 41], hp: 300, atk: 38, spd: 72, xp: 130, lumen: [24, 32], range: 40, atkCd: 1.7, aggro: 160, radius: 24, steal: true },
+  firstcaptain: { name: 'The First Captain', lvl: [42, 42], hp: 46000, atk: 150, spd: 56, xp: 3000, lumen: [1400, 1400], range: 175, atkCd: 1.7, aggro: 380, radius: 30, boss: true, ranged: true, shot: 'rifle', sub: 'Marr, before she forgot' },
+  beacon: { name: 'Recall Beacon', lvl: [42, 42], hp: 1000, atk: 0, spd: 0, xp: 0, lumen: [0, 0], range: 0, atkCd: 99, aggro: 0, radius: 18, object: true },
   choir: { name: 'The Choir Below', lvl: [32, 32], hp: 22000, atk: 84, spd: 0, xp: 2200, lumen: [1100, 1100], range: 130, atkCd: 2.2, aggro: 380, radius: 70, boss: true, sub: 'What the reef remembers' }
 };
 
@@ -145,6 +150,18 @@ export const REGIONS = {
     npcs: ['marr', 'okafor', 'bix', 'ilse', 'pell', 'hush', 'corvin'],
     boss: { type: 'choir', at: 'arena', quest: 'iii_boss' }, music: 'lattice', unlock: 'iii_travel'
   },
+  heartstrand: {
+    name: 'The Heartstrand', hub: 'Heartstrand Camp', lvl: '33 to 42', w: 2000, h: 2800, bg: '#2a2e34', ground: 'shore', path: 'shorepath', motes: [0x9ff6ff, 0x7fc8ff, 0xd8e0e8],
+    paths: [[[1000, 2780], [1000, 2450], [1000, 2120], [820, 1880], [760, 1600], [860, 1360], [1000, 1250], [1000, 900], [1000, 520]], [[820, 1880], [560, 1640], [400, 1520]], [[1000, 2120], [1300, 2010]], [[1000, 1250], [1300, 1320], [1540, 1390]], [[1000, 1100], [760, 1050], [620, 1010]], [[1000, 820], [1350, 700], [1600, 640]]],
+    spawns: [
+      { type: 'mauler', x: 680, y: 2120, r: 250, count: 9 },
+      { type: 'archivist', x: 1420, y: 1120, r: 210, count: 8 },
+      { type: 'dredger', x: 1280, y: 880, r: 220, count: 9 }
+    ],
+    places: { start: { x: 1000, y: 2580 }, arrive: { x: 1000, y: 2500 }, spire: { x: 1000, y: 2440 }, marr: { x: 860, y: 2560 }, okafor: { x: 1150, y: 2590 }, heart: { x: 1000, y: 1870 }, core: { x: 1000, y: 1640 }, canyon: { x: 400, y: 1520 }, hush: { x: 410, y: 1470 }, nose: { x: 1300, y: 2010 }, vault: { x: 1540, y: 1390 }, tovin: { x: 1620, y: 1330 }, mill: { x: 620, y: 1010 }, corvin: { x: 660, y: 980 }, nessa: { x: 560, y: 1045 }, steps: { x: 1000, y: 1250 }, marker: { x: 1600, y: 640 }, kestrel: { x: 1660, y: 680 }, pell: { x: 900, y: 1880 }, arena: { x: 1000, y: 420 } },
+    npcs: ['marr', 'okafor', 'hush', 'corvin', 'nessa', 'tovin', 'kestrel', 'pell'],
+    boss: { type: 'firstcaptain', at: 'arena', quest: 'iv_boss' }, music: 'lattice', unlock: 'iv_travel'
+  },
   tower: {
     name: 'Ossivar’s Spire', hub: 'Endless floors', lvl: 'endless', w: 1200, h: 1500, bg: '#07070f', ground: 'towerfloor', path: 'path', motes: [0xffe6a0, 0x9ff6ff, 0xc58bff],
     paths: [], spawns: [],
@@ -152,8 +169,8 @@ export const REGIONS = {
     npcs: [], tower: true, boss: null, music: 'theme'
   }
 };
-export const TOWER_POOL = ['shardling', 'glowmoth', 'crawler', 'skimmer', 'hound', 'sdrone', 'skitter', 'husker', 'leech'];
-export const TOWER_GUARDS = ['thornmother', 'marrowking', 'choir'];
+export const TOWER_POOL = ['shardling', 'glowmoth', 'crawler', 'skimmer', 'hound', 'sdrone', 'skitter', 'husker', 'leech', 'mauler', 'archivist', 'dredger'];
+export const TOWER_GUARDS = ['thornmother', 'marrowking', 'choir', 'firstcaptain'];
 
 export const SPAWNS = REGIONS.verge.spawns;
 export const PLACES = REGIONS.verge.places;
@@ -169,6 +186,8 @@ export const NPCS = {
   ilse: { name: 'Ilse Vane', short: 'Ilse', title: 'Lattice warden', color: '#7fc8ff' },
   bix: { name: 'Tomas \u201cBix\u201d Rey', short: 'Bix', title: 'Diver', color: '#5ff2d0' },
   pell: { name: 'Pell', short: 'Pell', title: 'Driftborn', color: '#ffd9a0' },
+  tovin: { name: 'Tovin Hale', short: 'Tovin', title: 'First-landing pilot', color: '#9fc8ff' },
+  nessa: { name: 'Nessa Quill', short: 'Nessa', title: 'Syndicate broker', color: '#d9a45a' },
   you: { name: 'You', short: 'You', title: '', color: '#e8f6ff' }
 };
 
@@ -252,7 +271,18 @@ export const CODEX = {
   vey70: { title: 'Camp', src: 'Aldren Vey, unsent letter to Marr', text: 'Found a camp. Bedroll still warm. Nobody here. If you read this, I borrowed their rope.' },
   vey80: { title: 'Fresh Dust', src: 'Writing traced in dust, no author', text: 'Do not count the floors out loud. It adds one when you do.' },
   vey90: { title: 'Vey, Slower', src: 'Aldren Vey, climb log 21', text: 'Hands shake now. Writing takes two tries. Something above keeps pace with me.' },
-  vey100: { title: 'Not the Top', src: 'Aldren Vey, final recovered log', text: 'Floor one hundred is another door. Locked from above. Heard myself knock back. Then I stopped recording.' }
+  vey100: { title: 'Not the Top', src: 'Aldren Vey, final recovered log', text: 'Floor one hundred is another door. Locked from above. Heard myself knock back. Then I stopped recording.' },
+  heartstrand: { title: 'The Heartstrand', src: 'Lodge survey, Act IV', text: 'A gray beach where the canyon river meets the sea. A dragon heart the size of a hill lies on it, still beating.' },
+  mauler: { title: 'Saltback Mauler', src: 'Kestrel, hunting notes', text: 'Big, crystal grown through the fur. They charge toward the heartbeat and feed between beats. Count the beats.' },
+  archivist: { title: 'Hollow Archivist', src: 'Sparks, field sketch', text: 'Vault drones built from paper-thin crystal sheets. Every sheet is a file. They throw the pages at you.' },
+  dredger: { title: 'Memory Dredger', src: 'Pell', text: 'Long arms, longer nets. They steal whatever you are holding onto, then run it to the heart.' },
+  firstcaptain: { title: 'The First Captain', src: 'Captain Marr', text: 'I gave Hush the worst of me so I could keep working. The heart found it, and gave it a rifle.' },
+  firstlanding: { title: 'First Landing', src: 'Tovin Hale, recorded statement', text: 'We landed cleanly eleven years before the remembered crash. We built the vault, met the dragons, made mistakes.' },
+  why: { title: 'Why We Forgot', src: 'Mother Hush, archivist note', text: 'The heart learned names from harvested memories. Named people could be called, controlled, and emptied.' },
+  relaunch: { title: 'The Relaunch Order', src: 'Captain Marr, first-landing log', text: 'Wipe the crew. Relaunch with the crew asleep and Corvin awake. Crash us again where nobody will dig honestly.' },
+  calf: { title: 'The Calf', src: 'Pell, listening session transcript', text: 'The calf died under falling Meridian debris. It was an accident. The heart never believed us.' },
+  cones: { title: 'Two Nose Cones', src: 'Sparks, engineering report', text: 'Both cones are original Meridian parts, same serial. One was replaced before relaunch and buried deliberately.' },
+  signature: { title: 'The Signature Above', src: 'Unknown, vault file copy', text: 'Every first-landing order carries one extra signature. Aldren Vey signed before the Lodge existed.' }
 };
 
 const D = (who, text) => ({ who, text });
@@ -480,13 +510,112 @@ export const QUESTS = [
       D('skein', 'the heart heard me. it is coming.'),
       D('ilse', 'Coming where?'),
       D('skein', 'ashore.')
+    ] },
+  { id: 'iv_travel', act: 4, region: 'heartstrand', title: 'Ashore', goal: 'Sync to the Heartstrand at the Spire', kind: 'travel', reward: { xp: 400 }, codex: ['heartstrand'] },
+  { id: 'iv_marr', act: 4, region: 'heartstrand', title: 'It Came Ashore', goal: 'Talk to Captain Marr at Heartstrand Camp', kind: 'talk', npc: 'marr', reward: { xp: 700, lumen: 300 },
+    talk: [
+      D('marr', 'It beached overnight. No tracks. It just arrived.'),
+      D('you', 'Skein hasn’t stopped shaking since dawn.'),
+      D('marr', 'Then keep it close. And keep it honest.'),
+      D('skein', 'it heard me breathe. sorry.')
+    ] },
+  { id: 'iv_heart', act: 4, region: 'heartstrand', title: 'First Approach', goal: 'Reach the Beached Heart', kind: 'goto', place: 'heart', reward: { xp: 600 },
+    talk: [
+      D('pell', 'It beats slower when Skein is near.'),
+      D('hush', 'Slower is not calmer. It is listening harder.'),
+      D('skein', 'do not touch. it knows hands.')
+    ] },
+  { id: 'iv_mauler', act: 4, region: 'heartstrand', title: 'Drawn to the Beat', goal: 'Clear Saltback Maulers from the Salt Flats', kind: 'hunt', enemy: 'mauler', count: 12, reward: { xp: 2600, lumen: 500, shards: 10 }, codex: ['mauler'],
+    done: [
+      D('you', 'Fresh Lumen in their fur. Stamped with Meridian serials.'),
+      D('skein', 'the heart has been eating our names.')
+    ] },
+  { id: 'iv_hush', act: 4, region: 'heartstrand', title: 'What Hush Did', goal: 'Talk to Mother Hush at the Canyon Mouth', kind: 'talk', npc: 'hush', reward: { xp: 900, lumen: 300 }, codex: ['why'],
+    talk: [
+      D('you', 'You wiped us. Say it plainly.'),
+      D('hush', 'I wiped you. At your captain’s request.'),
+      D('you', 'Why would Marr ask for that?'),
+      D('hush', 'Because the heart had learned your names.')
+    ] },
+  { id: 'iv_vault', act: 4, region: 'heartstrand', title: 'The Consent Forms', goal: 'Enter the Archivist Vault', kind: 'goto', place: 'vault', reward: { xp: 800 },
+    talk: [
+      D('sparks', 'Vault was sealed from inside. By us.'),
+      D('okafor', 'That is my signature. I do not remember signing.'),
+      D('hush', 'You cried afterward. Then you thanked me.'),
+      D('sparks', 'There’s a pod back here. Someone’s still breathing.')
+    ] },
+  { id: 'iv_amara', act: 4, region: 'heartstrand', title: 'Amara Remembers Paper', goal: 'Talk to Doctor Okafor at camp', kind: 'talk', npc: 'okafor', reward: { xp: 900, lumen: 300 },
+    talk: [
+      D('okafor', 'My handwriting. My medical shorthand. No doubt.'),
+      D('you', 'What did we see on first landing?'),
+      D('okafor', 'Enough that forgetting felt like treatment.'),
+      D('okafor', 'I hate that I still agree.')
+    ] },
+  { id: 'iv_archivist', act: 4, region: 'heartstrand', title: 'Staff Problems', goal: 'Clear the Hollow Archivists from the vault stairs', kind: 'hunt', enemy: 'archivist', count: 10, reward: { xp: 2800, lumen: 520, shards: 10, gear: 'implant', gearRar: 2 }, codex: ['archivist', 'relaunch'],
+    done: [
+      D('nessa', 'Thank you. Those drones guard one file. The relaunch order.'),
+      D('you', 'And you are?'),
+      D('nessa', 'Nessa Quill. I buy what people forget. That file is worth a fortune.'),
+      D('you', 'It’s not for sale.'),
+      D('nessa', 'Everything is for sale. Ask Corvin.')
+    ] },
+  { id: 'iv_nose', act: 4, region: 'heartstrand', title: 'The Piece That Should Not Exist', goal: 'Inspect the Second Meridian Nose', kind: 'goto', place: 'nose', reward: { xp: 900, shards: 8 }, codex: ['cones'],
+    talk: [
+      D('sparks', 'Same serial as the piece the Thornmother guarded.'),
+      D('you', 'Two nose cones. One ship.'),
+      D('sparks', 'No. One ship, landed twice. This proves it.'),
+      D('skein', 'it remembers falling. twice.')
+    ] },
+  { id: 'iv_corvin', act: 4, region: 'heartstrand', title: 'Corvin Was Awake', goal: 'Talk to Corvin at the Memory Mill', kind: 'talk', npc: 'corvin', reward: { xp: 1000, lumen: 400 },
+    talk: [
+      D('corvin', 'I was never wiped. Someone had to steer.'),
+      D('you', 'You flew the relaunch, then staged the crash?'),
+      D('corvin', 'Staged is ugly. Call it a hard reset.'),
+      D('corvin', 'Hush hid the vault. I hid the landing.'),
+      D('nessa', 'And I sell whatever washes up. Everyone has a job.')
+    ] },
+  { id: 'iv_dredger', act: 4, region: 'heartstrand', title: 'What the Heart Lost', goal: 'Stop Memory Dredgers reaching the heart', kind: 'hunt', enemy: 'dredger', count: 12, reward: { xp: 3200, lumen: 600, shards: 12, gear: 'weapon', gearRar: 2 }, codex: ['dredger', 'calf'],
+    done: [
+      D('pell', 'They all carry the same memory.'),
+      D('pell', 'A little dragon. Ship parts falling. It was an accident.'),
+      D('skein', 'the heart never believed you.')
+    ] },
+  { id: 'iv_steps', act: 4, region: 'heartstrand', title: 'Skein Stays', goal: 'Walk with Skein to the Tidal Steps', kind: 'goto', place: 'steps', reward: { xp: 1000, shards: 15 },
+    talk: [
+      D('you', 'You can run again. I won’t stop you.'),
+      D('skein', 'i know. that is why i can stay.'),
+      D('skein', 'i was the part that ran from grief.'),
+      D('skein', 'i am still small. i am not running.')
+    ] },
+  { id: 'iv_marker', act: 4, region: 'heartstrand', title: 'A Signal From the Shadow', goal: 'Reach Vey’s Marker under Ossivar', kind: 'goto', place: 'marker', reward: { xp: 900 },
+    talk: [
+      D('kestrel', 'Marker is new. Paint is still wet.'),
+      D('pell', 'Someone knocked three times inside my helmet.'),
+      D('skein', 'that was not the heart. that was higher.')
+    ] },
+  { id: 'iv_tovin', act: 4, region: 'heartstrand', title: 'Tovin Wakes', goal: 'Talk to Tovin at the vault', kind: 'talk', npc: 'tovin', reward: { xp: 1100, lumen: 400 }, codex: ['firstlanding'],
+    talk: [
+      D('tovin', 'I piloted the first landing. Corvin piloted the second.'),
+      D('you', 'Who ordered the wipe and the relaunch?'),
+      D('tovin', 'Marr did. After we killed the calf.'),
+      D('tovin', 'But the order above Marr was already signed.')
+    ] },
+  { id: 'iv_boss', act: 4, region: 'heartstrand', title: 'The First Captain', goal: 'Defeat the First Captain', kind: 'boss', enemy: 'firstcaptain', count: 1, reward: { xp: 6000, lumen: 1400, geode: 1 }, codex: ['firstcaptain'] },
+  { id: 'iv_after', act: 4, region: 'heartstrand', title: 'The Heart Ashore', goal: 'Talk to Captain Marr at camp', kind: 'talk', npc: 'marr', reward: { xp: 1800, lumen: 800, geode: 1 }, actEnd: 4, codex: ['signature'],
+    talk: [
+      D('marr', 'I watched myself try to kill you.'),
+      D('you', 'It wasn’t you. It was what you asked Hush to take.'),
+      D('marr', 'I asked her to take it. I never asked her to keep it.'),
+      D('marr', 'Tovin says the order above mine was already signed.'),
+      D('skein', 'i saw the name. you will not like it.')
     ] }
 ];
 
 export const ACTS = {
   1: { title: 'Act I complete', sub: 'Landfall', text: 'The Thornmother was guarding a piece of the Meridian that should not exist. Captain Marr has questions. So does Skein.', next: 'Act II: The Singing Dark begins now. Captain Marr has news from the dunes.' },
   2: { title: 'Act II complete', sub: 'The Singing Dark', text: 'Lumen is memory. Something in the quiet canyon is hungry for it, the Syndicate is digging it up, and Mother Hush knows more than she says. Kestrel has joined the Lodge.', next: 'Act III: Memory of Water begins now. Skein wants to go to the water.' },
-  3: { title: 'Act III complete', sub: 'Memory of Water', text: 'Corvin was sinking Lumen to keep it from the canyon. The drowned memories include Meridian crew, from before the crash.', next: 'Act IV: the heart has found Skein, and it is coming ashore. Coming in a later build. Bounties are open in every region.' }
+  3: { title: 'Act III complete', sub: 'Memory of Water', text: 'Corvin was sinking Lumen to keep it from the canyon. The drowned memories include Meridian crew, from before the crash.', next: 'Act IV: The Heart Ashore begins now. Something huge just landed on the beach.' },
+  4: { title: 'Act IV complete', sub: 'The Heart Ashore', text: 'The crew landed first, killed the calf by accident, and asked Hush to wipe them. Hush and Corvin relaunched the Meridian and staged its second crash.', next: 'Act V: the order above Marr was signed by Aldren Vey. Coming in a later build. Bounties are open in every region.' }
 };
 export const ACT_END = ACTS[1];
 
@@ -499,7 +628,10 @@ export const BOUNTIES = [
   { id: 'b6', enemy: 'sdrone', count: 15, lumen: 520, shards: 7, minLvl: 18, region: 'dunes' },
   { id: 'b7', enemy: 'skitter', count: 15, lumen: 640, shards: 8, minLvl: 23, region: 'lattice' },
   { id: 'b8', enemy: 'husker', count: 15, lumen: 760, shards: 9, minLvl: 26, region: 'lattice' },
-  { id: 'b9', enemy: 'leech', count: 15, lumen: 880, shards: 10, minLvl: 28, region: 'lattice' }
+  { id: 'b9', enemy: 'leech', count: 15, lumen: 880, shards: 10, minLvl: 28, region: 'lattice' },
+  { id: 'b10', enemy: 'mauler', count: 15, lumen: 1000, shards: 11, minLvl: 33, region: 'heartstrand' },
+  { id: 'b11', enemy: 'archivist', count: 15, lumen: 1120, shards: 12, minLvl: 36, region: 'heartstrand' },
+  { id: 'b12', enemy: 'dredger', count: 15, lumen: 1240, shards: 13, minLvl: 38, region: 'heartstrand' }
 ];
 
 export const IDLE = {
@@ -511,7 +643,9 @@ export const IDLE = {
   hush: ['Quiet suits you.', 'Listen first. Speak if it helps.', 'The water heard you coming.'],
   ilse: ['Check your seals before you check your courage.', 'Tide does not care about your plans.', 'Blue light means memory. Deep blue means leave.'],
   bix: ['Lost two fingers. Kept the important ones.', 'Syndicate pays better. Lodge lets me sleep.', 'Goggles crack before I do. Usually.'],
-  pell: ['Your helmet would remember you loudly.', 'I heard a dragon dreaming under us.', 'Can Skein stay? It hums nice.']
+  pell: ['Your helmet would remember you loudly.', 'I heard a dragon dreaming under us.', 'Can Skein stay? It hums nice.'],
+  tovin: ['I slept eleven years. Still tired.', 'Second launch felt rougher. Now I know why.', 'Do not trust a log I wrote.'],
+  nessa: ['Memories sell better when owners forget them.', 'I never buy my own stock. Rule one.', 'Corvin smiles. I count the exits.']
 };
 
 export const TOWER_LINES = ['The tower keeps your place. Try again when ready.', 'Knocked out at the knees, not in spirit.', 'Good climb. Bad landing. There is a difference.', 'The stairs are patient. They will wait.', 'You fell. The tower took notes.', 'Rest up. Ossivar is not going anywhere.'];

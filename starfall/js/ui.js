@@ -1,8 +1,8 @@
-import { CALLINGS, ECHOES, HATCHABLE, SLOTS, RARITY, CODEX, QUESTS, NPCS, BOUNTIES, ACTS, ART, REGIONS, ENEMIES, TOWER_LINES, RANKS, CALLING_PORTRAIT, TREES, TREE_THEMES, TREE_ROW_REQ } from './data.js?v=5.1';
-import { portraitCanvas, LOOKS, iconCanvas, echoCanvas, lumenCanvas, shardIconCanvas, geodeCanvas, composeLook, RANK_THEMES } from './art.js?v=5.1';
-import { heroStats, power, xpNeed, gearLine, upgradeCost, echoStats, echoLevelCost, EVOLVE_COST, ASCEND_COST, STAR_MAX, refineCost, refineNeed, save, wipe, rankIndex, portraitDef, portraitUnlocked, treeOf, treePoints, branchSpent, nodeDef, canLearn, respecCost } from './state.js?v=5.1';
-import { sfx, setMusic, audioResume } from './audio.js?v=5.1';
-import { creator } from './creator.js?v=5.1';
+import { CALLINGS, ECHOES, HATCHABLE, SLOTS, RARITY, CODEX, QUESTS, NPCS, BOUNTIES, ACTS, ART, REGIONS, ENEMIES, TOWER_LINES, RANKS, CALLING_PORTRAIT, TREES, TREE_THEMES, TREE_ROW_REQ } from './data.js?v=6';
+import { portraitCanvas, LOOKS, iconCanvas, echoCanvas, lumenCanvas, shardIconCanvas, geodeCanvas, composeLook, RANK_THEMES } from './art.js?v=6';
+import { heroStats, power, xpNeed, gearLine, upgradeCost, echoStats, echoLevelCost, EVOLVE_COST, ASCEND_COST, STAR_MAX, refineCost, refineNeed, save, wipe, rankIndex, portraitDef, portraitUnlocked, treeOf, treePoints, branchSpent, nodeDef, canLearn, respecCost } from './state.js?v=6';
+import { sfx, setMusic, audioResume } from './audio.js?v=6';
+import { creator } from './creator.js?v=6';
 
 const $ = (s, r = document) => r.querySelector(s);
 const el = (tag, cls, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; };
@@ -64,6 +64,7 @@ export class UI {
 
   portrait(who) {
     if (who === 'you') return this.portraitImg(portraitUnlocked(this.st, this.st.portrait) ? this.st.portrait : 'calling');
+    if (who === 'skein' && this.st.q > QUESTS.findIndex(q => q.id === 'iv_steps') && ART.echoAsc.skein) return ART.echoAsc.skein;
     if (ART.portrait[who]) return ART.portrait[who];
     if (this.img['p_' + who]) return this.img['p_' + who];
     let c;
