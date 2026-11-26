@@ -1,6 +1,6 @@
-import { CALLINGS, NAMES } from './data.js?v=7';
-import { composeLook, drawChar, DEFAULT_LOOKS, SKINS, HAIR_COLORS, LOOK_NAMES } from './art.js?v=7';
-import { sfx } from './audio.js?v=7';
+import { CALLINGS, NAMES } from './data.js?v=7.1';
+import { composeLook, drawChar, DEFAULT_LOOKS, SKINS, HAIR_COLORS, LOOK_NAMES } from './art.js?v=7.1';
+import { sfx } from './audio.js?v=7.1';
 
 const el = (tag, cls, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; };
 export const cleanName = s => String(s || '').replace(/[^A-Za-z0-9 '\-.]/g, '').replace(/\s+/g, ' ').trim().slice(0, 16);
@@ -10,7 +10,7 @@ export function creator(root, { cls, look, name, mode = 'new', onDone, onCancel 
   let nm = name && name !== 'Hunter' ? name : '';
   root.innerHTML = '';
   const wrap = el('div', 'cre');
-  wrap.appendChild(el('div', 'h1', mode === 'edit' ? 'Appearance' : 'Create your hunter'));
+  if (mode !== 'edit') wrap.appendChild(el('div', 'h1', 'Create your hunter'));
   wrap.appendChild(el('div', 'cre-sub', `${CALLINGS[cls].name} · ${CALLINGS[cls].role}`));
   const cv = document.createElement('canvas'); cv.className = 'cre-prev';
   const pw = 200, ph = 176, dpr = Math.min(3, window.devicePixelRatio || 1);
@@ -51,7 +51,7 @@ export function creator(root, { cls, look, name, mode = 'new', onDone, onCancel 
   dice.onclick = () => { const pool = NAMES[L.sex === 'f' ? 'f' : 'm'].concat(NAMES.n); inp.value = pool[Math.floor(Math.random() * pool.length)]; sfx('ui'); check(); };
   nr.appendChild(inp); nr.appendChild(dice); wrap.appendChild(nr);
   const err = el('div', 'cre-err'); wrap.appendChild(err);
-  const btns = el('div', 'row cre-btns');
+  const btns = el('div', 'row cre-btns' + (mode === 'edit' ? ' pin' : ''));
   const go = el('button', 'btn gold go', mode === 'edit' ? 'Save' : 'Begin');
   const check = () => { const v = cleanName(inp.value); go.disabled = v.length < 2; err.textContent = inp.value && v.length < 2 ? 'Names need at least 2 letters.' : ''; };
   inp.oninput = check;

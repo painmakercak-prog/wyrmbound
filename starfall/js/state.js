@@ -1,4 +1,4 @@
-import { CALLINGS, ECHOES, SLOTS, RARITY, GEAR_NAMES, QUESTS, RANKS, CALLING_PORTRAIT, TREES, TREE_THEMES, TREE_ROW_REQ, ORDERS } from './data.js?v=7';
+import { CALLINGS, ECHOES, SLOTS, RARITY, GEAR_NAMES, QUESTS, RANKS, CALLING_PORTRAIT, TREES, TREE_THEMES, TREE_ROW_REQ, ORDERS } from './data.js?v=7.1';
 
 const KEY = 'starfall.save.v1';
 
@@ -16,7 +16,9 @@ export function load() {
   try { const s = JSON.parse(localStorage.getItem(KEY) || 'null'); if (s && s.v === 1 && CALLINGS[s.cls]) { if (!s.region) s.region = 'verge'; if (!s.tower) s.tower = { best: 0, from: 'verge' }; if (!s.trees) s.trees = {}; if (!s.portrait) s.portrait = 'calling'; if (!s.frame) s.frame = 'recruit'; if (!s.rankSeen) s.rankSeen = rankIndex(s.lvl) + 1; for (const k in s.echoes) s.echoes[k].evo = +s.echoes[k].evo || 0; return s; } } catch (e) {}
   return null;
 }
-export function save(st) { try { st.lastSeen = Date.now(); localStorage.setItem(KEY, JSON.stringify(st)); } catch (e) {} }
+let saveLocked = false;
+export const lockSaves = () => { saveLocked = true; };
+export function save(st) { if (saveLocked) return; try { st.lastSeen = Date.now(); localStorage.setItem(KEY, JSON.stringify(st)); } catch (e) {} }
 export function wipe() { try { localStorage.removeItem(KEY); } catch (e) {} }
 
 export const dayKey = (d = new Date()) => d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate();
@@ -67,6 +69,14 @@ export function treePoints(st) { return Math.max(0, st.lvl - 1 - treeSpent(st));
 export function branchSpent(st, b) { const t = treeOf(st); let n = 0; for (let r = 0; r < 6; r++) n += t[b + '_' + r] || 0; return n; }
 export function nodeDef(cls, b, r) { const B = TREES[cls][b], N = TREE_THEMES[B.theme][r]; return Object.assign({ id: b + '_' + r, branch: B }, N); }
 export function canLearn(st, b, r) { const N = nodeDef(st.cls, b, r), have = treeOf(st)[N.id] || 0; return treePoints(st) > 0 && have < N.max && branchSpent(st, b) >= TREE_ROW_REQ[r]; }
+export function autoSpend(st, b) {
+  const t = treeOf(st), order = [b, (b + 1) % 3, (b + 2) % 3]; let n = 0;
+  outer: while (treePoints(st) > 0) {
+    for (const bb of order) for (let r = 0; r < 6; r++) if (canLearn(st, bb, r)) { t[bb + '_' + r] = (t[bb + '_' + r] || 0) + 1; n++; continue outer; }
+    break;
+  }
+  return n;
+}
 export const respecCost = st => st.lvl < 10 ? 0 : st.lvl * 40;
 export function mods(st) {
   const m = { atkPct: 0, hpPct: 0, defPct: 0, crit: 0, critDmg: 0, aspd: 0, res: 0, echo: 0, regen: 0, xp: 0, skill: 0, skillDmg: {}, skillCd: {}, keys: {} };

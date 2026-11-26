@@ -1,8 +1,9 @@
-import { CALLINGS, ECHOES, HATCHABLE, SLOTS, RARITY, CODEX, QUESTS, NPCS, BOUNTIES, ACTS, ART, REGIONS, ENEMIES, TOWER_LINES, RANKS, CALLING_PORTRAIT, TREES, TREE_THEMES, TREE_ROW_REQ, ORDERS } from './data.js?v=7';
-import { portraitCanvas, LOOKS, iconCanvas, echoCanvas, lumenCanvas, shardIconCanvas, geodeCanvas, composeLook, RANK_THEMES } from './art.js?v=7';
-import { heroStats, power, xpNeed, gearLine, upgradeCost, echoStats, echoLevelCost, EVOLVE_COST, ASCEND_COST, STAR_MAX, refineCost, refineNeed, save, wipe, rankIndex, portraitDef, portraitUnlocked, treeOf, treePoints, branchSpent, nodeDef, canLearn, respecCost, rollDaily, orderReward, ORDER_BONUS, ordersClaimable } from './state.js?v=7';
-import { sfx, setMusic, audioResume } from './audio.js?v=7';
-import { creator } from './creator.js?v=7';
+import { CALLINGS, ECHOES, HATCHABLE, SLOTS, RARITY, CODEX, QUESTS, NPCS, BOUNTIES, ACTS, ART, REGIONS, ENEMIES, TOWER_LINES, RANKS, CALLING_PORTRAIT, TREES, TREE_THEMES, TREE_ROW_REQ, ORDERS } from './data.js?v=7.1';
+import { portraitCanvas, LOOKS, iconCanvas, echoCanvas, lumenCanvas, shardIconCanvas, geodeCanvas, composeLook, RANK_THEMES } from './art.js?v=7.1';
+import { heroStats, power, xpNeed, gearLine, upgradeCost, echoStats, echoLevelCost, EVOLVE_COST, ASCEND_COST, STAR_MAX, refineCost, refineNeed, save, wipe, rankIndex, portraitDef, portraitUnlocked, treeOf, treePoints, branchSpent, nodeDef, canLearn, respecCost, autoSpend, lockSaves, rollDaily, orderReward, ORDER_BONUS, ordersClaimable } from './state.js?v=7.1';
+import { sfx, setMusic, audioResume } from './audio.js?v=7.1';
+import { creator } from './creator.js?v=7.1';
+import { copyModal, pasteModal } from './transfer.js?v=7.1';
 
 const $ = (s, r = document) => r.querySelector(s);
 const el = (tag, cls, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; };
@@ -186,8 +187,9 @@ export class UI {
   lookKey() { const l = this.st.look || {}; return this.st.cls + [l.sex, l.head, l.face, l.body, l.skin, l.hairc, l.gear === false ? 0 : 1].join(''); }
   portraitImg(id) {
     const st = this.st, sex = (st.look && st.look.sex) || 'm';
-    if (id === 'calling') { const artSex = { psion: 'f' }[st.cls] || 'm'; if (sex === artSex && ART.face[st.cls]) return ART.face[st.cls]; if (ART.faceAlt && ART.faceAlt[st.cls + '_' + sex]) return ART.faceAlt[st.cls + '_' + sex]; id = 'recruit'; }
-    if (ART.avatar && ART.avatar[id + '_' + sex]) return ART.avatar[id + '_' + sex];
+    if (ART.avatar && id !== 'calling' && ART.avatar[id + '_' + sex]) return ART.avatar[id + '_' + sex];
+    const artSex = { psion: 'f' }[st.cls] || 'm', ca = sex === artSex && ART.face[st.cls] ? ART.face[st.cls] : ART.faceAlt && ART.faceAlt[st.cls + '_' + sex];
+    if (ca) return ca;
     const k = 'pr_' + id + this.lookKey();
     return this.img[k] || (this.img[k] = url(portraitCanvas(composeLook(st.cls, st.look), 192, RANK_THEMES[id] || RANK_THEMES.recruit)));
   }
@@ -359,7 +361,8 @@ export class UI {
     const grid = el('div', 'pgrid');
     for (const P of [CALLING_PORTRAIT].concat(RANKS)) {
       const open = portraitUnlocked(st, P.id), on = (st.portrait || 'calling') === P.id;
-      const c = el('button', 'ptile' + (open ? '' : ' lock') + (on ? ' on' : ''), `<img src="${this.portraitImg(P.id)}" alt=""><div class="pn">${P.id === 'calling' ? C.name : P.n + ' ' + P.name}</div><div class="pb">${esc(P.pbText)}</div>${open ? '' : `<div class="pl">Level ${P.lvl}</div>`}`);
+      const raw = P.id === 'recruit' && !(ART.avatar && ART.avatar['recruit_' + ((st.look && st.look.sex) || 'm')]);
+      const c = el('button', 'ptile' + (open ? '' : ' lock') + (on ? ' on' : ''), `<img src="${this.portraitImg(P.id)}"${raw ? ' class="raw"' : ''} alt=""><div class="pn">${P.id === 'calling' ? C.name : P.n + ' ' + P.name}</div><div class="pb">${esc(P.pbText)}</div>${open ? '' : `<div class="pl">Level ${P.lvl}</div>`}`);
       if (open && !on) c.onclick = () => { st.portrait = P.id; this.w.refreshStats(false); this.hudId(); sfx('gear'); save(st); this.render(); this.stats(); };
       grid.appendChild(c);
     }
@@ -387,10 +390,22 @@ export class UI {
 
   p_tree(bd) {
     const st = this.st, C = CALLINGS[st.cls], T = TREES[st.cls], t = treeOf(st), pts = treePoints(st);
-    const head = el('div', 'tree-head', `<div><b class="d">${pts}</b> point${pts === 1 ? '' : 's'} to spend</div><div class="small muted">You earn 1 point every level. Each row opens after you spend 3 more points in that branch.</div>`);
+    const head = el('div', 'tree-head', `<div><b class="d">${pts}</b> point${pts === 1 ? '' : 's'} to spend</div><div class="small muted">1 point per level. Each row opens after 3 more points in its branch.</div>`);
     const cost = respecCost(st), spent = Object.values(t).reduce((a, b) => a + b, 0);
     if (spent) { const rb = el('button', 'btn ghost small', cost ? `Reset · <span class="c"><img src="${this.lumenIcon}" alt="">${cost}</span>` : 'Reset (free)'); rb.disabled = st.lumen < cost; rb.onclick = () => { if (!rb.dataset.c) { rb.dataset.c = 1; rb.textContent = 'Tap again to reset'; return; } st.lumen -= cost; st.trees[st.cls] = {}; this.selNode = null; this.w.refreshStats(false); sfx('ui'); save(st); this.render(); this.stats(); }; head.appendChild(rb); }
     bd.appendChild(head);
+    if (pts) {
+      const ar = el('div', 'tauto', '<span>Spend for me</span>');
+      T.forEach((B, b) => {
+        const ab = el('button', 'btn small', esc(B.name));
+        ab.onclick = () => {
+          if (ab.dataset.c !== '1') { for (const o of ar.querySelectorAll('.btn')) { o.dataset.c = ''; o.textContent = o.dataset.n; o.classList.remove('gold'); } ab.dataset.c = '1'; ab.textContent = `Spend ${pts}?`; ab.classList.add('gold'); sfx('ui'); return; }
+          const n = autoSpend(st, b); this.selNode = null; this.w.refreshStats(false); sfx('level'); save(st); this.render(); this.stats(); this.toast(`${n} point${n === 1 ? '' : 's'} spent, ${esc(B.name)} first`);
+        };
+        ab.dataset.n = B.name; ar.appendChild(ab);
+      });
+      bd.appendChild(ar);
+    }
     const tree = el('div', 'tree');
     T.forEach((B, b) => {
       const col = el('div', 'tcol');
@@ -399,25 +414,32 @@ export class UI {
       for (let r = 0; r < 6; r++) {
         const N = nodeDef(st.cls, b, r), have = t[N.id] || 0, open = bs >= TREE_ROW_REQ[r], can = canLearn(st, b, r), sel = this.selNode === N.id;
         const icon = N.icon === 'S' ? B.skill : N.icon;
+        const tag = N.k === 'skillDmg' ? ' <b class="bdg">PWR</b>' : N.k === 'skillCd' ? ' <b class="bdg cd">CD</b>' : '';
+        const w = el('div', 'tnw' + (open ? '' : ' lock'));
         const n = el('button', 'tn' + (have ? ' has' : '') + (open ? '' : ' lock') + (can ? ' can' : '') + (have >= N.max ? ' max' : '') + (N.k === 'key' ? ' key' : '') + (sel ? ' sel' : ''), `<img src="${this.icon(icon, N.k === 'key' ? 0xffcf5a : C.color)}" alt=""><i>${have}/${N.max}</i>`);
-        n.onclick = () => { this.selNode = N.id; sfx('tap'); this.render(); };
-        col.appendChild(n);
+        n.onclick = () => { this.selNode = sel ? null : N.id; sfx('tap'); this.render(); };
+        w.appendChild(n); w.appendChild(el('div', 'tl', esc(N.name) + tag));
+        col.appendChild(w);
       }
       tree.appendChild(col);
     });
     bd.appendChild(tree);
-    const id = this.selNode;
+    const foot = el('div', 'tfoot'), id = this.selNode;
     if (id) {
       const [b, r] = id.split('_').map(Number), N = nodeDef(st.cls, b, r), B = T[b], have = t[id] || 0;
       const sk = C.skills.find(k => k.id === B.skill);
       const name = N.icon === 'S' ? `${N.name} ${sk.name}` : N.name;
       const per = N.k === 'key' ? N.desc : N.k === 'skillDmg' ? `+${Math.round(N.v * 100)}% ${sk.name} power per rank (damage, healing, shields).` : N.k === 'skillCd' ? `${sk.name} cooldown −${Math.round(N.v * 100)}% per rank.` : N.k === 'regen' ? `Regenerate ${(N.v * 100).toFixed(1)}% of max HP per second per rank.` : `+${N.k === 'crit' ? (N.v * 100).toFixed(0) : Math.round(N.v * 100)}% ${N.fmt} per rank.`;
-      const det = el('div', 'card tdet', `<div class="row"><img src="${this.icon(N.icon === 'S' ? B.skill : N.icon, N.k === 'key' ? 0xffcf5a : C.color)}" style="width:44px;height:44px" alt=""><div class="grow"><b class="d">${esc(name)}</b> <span class="tag">${have}/${N.max}</span><div class="small muted">${esc(B.name)} · row ${r + 1}${branchSpent(st, b) < TREE_ROW_REQ[r] ? ` · needs ${TREE_ROW_REQ[r]} points in ${esc(B.name)}` : ''}</div></div></div><div class="small" style="margin-top:6px">${esc(per)}</div>`);
-      const lb = el('button', 'btn gold', have >= N.max ? 'Maxed' : 'Learn · 1 point'); lb.style.marginTop = '10px'; lb.style.width = '100%';
+      const lockTxt = branchSpent(st, b) < TREE_ROW_REQ[r] ? `Needs ${TREE_ROW_REQ[r]} points in ${esc(B.name)} (${branchSpent(st, b)} now).` : '';
+      foot.innerHTML = `<div class="row"><img src="${this.icon(N.icon === 'S' ? B.skill : N.icon, N.k === 'key' ? 0xffcf5a : C.color)}" style="width:44px;height:44px;flex:none" alt=""><div class="grow"><b class="d">${esc(name)}</b> <span class="tag">${have}/${N.max}</span><div class="small">${esc(per)}</div>${lockTxt ? `<div class="small" style="color:var(--gold)">${lockTxt}</div>` : ''}</div></div>`;
+      const row = el('div', 'row tfb');
+      const cx = el('button', 'btn ghost', 'Close'); cx.onclick = () => { this.selNode = null; sfx('ui'); this.render(); };
+      const lb = el('button', 'btn gold grow', have >= N.max ? 'Maxed' : pts ? 'Learn · 1 point' : 'No points yet');
       lb.disabled = !canLearn(st, b, r);
       lb.onclick = () => { if (!canLearn(st, b, r)) return; t[id] = have + 1; this.w.refreshStats(false); sfx('level'); save(st); this.render(); this.stats(); };
-      det.appendChild(lb); bd.appendChild(det);
-    } else bd.appendChild(el('div', 'small muted tdet', 'Tap a talent to see what it does.'));
+      row.appendChild(cx); row.appendChild(lb); foot.appendChild(row);
+      bd.appendChild(foot);
+    } else bd.appendChild(el('div', 'small muted', `Tap a talent to see what it does.${pts ? '' : ` Next point at level ${st.lvl + 1}.`}`)).style.marginTop = '12px';
   }
 
   p_look(bd) {
@@ -589,10 +611,16 @@ export class UI {
     sw('Sound effects', () => st.settings.sound, v => st.settings.sound = v);
     sw('Music', () => st.settings.music, v => { st.settings.music = v; setMusic(v); });
     sw('Auto skills', () => st.settings.autoSkill, v => { st.settings.autoSkill = v; this.autoBtn(); });
+    bd.appendChild(el('div', 'sec', 'Move your save'));
+    bd.appendChild(el('div', 'small muted', 'Safari and the Home Screen app keep separate saves. Copy a code here, then load it in the other one.'));
+    const tr = el('div', 'row'); tr.style.gap = '10px'; tr.style.marginTop = '10px';
+    const cpb = el('button', 'btn grow', 'Copy save code'); cpb.onclick = () => { save(st); sfx('ui'); copyModal($('#modal'), st, sfx); };
+    const ldb = el('button', 'btn ghost grow', 'Load a save code'); ldb.onclick = () => { sfx('ui'); pasteModal($('#modal'), () => { lockSaves(); location.reload(); }); };
+    tr.appendChild(cpb); tr.appendChild(ldb); bd.appendChild(tr);
     const rs = el('button', 'btn ghost', 'Start over'); rs.style.marginTop = '16px'; rs.style.width = '100%';
     rs.onclick = () => { if (rs.dataset.c) { wipe(); location.reload(); } else { rs.dataset.c = 1; rs.textContent = 'Tap again to erase your save'; rs.style.color = 'var(--red)'; } };
     bd.appendChild(rs);
-    bd.appendChild(el('div', 'small muted', 'Wyrmbound: Starfall · build 7. Engine: Phaser (MIT). Font: Chakra Petch (OFL). Art: Grok and drawn in code. Music: made with Suno.')).style.marginTop = '14px';
+    bd.appendChild(el('div', 'small muted', 'Wyrmbound: Starfall · build 7.1. Engine: Phaser (MIT). Font: Chakra Petch (OFL). Art: Grok and drawn in code. Music: made with Suno.')).style.marginTop = '14px';
   }
 
   actEnd(n = 1) {
