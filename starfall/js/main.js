@@ -1,11 +1,11 @@
-import { CALLINGS, ART } from './data.js?v=7.2.1';
-import { fresh, load, save, offlineRewards, lockSaves } from './state.js?v=7.2.1';
-import { UI } from './ui.js?v=7.2.1';
-import { portraitCanvas, LOOKS, DEFAULT_LOOKS } from './art.js?v=7.2.1';
-import { creator } from './creator.js?v=7.2.1';
-import { pasteModal, copyModal } from './transfer.js?v=7.2.1';
-import { WorldScene } from './world.js?v=7.2.1';
-import { audioInit, audioResume, audioSuspend, sfx, playTrack, prefetchTrack } from './audio.js?v=7.2.1';
+import { CALLINGS, ART } from './data.js?v=7.3';
+import { fresh, load, save, offlineRewards, lockSaves } from './state.js?v=7.3';
+import { UI } from './ui.js?v=7.3';
+import { portraitCanvas, LOOKS, DEFAULT_LOOKS } from './art.js?v=7.3';
+import { creator } from './creator.js?v=7.3';
+import { pasteModal, copyModal } from './transfer.js?v=7.3';
+import { WorldScene } from './world.js?v=7.3';
+import { audioInit, audioResume, audioSuspend, sfx, playTrack, prefetchTrack } from './audio.js?v=7.3';
 
 const $ = s => document.querySelector(s);
 let game = null, ui = null, st = null;
@@ -43,7 +43,7 @@ function titleScreen() {
   const t = $('#title');
   const saved = load();
   const ios = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1), inSafari = ios && navigator.standalone === false;
-  t.innerHTML = `<div class="home"><div><div class="logo">WYRMBOUND</div><div class="sub">STARFALL</div></div><div><div class="tag2">Bond an Echo. Hunt the bones of fallen stars.</div><button class="btn go">${saved ? 'Continue' : 'Begin'}</button>${saved ? `<div class="savec">${String(saved.name || 'Hunter').replace(/[&<>]/g, '')} · ${CALLINGS[saved.cls].name} · Level ${saved.lvl}</div>` : '<button class="linkb">Have a save code?</button>'}${inSafari ? `<div class="a2hs">Play full screen: tap <b>Share</b>, then <b>Add to Home Screen</b>.${saved ? ' Copy your save code first, then load it there.' : ''}</div>` : ''}${saved ? '<button class="linkb cpy">Copy save code</button>' : ''}</div></div><div class="foot">Build 7.2.1 · New interface</div><div id="tmodal"></div>`;
+  t.innerHTML = `<div class="home"><div><div class="logo">WYRMBOUND</div><div class="sub">STARFALL</div></div><div><div class="tag2">Bond an Echo. Hunt the bones of fallen stars.</div><button class="btn go">${saved ? 'Continue' : 'Begin'}</button>${saved ? `<div class="savec">${String(saved.name || 'Hunter').replace(/[&<>]/g, '')} · ${CALLINGS[saved.cls].name} · Level ${saved.lvl}</div>` : '<button class="linkb">Have a save code?</button>'}${inSafari ? `<div class="a2hs">Play full screen: tap <b>Share</b>, then <b>Add to Home Screen</b>.${saved ? ' Copy your save code first, then load it there.' : ''}</div>` : ''}${saved ? '<button class="linkb cpy">Copy save code</button>' : ''}</div></div><div class="foot">Build 7.3 · Lighting</div><div id="tmodal"></div>`;
   const lb = $('#title .linkb:not(.cpy)'); if (lb) lb.onclick = () => pasteModal($('#tmodal'), () => { lockSaves(); location.reload(); });
   const cb = $('#title .linkb.cpy'); if (cb) cb.onclick = () => copyModal($('#tmodal'), saved);
   stars();

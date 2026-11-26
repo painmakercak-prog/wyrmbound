@@ -1,7 +1,8 @@
-import { CALLINGS, ENEMIES, REGIONS, NPCS, ECHOES, QUESTS, SLOTS, RARITY, CODEX, BOUNTIES, TOWER_POOL, TOWER_GUARDS, GEAR_NAMES, IDLE } from './data.js?v=7.2.1';
-import { buildArt, ANCHORS, heroCanvas } from './art.js?v=7.2.1';
-import { heroStats, echoStats, xpNeed, makeGear, rollRarity, gearValue, save, rankIndex } from './state.js?v=7.2.1';
-import { sfx, duck, playTrack } from './audio.js?v=7.2.1';
+import { CALLINGS, ENEMIES, REGIONS, NPCS, ECHOES, QUESTS, SLOTS, RARITY, CODEX, BOUNTIES, TOWER_POOL, TOWER_GUARDS, GEAR_NAMES, IDLE } from './data.js?v=7.3';
+import { buildArt, ANCHORS, heroCanvas } from './art.js?v=7.3';
+import { heroStats, echoStats, xpNeed, makeGear, rollRarity, gearValue, save, rankIndex } from './state.js?v=7.3';
+import { sfx, duck, playTrack } from './audio.js?v=7.3';
+import { Lighting } from './lighting.js?v=7.3';
 
 const dist = (a, b, c, d) => Math.hypot(c - a, d - b);
 const rnd = (a, b) => a + Math.random() * (b - a);
@@ -20,6 +21,8 @@ function distToPath(paths, x, y) {
   }
   return best;
 }
+
+const SHADOWED = /^tree|^rib|^rock|^mesa|^crate|^tent|^stall|^lamp|^forge|^banner|^rig|^cage|^wreck|^mill|^vaultdoor|^marker|^crystal|^coral|^kelp|^scrap|^cone|^fence|^spire/;
 
 export class WorldScene extends Phaser.Scene {
   constructor() { super('world'); }
@@ -40,6 +43,7 @@ export class WorldScene extends Phaser.Scene {
     this.paused = false; this.travelling = false; this.towerState = null; this.floor = 0;
     this.now = 0;
     this.fx = this.add.layer(); this.fx.setDepth(5e5);
+    this.lit = new Lighting(this, this.R.tower ? 'tower' : this.st.region);
     this.enemies = []; this.projs = []; this.zones = []; this.teles = []; this.drones = []; this.pickups = [];
     this.manualUntil = 0; this.joy = null; this.tapTarget = null; this.tapPoint = null;
     this.res = 0; this.shield = 0; this.shieldT = 0; this.veilT = 0; this.iframeT = 0; this.critShots = 0; this.overT = 0; this.swReady = 0; this.regenUi = 0;
@@ -59,7 +63,12 @@ export class WorldScene extends Phaser.Scene {
       x: { min: -400, max: 400 }, y: { min: -500, max: 500 }, lifespan: 6000, speedY: { min: -14, max: -4 }, speedX: { min: -6, max: 6 },
       scale: { start: .5 / this.TS * 2, end: 0 }, alpha: { start: .55, end: 0 }, tint: this.R.motes, frequency: 90, blendMode: 'ADD'
     });
-    this.motes.setDepth(4e5);
+    this.motes.setDepth(4.6e5);
+    this.bokeh = this.add.particles(0, 0, 'soft', {
+      x: { min: -520, max: 520 }, y: { min: -900, max: 900 }, lifespan: 9000, speedY: { min: -10, max: -2 }, speedX: { min: -5, max: 5 },
+      scale: { start: 0, end: 1.1, ease: 'Sine.easeOut' }, alpha: { start: .22, end: 0 }, tint: this.R.motes, frequency: 650, blendMode: 'ADD'
+    });
+    this.bokeh.setDepth(4.6e5 + 1);
     this.burstE = this.add.particles(0, 0, 'dot', { speed: { min: 60, max: 220 }, lifespan: { min: 250, max: 550 }, scale: { start: .9, end: 0 }, alpha: { start: 1, end: 0 }, blendMode: 'ADD', emitting: false });
     this.burstE.setDepth(5e5 + 2);
     this.shardE = this.add.particles(0, 0, 'shardbit', { speed: { min: 80, max: 200 }, lifespan: { min: 300, max: 650 }, scale: { start: 1 / this.TS * 2, end: 0 }, rotate: { min: 0, max: 360 }, gravityY: 300, emitting: false });
@@ -95,9 +104,9 @@ export class WorldScene extends Phaser.Scene {
     const R = this.R, P = this.P, W = R.w, H = R.h;
     const g = this.add.tileSprite(0, 0, W, H, R.ground).setOrigin(0).setTileScale(this.sx(R.ground));
     g.setDepth(-1e6);
-    const tint = (x, y, r, col, a, mode = 'ADD') => { const s = this.add.image(x, y, 'soft').setScale(r / 32).setTint(col).setAlpha(a).setBlendMode(mode); s.setDepth(-9e5); return s; };
+    const tint = (x, y, r, col, a, mode = 'ADD') => { const s = this.add.image(x, y, 'soft').setScale(r / 32).setTint(col).setAlpha(a).setBlendMode(mode); s.setDepth(-9e5); if (mode === 'ADD') this.lit.pool(x, y, r, col, a); return s; };
     this.tall = [];
-    const placeProp = (key, x, y, s = 1, flip = false) => { const [ax, ay] = ANCHORS[key] || [.5, .9]; const p = this.img(x, y, key, ax, ay, s); if (flip) p.setFlipX(true); p.setDepth(y); if (/^tree|^rib|^spire|^rig|^mesa|^cage|^bigheart|^mill|^vaultdoor/.test(key)) this.tall.push(p); return p; };
+    const placeProp = (key, x, y, s = 1, flip = false) => { const [ax, ay] = ANCHORS[key] || [.5, .9]; const p = this.img(x, y, key, ax, ay, s); if (flip) p.setFlipX(true); p.setDepth(y); if (/^tree|^rib|^spire|^rig|^mesa|^cage|^bigheart|^mill|^vaultdoor/.test(key)) this.tall.push(p); this.lit.prop(key, x, y, s); if (SHADOWED.test(key)) { const c = this.art[key]; const sh = this.img(x + 6 * s, y + 2, 'shadow', .5, .5, Math.min(7, c.unitW * s * .8 / 48)); sh.setDepth(-7.6e5).setAlpha(.85); } return p; };
     for (const PATH of R.paths) for (let i = 0; i < PATH.length - 1; i++) {
       const [ax, ay] = PATH[i], [bx, by] = PATH[i + 1], n = Math.ceil(dist(ax, ay, bx, by) / 24);
       for (let k = 0; k < n; k++) { const t = k / n; const d = this.img(ax + (bx - ax) * t + rnd(-6, 6), ay + (by - ay) * t + rnd(-4, 4), R.path, .5, .5, rnd(1.1, 1.5)); d.setDepth(-8e5); d.setAlpha(i < 2 && R === REGIONS.verge && PATH === R.paths[0] ? 0 : 1); }
@@ -361,6 +370,7 @@ export class WorldScene extends Phaser.Scene {
     if (this.echo) { this.echo.destroy(); this.echo = null; }
     if (!id || !this.st.echoes[id]) return;
     const e = this.add.container(this.hero.x - 30, this.hero.y + 6);
+    this.echoColor = ECHOES[id].color;
     const shadow = this.img(0, 0, 'shadow', .5, .5, .7);
     const body = this.img(0, -6, 'echo_' + id, .5, 1);
     const glow = this.add.image(0, -18, 'soft').setTint(ECHOES[id].color).setBlendMode('ADD').setAlpha(.35).setScale(1.2);
@@ -446,6 +456,8 @@ export class WorldScene extends Phaser.Scene {
   update(time, dms) {
     const dt = Math.min(.05, dms / 1000) * (window.__SPEED || 1);
     this.motes.setPosition(this.cameras.main.midPoint.x, this.cameras.main.midPoint.y);
+    this.bokeh.setPosition(this.cameras.main.midPoint.x, this.cameras.main.midPoint.y);
+    this.lit.update(this.paused ? 0 : dt);
     if (this.paused) return;
     this.now += dt;
     this.updateHero(dt);
@@ -818,11 +830,13 @@ export class WorldScene extends Phaser.Scene {
   }
 
   ring(x, y, tint, s = 2) {
+    this.lit.flash(x, y, 70 * s, tint, .5, .9);
     const r = this.img(x, y, 'ring', .5, .5, .2).setTint(tint).setBlendMode('ADD').setDepth(5e5);
     this.tweens.add({ targets: r, scale: this.sx('ring') * s, alpha: 0, duration: 520, ease: 'Cubic.easeOut', onComplete: () => r.destroy() });
   }
   beam(x1, y1, x2, y2, col, w = 3, dur = 160) {
     const g = this.add.graphics().setBlendMode('ADD').setDepth(5e5 + 1);
+    this.lit.flash((x1 + x2) / 2, (y1 + y2) / 2, Math.min(300, 60 + dist(x1, y1, x2, y2) * .3), col, Math.max(.2, dur / 1000), .7); this.lit.flash(x2, y2, 70 + w * 4, col, .3, .9);
     g.lineStyle(w * 3, col, .25); g.lineBetween(x1, y1, x2, y2); g.lineStyle(w, col, 1); g.lineBetween(x1, y1, x2, y2); g.lineStyle(Math.max(1, w * .4), 0xffffff, 1); g.lineBetween(x1, y1, x2, y2);
     this.tweens.add({ targets: g, alpha: 0, duration: dur, onComplete: () => g.destroy() });
   }
