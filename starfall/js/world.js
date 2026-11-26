@@ -1,7 +1,7 @@
-import { CALLINGS, ENEMIES, REGIONS, NPCS, ECHOES, QUESTS, SLOTS, RARITY, CODEX, BOUNTIES, TOWER_POOL, TOWER_GUARDS, GEAR_NAMES, IDLE } from './data.js?v=6.1';
-import { buildArt, ANCHORS, heroCanvas } from './art.js?v=6.1';
-import { heroStats, echoStats, xpNeed, makeGear, rollRarity, gearValue, save, rankIndex } from './state.js?v=6.1';
-import { sfx, duck, playTrack } from './audio.js?v=6.1';
+import { CALLINGS, ENEMIES, REGIONS, NPCS, ECHOES, QUESTS, SLOTS, RARITY, CODEX, BOUNTIES, TOWER_POOL, TOWER_GUARDS, GEAR_NAMES, IDLE } from './data.js?v=7';
+import { buildArt, ANCHORS, heroCanvas } from './art.js?v=7';
+import { heroStats, echoStats, xpNeed, makeGear, rollRarity, gearValue, save, rankIndex } from './state.js?v=7';
+import { sfx, duck, playTrack } from './audio.js?v=7';
 
 const dist = (a, b, c, d) => Math.hypot(c - a, d - b);
 const rnd = (a, b) => a + Math.random() * (b - a);
@@ -277,6 +277,7 @@ export class WorldScene extends Phaser.Scene {
       if (n % 5 === 0) { const sh = 2 + Math.floor(n / 5); st.shards += sh; extra += ` · +${sh} memory`; }
       if (n % 10 === 0) { st.geodes++; extra += ' · +1 geode'; this.towerGear(3 + n); this.unlockCodex('vey' + n); }
       if (n > st.tower.best) { st.tower.best = n; extra += ' · new best'; }
+      this.ui.order('tower');
       this.heal(this.hero.hpMax * .25, '', true);
       sfx('quest'); this.ui.banner('Floor ' + n + ' cleared', '+' + lum + ' Lumen', extra.replace(/^ · /, ''));
       save(st); this.floor++; this.ui.quest();
@@ -736,6 +737,7 @@ export class WorldScene extends Phaser.Scene {
     sfx(e.D.boss ? 'bossdie' : 'die');
     const st = this.st;
     st.kills[e.type] = (st.kills[e.type] || 0) + 1;
+    this.ui.order('kill'); if (e.D.boss) this.ui.order('boss');
     const xp = Math.round(e.D.xp * (1 + .15 * (e.lvl - 1)) * (e.lvl < st.lvl - 4 ? .4 : 1));
     this.gainXp(xp);
     const lum = ri(e.D.lumen[0], e.D.lumen[1]) + Math.floor(e.lvl / 2);
@@ -920,7 +922,7 @@ export class WorldScene extends Phaser.Scene {
     if (this.res < 100 || this.hero.dead || this.paused) return false;
     const C = CALLINGS[this.st.cls], h = this.hero;
     const t = (h.target && !h.target.dead) ? h.target : this.nearestEnemy(h.x, h.y, 400);
-    this.res = 0; sfx('ult'); this.ui.ultCast(C.ult.name);
+    this.res = 0; sfx('ult'); this.ui.ultCast(C.ult.name); this.ui.order('ult');
     if (h.mods && h.mods.keys.overdrive) { this.overT = 6; this.num(h.x, h.y - 96, 'Overdrive', '#ffcf5a', 15, true); }
     if (C.ult.id === 'starbreaker') {
       this.tweens.add({ targets: h.body, y: -60, duration: 220, yoyo: true, ease: 'Quad.easeOut', onComplete: () => {
@@ -1338,7 +1340,7 @@ export class WorldScene extends Phaser.Scene {
     if (r.echo) { st.echoes[r.echo] = { lvl: 1, evo: 0 }; st.activeEcho = r.echo; this.setEcho(r.echo); this.ring(this.hero.x, this.hero.y - 20, 0xbfe8ff, 3); this.ui.newEcho(r.echo); }
     for (const c of q.codex || []) this.unlockCodex(c);
     sfx('quest');
-    this.ui.questDone(q, r);
+    this.ui.questDone(q, r); this.ui.order('quest');
     st.q++; st.qp = 0;
     const after = () => { this.questChanged(); save(st); if (q.actEnd) this.time.delayedCall(600, () => this.ui.actEnd(q.actEnd)); };
     if (q.done) this.time.delayedCall(300, () => this.dialogue(q.done, after)); else after();
@@ -1361,7 +1363,7 @@ export class WorldScene extends Phaser.Scene {
   onUiEvent(kind) { const q = this.quest(); if (q && q.kind === kind) this.completeQuest(); }
   completeBounty(b) {
     this.st.lumen += b.lumen; this.st.shards += b.shards; this.ui.lumenBump(); sfx('quest');
-    this.ui.toast(`Bounty complete: +${b.lumen} Lumen, +${b.shards} memory`);
+    this.ui.toast(`Bounty complete: +${b.lumen} Lumen, +${b.shards} memory`); this.ui.order('quest');
     this.pickBounty(); this.ui.quest();
   }
   unlockCodex(id) { if (this.st.codex[id] || !CODEX[id]) return; this.st.codex[id] = true; this.ui.codexNew(id); }
