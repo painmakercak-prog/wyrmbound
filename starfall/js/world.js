@@ -1,16 +1,17 @@
-import { CALLINGS, ENEMIES, REGIONS, NPCS, ECHOES, QUESTS, SLOTS, RARITY, CODEX, BOUNTIES, TOWER_POOL, TOWER_GUARDS, GEAR_NAMES, IDLE } from './data.js?v=7.3';
-import { buildArt, ANCHORS, heroCanvas } from './art.js?v=7.3';
-import { heroStats, echoStats, xpNeed, makeGear, rollRarity, gearValue, save, rankIndex } from './state.js?v=7.3';
-import { sfx, duck, playTrack } from './audio.js?v=7.3';
-import { Lighting } from './lighting.js?v=7.3';
+import { CALLINGS, ENEMIES, REGIONS, NPCS, ECHOES, QUESTS, SLOTS, RARITY, CODEX, BOUNTIES, TOWER_POOL, TOWER_GUARDS, GEAR_NAMES, IDLE } from './data.js?v=8';
+import { buildArt, ANCHORS, heroCanvas, HAIR_COLORS, DEFAULT_LOOKS } from './art.js?v=8';
+import { PA, RIG, PKEYS, PV } from './painted.js?v=8';
+import { heroStats, echoStats, xpNeed, makeGear, rollRarity, gearValue, save, rankIndex } from './state.js?v=8';
+import { sfx, duck, playTrack } from './audio.js?v=8';
+import { Lighting } from './lighting.js?v=8';
 
 const dist = (a, b, c, d) => Math.hypot(c - a, d - b);
 const rnd = (a, b) => a + Math.random() * (b - a);
 const ri = (a, b) => Math.floor(rnd(a, b + 1));
 
 const HIT = { thornmother: [60, 120], marrowking: [110, 210], choir: [110, 240], firstcaptain: [70, 150] };
-const hy = e => (HIT[e.type] || [16, 44])[0];
-const topY = e => (HIT[e.type] || [16, 44])[1];
+const hy = e => (e.hyp || HIT[e.type] || [16, 44])[0];
+const topY = e => (e.hyp || HIT[e.type] || [16, 44])[1];
 
 function distToPath(paths, x, y) {
   let best = 1e9;
@@ -22,10 +23,23 @@ function distToPath(paths, x, y) {
   return best;
 }
 
+const TREES = ['v_tree0', 'v_tree1', 'v_tree2', 'v_tree3'];
+const VMAP = { tree0: TREES, tree1: TREES, tree2: TREES, tree3: ['v_tree4', 'v_tree5'], rock: ['v_rock0', 'v_rock1', 'v_rock2'], moss: ['v_moss0', 'v_moss1', 'v_moss2'], bulb: ['v_bulb0', 'v_bulb1', 'v_bulb2', 'v_shroom0', 'v_shroom1'], rib: ['v_rib0', 'v_rib1'], hull: ['v_hull'], lamp: ['v_lamp'], banner: ['v_banner'], forge: ['v_forge'], tent: ['v_tent'], stall: ['v_stall0', 'v_stall1'], crate: ['v_crate'], geode: ['v_geode'], door: ['v_door'], spire: ['v_spire'], root: ['v_roots'] };
+const VK = { tree0: .8, tree1: .8, tree2: .8, tree3: .8 };
+const PE = { shardling: ['e_shardling', [24, 64], 66], crawler: ['e_crawler', [24, 70], 74], glowmoth: ['e_moth_b', [44, 96], 98] };
+
 const SHADOWED = /^tree|^rib|^rock|^mesa|^crate|^tent|^stall|^lamp|^forge|^banner|^rig|^cage|^wreck|^mill|^vaultdoor|^marker|^crystal|^coral|^kelp|^scrap|^cone|^fence|^spire/;
 
 export class WorldScene extends Phaser.Scene {
   constructor() { super('world'); }
+
+  preload() {
+    const need = PKEYS.filter(k => !this.textures.exists(k)); if (!need.length) return;
+    for (const k of need) this.load.image(k, 'art/p/' + k + '.webp?v=' + PV);
+    const cam = this.cameras.main, d = this.dpr || 1, t = this.add.text(cam.width / 2, cam.height / 2, 'Loading art 0%', { fontFamily: '"Chakra Petch", system-ui, sans-serif', fontStyle: '700', fontSize: Math.round(15 * d) + 'px', color: '#9ff6ff' }).setOrigin(.5);
+    this.load.on('progress', v => t.setText('Loading art ' + Math.round(v * 100) + '%'));
+    this.load.once('complete', () => t.destroy());
+  }
 
   init(d) {
     this.initData = d; this.ui = d.ui; this.st = d.state; this.TS = d.TS; this.Z = d.Z; this.dpr = d.dpr; this.onReady = d.onReady;
@@ -97,19 +111,24 @@ export class WorldScene extends Phaser.Scene {
   }
 
   setZoom(Z, dpr) { this.Z = Z; this.dpr = dpr; this.cameras.main.setZoom(Z * dpr); }
-  sx(key) { const c = this.art[key]; return c.unitW / c.width; }
+  sx(key) { const c = this.art[key]; if (c) return c.unitW / c.width; const p = PA[key]; return p ? p[0] / this.textures.get(key).getSourceImage().width : 1; }
+  pt(key) { return !!PA[key] && this.textures.exists(key); }
   img(x, y, key, ax = .5, ay = .5, s = 1) { return this.add.image(x, y, key).setOrigin(ax, ay).setScale(this.sx(key) * s); }
 
   buildWorld() {
     const R = this.R, P = this.P, W = R.w, H = R.h;
-    const g = this.add.tileSprite(0, 0, W, H, R.ground).setOrigin(0).setTileScale(this.sx(R.ground));
+    this.pv = !R.tower && this.st.region === 'verge' && this.pt('v_ground') && this.pt('v_tree0');
+    const gk = this.pv ? 'v_ground' : R.ground;
+    const g = this.add.tileSprite(0, 0, W, H, gk).setOrigin(0).setTileScale(this.sx(gk));
     g.setDepth(-1e6);
     const tint = (x, y, r, col, a, mode = 'ADD') => { const s = this.add.image(x, y, 'soft').setScale(r / 32).setTint(col).setAlpha(a).setBlendMode(mode); s.setDepth(-9e5); if (mode === 'ADD') this.lit.pool(x, y, r, col, a); return s; };
     this.tall = [];
-    const placeProp = (key, x, y, s = 1, flip = false) => { const [ax, ay] = ANCHORS[key] || [.5, .9]; const p = this.img(x, y, key, ax, ay, s); if (flip) p.setFlipX(true); p.setDepth(y); if (/^tree|^rib|^spire|^rig|^mesa|^cage|^bigheart|^mill|^vaultdoor/.test(key)) this.tall.push(p); this.lit.prop(key, x, y, s); if (SHADOWED.test(key)) { const c = this.art[key]; const sh = this.img(x + 6 * s, y + 2, 'shadow', .5, .5, Math.min(7, c.unitW * s * .8 / 48)); sh.setDepth(-7.6e5).setAlpha(.85); } return p; };
+    const placeProp = (key, x, y, s = 1, flip = false) => { const alt = this.pv && VMAP[key], pk = alt ? alt[Math.floor(Math.random() * alt.length)] : null, pm = pk && this.pt(pk) ? PA[pk] : null; if (pm) s *= VK[key] || 1; const [ax, ay] = pm ? [pm[1], pm[2]] : ANCHORS[key] || [.5, .9]; const p = this.img(x, y, pm ? pk : key, ax, ay, s); if (flip) p.setFlipX(true); p.setDepth(y); if (/^tree|^rib|^spire|^rig|^mesa|^cage|^bigheart|^mill|^vaultdoor/.test(key)) this.tall.push(p); this.lit.prop(key, x, y, s); if (SHADOWED.test(key)) { const uw = pm ? pm[0] : this.art[key].unitW; const sh = this.img(x + 6 * s, y + 2, 'shadow', .5, .5, Math.min(7, uw * s * .8 / 48)); sh.setDepth(-7.6e5).setAlpha(.85); } return p; };
     for (const PATH of R.paths) for (let i = 0; i < PATH.length - 1; i++) {
       const [ax, ay] = PATH[i], [bx, by] = PATH[i + 1], n = Math.ceil(dist(ax, ay, bx, by) / 24);
-      for (let k = 0; k < n; k++) { const t = k / n; const d = this.img(ax + (bx - ax) * t + rnd(-6, 6), ay + (by - ay) * t + rnd(-4, 4), R.path, .5, .5, rnd(1.1, 1.5)); d.setDepth(-8e5); d.setAlpha(i < 2 && R === REGIONS.verge && PATH === R.paths[0] ? 0 : 1); }
+      const hide = i < 2 && R === REGIONS.verge && PATH === R.paths[0];
+      if (this.pv) { const m = Math.ceil(dist(ax, ay, bx, by) / 30); if (!hide) for (let k = 0; k < m; k++) { const t = k / m; this.img(ax + (bx - ax) * t + rnd(-5, 5), ay + (by - ay) * t + rnd(-4, 4), 'v_dab' + ri(0, 2), .5, .5, rnd(.9, 1.2)).setRotation(rnd(0, 6.28)).setDepth(-8e5).setAlpha(.88); } continue; }
+      for (let k = 0; k < n; k++) { const t = k / n; const d = this.img(ax + (bx - ax) * t + rnd(-6, 6), ay + (by - ay) * t + rnd(-4, 4), R.path, .5, .5, rnd(1.1, 1.5)); d.setDepth(-8e5); d.setAlpha(hide ? 0 : 1); }
     }
     this.spire = placeProp('spire', P.spire.x, P.spire.y, .9);
     this.spireGlow = this.add.image(P.spire.x, P.spire.y - 270, 'soft').setTint(0x9ff6ff).setBlendMode('ADD').setScale(3).setAlpha(.5).setDepth(P.spire.y + 1);
@@ -125,7 +144,7 @@ export class WorldScene extends Phaser.Scene {
     this.door = null;
     tint(900, 2640, 400, 0xffa04a, .16); tint(900, 2060, 420, 0x5ff2d0, .07); tint(860, 1420, 520, 0x9a5aff, .16); tint(900, 860, 480, 0xff3a6a, .09);
     tint(900, 380, 340, 0xff5aa8, .14); tint(900, 380, 300, 0x000000, .35, 'NORMAL');
-    for (let i = 0; i < 70; i++) { const a = rnd(0, Math.PI * 2), r = rnd(0, 240); const d = this.img(900 + Math.cos(a) * r * 1.4, 2640 + Math.sin(a) * r * .6, 'plaza', .5, .5, rnd(1.2, 1.8)); d.setDepth(-8e5); }
+    for (let i = 0; i < (this.pv ? 44 : 70); i++) { const a = rnd(0, Math.PI * 2), r = rnd(0, 240); const d = this.img(900 + Math.cos(a) * r * 1.4, 2640 + Math.sin(a) * r * .6, this.pv ? 'v_dab' + ri(0, 2) : 'plaza', .5, .5, this.pv ? rnd(1.3, 1.9) : rnd(1.2, 1.8)); d.setDepth(-8e5); if (this.pv) d.setRotation(rnd(0, 6.28)).setAlpha(.85); }
     const okSpot = (x, y, pad) => distToPath(PATHS, x, y) > pad && dist(x, y, 900, 2660) > 380 && dist(x, y, P.spire.x, P.spire.y) > 120 && dist(x, y, P.arena.x, P.arena.y) > 260 && dist(x, y, P.geode.x, P.geode.y) > 80;
     for (let i = 0; i < 320 && this.countTrees !== 140; i++) {
       const edge = R() < .55; const x = edge ? (R() < .5 ? rnd(-20, 260) : rnd(1540, 1820)) : rnd(80, 1720); const y = rnd(60, 2560);
@@ -136,13 +155,14 @@ export class WorldScene extends Phaser.Scene {
     for (let i = 0; i < 160; i++) { const x = rnd(40, 1760), y = rnd(80, 2600); if (!okSpot(x, y, 70)) continue; const r = R(); placeProp(r < .3 ? 'rock' : r < .7 ? 'moss' : 'bulb', x, y, rnd(.8, 1.2), R() < .5); }
     placeProp('rib', 300, 1980, 1.1); placeProp('rib', 1500, 1700, 1, true); placeProp('rib', 260, 1100, 1.2); placeProp('rib', 1560, 820, 1.15, true);
     placeProp('hull', 900, 2998, 1.05);
-    for (const [x, y] of [[690, 2540], [1110, 2540], [620, 2700], [1180, 2700], [830, 2470], [970, 2470]]) { placeProp('lamp', x, y, 1); const l = this.add.image(x, y - 80, 'soft').setTint(0xffb85a).setBlendMode('ADD').setScale(2.2).setAlpha(.45).setDepth(y + 1); this.tweens.add({ targets: l, alpha: .6, duration: rnd(900, 1500), yoyo: true, repeat: -1 }); }
+    for (const [x, y] of [[690, 2540], [1110, 2540], [620, 2700], [1180, 2700], [830, 2470], [970, 2470]]) { placeProp('lamp', x, y, 1); const l = this.add.image(x + (this.pv ? 6 : 0), y - (this.pv ? 100 : 80), 'soft').setTint(0xffb85a).setBlendMode('ADD').setScale(2.2).setAlpha(.45).setDepth(y + 1); this.tweens.add({ targets: l, alpha: .6, duration: rnd(900, 1500), yoyo: true, repeat: -1 }); }
     placeProp('banner', 728, 2572, 1); placeProp('forge', 1112, 2582, 1); placeProp('tent', 1090, 2712, .9); placeProp('stall', 700, 2700, .9); placeProp('stall', 560, 2600, .85, true);
     for (const [x, y] of [[600, 2640], [624, 2668], [1180, 2610], [1204, 2640], [1240, 2760]]) placeProp('crate', x, y, rnd(.9, 1.1));
-    for (let i = 0; i < 14; i++) { const a = i / 14 * Math.PI * 2 + rnd(-.1, .1); const rr = rnd(150, 260); const x = P.arena.x + Math.cos(a) * rr, y = P.arena.y + Math.sin(a) * rr * .75; const r = this.img(x, y, 'root', .5, .5, rnd(.8, 1.3)); r.setRotation(a + rnd(-.3, .3)); r.setDepth(-7e5); }
+    if (this.pv) for (let i = 0; i < 9; i++) { const a = Math.PI * (.95 + i / 8 * 1.1) + rnd(-.08, .08), rr = rnd(190, 250); placeProp('root', P.arena.x + Math.cos(a) * rr, P.arena.y + Math.sin(a) * rr * .75, rnd(.7, .95), R() < .5); }
+    else for (let i = 0; i < 14; i++) { const a = i / 14 * Math.PI * 2 + rnd(-.1, .1); const rr = rnd(150, 260); const x = P.arena.x + Math.cos(a) * rr, y = P.arena.y + Math.sin(a) * rr * .75; const r = this.img(x, y, 'root', .5, .5, rnd(.8, 1.3)); r.setRotation(a + rnd(-.3, .3)); r.setDepth(-7e5); }
     for (let i = 0; i < 10; i++) { const a = rnd(Math.PI * 1.05, Math.PI * 1.95), rr = rnd(250, 330); placeProp('tree' + (i % 2 ? 3 : 1), P.arena.x + Math.cos(a) * rr, P.arena.y + Math.sin(a) * rr * .7, rnd(1, 1.3)); }
     this.geodeSpr = placeProp('geode', P.geode.x, P.geode.y, 1.1);
-    this.geodeGlow = this.add.image(P.geode.x, P.geode.y - 14, 'soft').setTint(0x5ff2d0).setBlendMode('ADD').setScale(1.6).setDepth(P.geode.y + 1);
+    this.geodeGlow = this.add.image(P.geode.x, P.geode.y - (this.pv ? 50 : 14), 'soft').setTint(0x5ff2d0).setBlendMode('ADD').setScale(1.6).setDepth(P.geode.y + 1);
     this.tweens.add({ targets: this.geodeGlow, scale: 2.2, alpha: .4, duration: 900, yoyo: true, repeat: -1 });
     this.door = placeProp('door', P.roots.x, P.roots.y + 30, 1); this.door.setVisible(false);
     if (this.st.q > QUESTS.findIndex(q => q.id === 'geode')) { this.geodeSpr.setAlpha(0); }
@@ -323,25 +343,60 @@ export class WorldScene extends Phaser.Scene {
     const shadow = this.img(0, 0, 'shadow', .5, .5, 1.1);
     const fl = this.img(-7, -2, 'foot', .5, .5), fr = this.img(7, -2, 'foot', .5, .5);
     this.heroKey = this.heroTex();
-    const body = this.img(0, 0, this.heroKey, .5, .97);
+    const PN = this.painted;
+    const body = this.img(0, 0, this.heroKey, PN ? PA['rw_' + PN][1] : .5, PN ? PA['rw_' + PN][2] : .97);
     const wkey = { slash: 'w_blade', rail: 'w_rifle', orb: 'w_orb', knife: 'w_knife', pistol: 'w_pistol', pulse: 'w_staff' }[C.attack];
     const weapon = this.img(0, 0, wkey, .5, { slash: .85, knife: .8, pulse: .85 }[C.attack] || .5);
     h.add([shadow, fl, fr, body, weapon]);
-    Object.assign(h, { shadow, fl, fr, body, weapon, facing: 1, walkT: 0, moving: false, vx: 0, vy: 0, kind: C.attack, hp: 1, dead: false, target: null, swing: 0 });
+    if (PN) { fl.setVisible(false); fr.setVisible(false); weapon.setVisible(false); shadow.setScale(shadow.scaleX * 1.3); }
+    Object.assign(h, { painted: PN, shadow, fl, fr, body, weapon, facing: 1, walkT: 0, moving: false, vx: 0, vy: 0, kind: C.attack, hp: 1, dead: false, target: null, swing: 0 });
     this.hero = h;
     this.halo = this.img(0, 0, 'ring', .5, .5, .5).setTint(0x5ff2ff).setAlpha(0).setBlendMode('ADD');
   }
 
   restyle() {
-    const h = this.hero; this.heroKey = this.heroTex();
-    h.body.setTexture(this.heroKey); h.body.setScale(this.sx(this.heroKey));
+    const h = this.hero; this.heroKey = this.heroTex(); const PN = this.painted; h.painted = PN;
+    h.body.setTexture(this.heroKey); h.body.setScale(this.sx(this.heroKey)).setOrigin(PN ? PA['rw_' + PN][1] : .5, PN ? PA['rw_' + PN][2] : .97);
+    for (const o of [h.fl, h.fr, h.weapon]) o.setVisible(!PN);
     this.ring(h.x, h.y - 20, 0x9ff6ff, 2.2); sfx('sync');
   }
   heroTex() {
+    this.painted = null;
+    if (this.st.cls === 'railwarden' && this.pt('rw_m') && this.pt('rw_f')) {
+      const L = Object.assign({}, DEFAULT_LOOKS.railwarden, this.st.look || {}), sex = L.sex === 'f' ? 'f' : 'm', hi = (+L.head || 0) % 3, hc = HAIR_COLORS[(+L.hairc || 0) % HAIR_COLORS.length];
+      const key = 'rwp_' + sex + hi + hc.slice(1);
+      if (this.textures.exists('rw_' + sex + '_h' + hi)) {
+        if (!this.textures.exists(key)) { this.art[key] = this.rwCanvas(sex, hi, hc); this.textures.addCanvas(key, this.art[key]); }
+        this.painted = sex; return key;
+      }
+    }
     const lk = this.st.look || null, key = 'hero_' + this.st.cls + '_' + (lk ? [lk.sex, lk.head, lk.face, lk.body, lk.skin, lk.hairc, lk.gear === false ? 0 : 1].join('') : 'd');
     if (!this.art[key]) this.art[key] = heroCanvas(this.TS, this.st.cls, lk);
     if (!this.textures.exists(key)) this.textures.addCanvas(key, this.art[key]);
     return key;
+  }
+
+  rwCanvas(sex, hi, hc) {
+    const b = this.textures.get('rw_' + sex).getSourceImage(), hr = this.textures.get('rw_' + sex + '_h' + hi).getSourceImage(), [hx, hy2] = RIG[sex].hair[hi];
+    const c = document.createElement('canvas'); c.width = b.width; c.height = b.height; const x = c.getContext('2d');
+    const t = document.createElement('canvas'); t.width = hr.width; t.height = hr.height; const y = t.getContext('2d');
+    y.drawImage(hr, 0, 0); y.globalCompositeOperation = 'multiply'; y.fillStyle = hc; y.fillRect(0, 0, t.width, t.height);
+    y.globalCompositeOperation = 'screen'; y.globalAlpha = .16; y.drawImage(hr, 0, 0);
+    y.globalAlpha = 1; y.globalCompositeOperation = 'destination-in'; y.drawImage(hr, 0, 0);
+    x.drawImage(t, Math.round(hx), Math.round(hy2)); x.drawImage(b, 0, 0);
+    c.unitW = PA['rw_' + sex][0]; c.unitH = c.unitW * c.height / c.width;
+    return c;
+  }
+  muzzle() { const h = this.hero; if (h.painted) { const m = RIG[h.painted].muz; return { x: h.x + h.facing * m[0], y: h.y + m[1] + h.body.y }; } return { x: h.x + h.facing * 26, y: h.y - 24 }; }
+  rail(x1, y1, x2, y2, th = 1, dur = 140) {
+    const a = Math.atan2(y2 - y1, x2 - x1), L = dist(x1, y1, x2, y2), k = this.sx('fx_rail');
+    this.lit.flash((x1 + x2) / 2, (y1 + y2) / 2, Math.min(300, 60 + L * .3), 0x5ff2ff, Math.max(.2, dur / 1000), .7); this.lit.flash(x2, y2, 80 + th * 30, 0x5ff2ff, .3, .9);
+    const r = this.add.image(x1, y1, 'fx_rail').setOrigin(0, .5).setRotation(a).setScale(k * L / 200, k * .26 * th).setBlendMode('ADD').setDepth(5e5 + 1);
+    this.tweens.add({ targets: r, scaleY: 0, alpha: .2, duration: dur, ease: 'Quad.easeIn', onComplete: () => r.destroy() });
+    const m = this.img(x1, y1, 'fx_muzzle', PA.fx_muzzle[1], .5, .55 + th * .2).setRotation(a).setBlendMode('ADD').setDepth(5e5 + 2);
+    this.tweens.add({ targets: m, alpha: 0, scaleX: m.scaleX * 1.3, duration: 110, onComplete: () => m.destroy() });
+    const im = this.img(x2, y2, 'fx_impact', .5, .5, .35 + th * .15).setRotation(rnd(0, 6.28)).setBlendMode('ADD').setDepth(5e5 + 2);
+    this.tweens.add({ targets: im, alpha: 0, scale: im.scale * 1.8, duration: 200, ease: 'Quad.easeOut', onComplete: () => im.destroy() });
   }
 
   makeNpcs() {
@@ -401,16 +456,22 @@ export class WorldScene extends Phaser.Scene {
     const lvl = sp.lvl || ri(D.lvl[0], D.lvl[1]);
     const c = this.add.container(x, y);
     const shadow = this.img(0, 0, 'shadow', .5, .5, D.boss ? ({ marrowking: 5.2, choir: 5.6, firstcaptain: 2.6 }[sp.type] || 4.4) : D.radius / 16);
-    const key = sp.type === 'glowmoth' ? 'moth' : sp.type === 'firstcaptain' ? 'captain' : sp.type;
+    const pe = PE[sp.type] && this.pt(PE[sp.type][0]) && (sp.type !== 'glowmoth' || this.pt('e_moth_ul')) ? PE[sp.type] : null;
+    const key = pe ? pe[0] : sp.type === 'glowmoth' ? 'moth' : sp.type === 'firstcaptain' ? 'captain' : sp.type;
     const parts = [shadow];
     let wl, wr;
-    if (sp.type === 'glowmoth') {
+    if (pe && sp.type === 'glowmoth') {
+      const gl = this.add.image(0, -44, 'soft').setTint(0x5fc8ff).setBlendMode('ADD').setAlpha(.32).setScale(1.7);
+      const mk = n => { const m = PA[n], w = this.img(m[3][0], -50 + m[3][1], n, m[1], m[2]); w.oy = w.y; return w; };
+      const ll = mk('e_moth_ll'), lr = mk('e_moth_lr'), ul = mk('e_moth_ul'), ur = mk('e_moth_ur');
+      parts.push(gl, ll, lr, ul, ur); wl = [ul, ll]; wr = [ur, lr];
+    } else if (sp.type === 'glowmoth') {
       wl = this.img(-2, -30, 'wing', 1, .5); wl.setFlipX(true); wr = this.img(2, -30, 'wing', 0, .5);
       const gl = this.add.image(0, -28, 'soft').setTint(0xc58bff).setBlendMode('ADD').setAlpha(.4).setScale(1.3);
       parts.push(gl, wl, wr);
     }
     const fly = ['glowmoth', 'sdrone', 'skimmer', 'leech', 'archivist'].includes(sp.type);
-    const body = this.img(0, fly ? -14 : 0, key, .5, fly ? .9 : .95);
+    const body = pe && sp.type === 'glowmoth' ? this.img(0, -50, key, PA[key][1], PA[key][2]) : this.img(0, fly ? -14 : 0, key, .5, fly ? .9 : .95);
     if (sp.type === 'marrowking') { body.setOrigin(.56, .93); }
     if (sp.type === 'firstcaptain') { const g = this.add.image(0, -70, 'soft').setTint(0x5ff2ff).setBlendMode('ADD').setAlpha(.35).setScale(5); parts.push(g); }
     parts.push(body);
@@ -418,6 +479,7 @@ export class WorldScene extends Phaser.Scene {
     c.add(parts);
     const hpMul = sp.hpMul || (D.boss ? 1 : (1 + .2 * (lvl - 1))), atkMul = sp.atkMul || (D.boss ? 1 : (1 + .13 * (lvl - 1)));
     const bar = this.add.graphics().setDepth(4.4e5);
+    if (pe) { c.pm = true; c.hyp = pe[1]; c.barY = pe[2]; }
     Object.assign(c, { type: sp.type, D, sp, lvl, hpMax: Math.round(D.hp * hpMul), atk: D.atk * atkMul, body, wl, wr, shadow, bar, state: 'idle', cd: rnd(.5, 1.5), wander: null, wt: rnd(0, 3), t: rnd(0, 10), stun: 0, slow: 0, flash: 0, home: { x, y }, special: 5, broodA: false, broodB: false, dead: false, aggro: false });
     c.hp = c.hpMax;
     if (sp.aggro) { c.aggro = true; c.state = 'chase'; }
@@ -607,6 +669,7 @@ export class WorldScene extends Phaser.Scene {
     } else {
       h.body.y = 0; h.body.rotation = 0; h.body.setScale(k, k * (1 + Math.sin(h.walkT) * .018)); h.fl.x = -7; h.fr.x = 7; h.fl.y = h.fr.y = -2;
     }
+    if (h.painted) { const r = h.swing * h.swing * h.swing; h.body.x = -r * 4; h.body.rotation -= r * .07; }
     const w = h.weapon, wk = this.sx(w.texture.key);
     h.swing = Math.max(0, h.swing - dt * 4);
     if (h.kind === 'slash') { w.setPosition(13, -20 + h.body.y); w.rotation = .55 - Math.sin(h.swing * Math.PI) * 2.3 + (h.swing > 0 ? 1.2 * h.swing : 0); }
@@ -631,7 +694,8 @@ export class WorldScene extends Phaser.Scene {
       sfx('slash');
       this.hit(t, 1, 'basic');
     } else if (C.attack === 'rail') {
-      this.beam(h.x + h.facing * 26, h.y - 24, t.x, t.y - hy(t), 0x5ff2ff, 3, 140); sfx('rail');
+      const m = this.muzzle();
+      if (h.painted) this.rail(m.x, m.y, t.x, t.y - hy(t), 1, 140); else this.beam(m.x, m.y, t.x, t.y - hy(t), 0x5ff2ff, 3, 140); sfx('rail');
       this.hit(t, 1, 'basic');
     } else if (C.attack === 'knife') {
       const a = Math.atan2(t.y - 14 - (h.y - 22), t.x - h.x);
@@ -841,10 +905,16 @@ export class WorldScene extends Phaser.Scene {
     this.tweens.add({ targets: g, alpha: 0, duration: dur, onComplete: () => g.destroy() });
   }
 
+  lance(x, y) {
+    const k = this.sx('fx_lance'), l = this.add.image(x, y + 6, 'fx_lance').setOrigin(.5, PA.fx_lance[2]).setScale(0, k * 2.4).setBlendMode('ADD').setDepth(5e5 + 1);
+    this.lit.flash(x, y - 200, 340, 0x9ff6ff, .6, 1); this.lit.flash(x, y, 220, 0xffd08a, .5, 1);
+    this.tweens.add({ targets: l, scaleX: k * 1.15, duration: 90, ease: 'Quad.easeOut', onComplete: () => this.tweens.add({ targets: l, alpha: 0, scaleX: k * .5, duration: 520, delay: 160, ease: 'Quad.easeIn', onComplete: () => l.destroy() }) });
+  }
+
   // ---------- projectiles ----------
   proj(o) {
     const s = this.img(o.x, o.y, o.key, .5, .5, o.scale || 1).setBlendMode('ADD').setDepth(5e5);
-    if (o.tint) s.setTint(o.tint);
+    if (o.tint && !PA[o.key]) s.setTint(o.tint);
     this.projs.push(Object.assign({ s, x: o.x, y: o.y, life: 2 }, o));
   }
   updateProjs(dt) {
@@ -877,7 +947,7 @@ export class WorldScene extends Phaser.Scene {
     const M = h.mods || { skillDmg: {}, skillCd: {}, skill: 0 }, P = 1 + (M.skillDmg[S.id] || 0) + (M.skill || 0);
     this.cds[i] = S.cd * (1 - (M.skillCd[S.id] || 0)); h.swing = 1; sfx('skill');
     if (t) this.faceTo(t.x);
-    const ax = h.x, ay = h.y - 20;
+    const mz = this.muzzle(), ax = h.painted ? mz.x : h.x, ay = h.painted ? mz.y : h.y - 20;
     switch (S.id) {
       case 'cleave': {
         const a = Math.atan2(t.y - h.y, t.x - h.x);
@@ -890,12 +960,12 @@ export class WorldScene extends Phaser.Scene {
       case 'slam': this.ring(h.x, h.y - 4, 0xffcf5a, 2.2); this.cameras.main.shake(180, .005); for (const e of this.enemiesIn(h.x, h.y, 100)) { this.hit(e, 1.5 * P, 'skill'); e.stun = 1.2; } break;
       case 'pierce': {
         const a = Math.atan2(t.y - h.y, t.x - h.x);
-        this.beam(ax, ay, ax + Math.cos(a) * 340, ay + Math.sin(a) * 340, 0x9ff6ff, 7, 260); this.cameras.main.shake(100, .003);
+        if (h.painted) this.rail(ax, ay, ax + Math.cos(a) * 340, ay + Math.sin(a) * 340, 2.3, 280); else this.beam(ax, ay, ax + Math.cos(a) * 340, ay + Math.sin(a) * 340, 0x9ff6ff, 7, 260); this.cameras.main.shake(100, .003);
         for (const e of this.enemies) { if (e.dead) continue; const dx = e.x - h.x, dy = e.y - h.y; const along = dx * Math.cos(a) + dy * Math.sin(a), perp = Math.abs(-dx * Math.sin(a) + dy * Math.cos(a)); if (along > 0 && along < 340 && perp < 26 + (e.D.boss ? 40 : 0)) this.hit(e, 2.3 * P, 'skill'); }
         break;
       }
-      case 'volley': { const a = Math.atan2(t.y - h.y, t.x - h.x); for (const d of [-.25, 0, .25]) this.proj({ x: ax, y: ay, vx: Math.cos(a + d) * 520, vy: Math.sin(a + d) * 520, key: 'bolt', spd: 520, mult: 1.1 * P, pierce: true, hitSet: new Set(), tint: 0x5ff2ff, life: .7 }); break; }
-      case 'drone': { const d = this.img(h.x - 30, h.y - 60, 'echo_rivet', .5, .5, .8).setTint(0x9ff6ff).setDepth(5e5); this.drones.push({ s: d, t: 8, cd: 0, mult: .6 * P }); break; }
+      case 'volley': { const a = Math.atan2(t.y - h.y, t.x - h.x); for (const d of [-.25, 0, .25]) this.proj({ x: ax, y: ay, vx: Math.cos(a + d) * 520, vy: Math.sin(a + d) * 520, key: h.painted ? 'fx_bolt' : 'bolt', spd: 520, mult: 1.1 * P, pierce: true, hitSet: new Set(), tint: 0x5ff2ff, life: .7 }); break; }
+      case 'drone': { const d = h.painted ? this.img(h.x - 30, h.y - 60, 'fx_drone', .5, .5, 1).setDepth(5e5) : this.img(h.x - 30, h.y - 60, 'echo_rivet', .5, .5, .8).setTint(0x9ff6ff).setDepth(5e5); this.drones.push({ s: d, t: 8, cd: 0, mult: .6 * P }); break; }
       case 'pulse': { this.ring(h.x, h.y - 20, 0xc58bff, 2.6); for (const e of this.enemiesIn(h.x, h.y, 125)) this.hit(e, 1.7 * P, 'skill'); break; }
       case 'llance': this.proj({ x: ax, y: ay - 20, tgt: t, key: 'orb', scale: 2, spd: 640, mult: 3.2 * P, tint: 0xe2c6ff }); break;
       case 'hush': this.zone(t.x, t.y, 90, 5, .45 * P, 0xc58bff); break;
@@ -946,7 +1016,7 @@ export class WorldScene extends Phaser.Scene {
     } else if (C.ult.id === 'lance') {
       const x = t ? t.x : h.x, y = t ? t.y : h.y;
       this.addTele(x, y, 120, .55, 0x5ff2ff, true);
-      this.time.delayedCall(550, () => { this.beam(x, y - 900, x, y, 0x9ff6ff, 22, 400); this.ring(x, y, 0x9ff6ff, 3.4); this.cameras.main.shake(300, .01); for (const e of this.enemiesIn(x, y, 125)) this.hit(e, 6.2, 'ult'); });
+      this.time.delayedCall(550, () => { if (h.painted) this.lance(x, y); else this.beam(x, y - 900, x, y, 0x9ff6ff, 22, 400); this.ring(x, y, 0x9ff6ff, 3.4); this.cameras.main.shake(300, .01); for (const e of this.enemiesIn(x, y, 125)) this.hit(e, 6.2, 'ult'); });
     } else if (C.ult.id === 'eclipse') {
       const list = this.enemies.filter(e => !e.dead && dist(h.x, h.y, e.x, e.y) < 280).sort((a, b) => dist(h.x, h.y, a.x, a.y) - dist(h.x, h.y, b.x, b.y)).slice(0, 6);
       this.veilT = Math.max(this.veilT, .9); this.cameras.main.flash(200, 255, 90, 154);
@@ -1027,7 +1097,7 @@ export class WorldScene extends Phaser.Scene {
     for (const d of this.drones) {
       d.t -= dt; d.cd -= dt;
       d.s.x += (h.x - 26 - d.s.x) * dt * 3; d.s.y += (h.y - 64 + Math.sin(this.now * 4) * 4 - d.s.y) * dt * 3;
-      if (d.cd <= 0) { const t = this.nearestEnemy(d.s.x, d.s.y, 230); if (t) { d.cd = d.heal ? .6 : .5; this.beam(d.s.x, d.s.y, t.x, t.y - 16, d.col || 0x5ff2ff, 2, 100); this.hit(t, d.mult || .6, 'skill'); } }
+      if (d.cd <= 0) { const t = this.nearestEnemy(d.s.x, d.s.y, 230); if (t) { d.cd = d.heal ? .6 : .5; this.beam(d.s.x, d.s.y, t.x, t.y - hy(t), d.col || 0x5ff2ff, 2, 100); this.hit(t, d.mult || .6, 'skill'); } }
       if (d.heal) { d.ht -= dt; if (d.ht <= 0) { d.ht = 1; this.heal(h.hpMax * (d.healAmt || .03), '', true); this.beam(d.s.x, d.s.y, h.x, h.y - 30, 0x7fffb0, 2, 160); } }
       if (d.t <= 0) { d.done = true; this.tweens.add({ targets: d.s, alpha: 0, duration: 300, onComplete: () => d.s.destroy() }); }
     }
@@ -1112,7 +1182,7 @@ export class WorldScene extends Phaser.Scene {
       e.setDepth(e.y);
       e.bar.clear();
       if (!D.boss && e.hp < e.hpMax) {
-        const w = 34, y = e.y - ({ glowmoth: 66, skimmer: 52, sdrone: 66, hound: 56, husker: 82, leech: 64, skitter: 52, mauler: 70, archivist: 104, dredger: 100 }[e.type] || 50);
+        const w = 34, y = e.y - (e.barY || { glowmoth: 66, skimmer: 52, sdrone: 66, hound: 56, husker: 82, leech: 64, skitter: 52, mauler: 70, archivist: 104, dredger: 100 }[e.type] || 50);
         e.bar.fillStyle(0x061016, .85); e.bar.fillRoundedRect(e.x - w / 2 - 1, y - 1, w + 2, 6, 3);
         e.bar.fillStyle(0xff5a6e, 1); e.bar.fillRoundedRect(e.x - w / 2, y, Math.max(2, w * e.hp / e.hpMax), 4, 2);
       }
@@ -1124,6 +1194,7 @@ export class WorldScene extends Phaser.Scene {
     const k = this.sx(e.body.texture.key);
     if (mvx) e.body.setFlipX(mvx > 0);
     if (e.type === 'shardling') { const hop = moving ? Math.abs(Math.sin(e.t * 8)) : Math.abs(Math.sin(e.t * 2)) * .2; e.body.y = -hop * 9; e.body.setScale(k * (1 + (1 - hop) * .08), k * (1 - (1 - hop) * .08 + hop * .06)); e.shadow.setScale(this.sx('shadow') * (1 - hop * .3)); }
+    else if (e.type === 'glowmoth' && e.pm) { const f = Math.abs(Math.sin(e.t * 14)), y = Math.sin(e.t * 3) * 5; for (const w of e.wl.concat(e.wr)) { w.scaleX = this.sx(w.texture.key) * (.28 + .72 * f); w.y = w.oy + y; } e.body.y = -50 + y; e.list[1].y = -44 + y; }
     else if (e.type === 'glowmoth') { const f = Math.sin(e.t * 18); e.wl.scaleX = -this.sx('wing') * (.55 + .45 * Math.abs(f)); e.wr.scaleX = this.sx('wing') * (.55 + .45 * Math.abs(f)); const y = -14 + Math.sin(e.t * 3) * 5; e.body.y = y; e.wl.y = e.wr.y = y - 16; e.list[1].y = y - 14; }
     else if (e.type === 'crawler' || e.type === 'hound') { e.body.rotation = moving ? Math.sin(e.t * 20) * .05 : 0; e.body.y = moving ? -Math.abs(Math.sin(e.t * 20)) * 1.5 : 0; }
     else if (e.type === 'skimmer') { const f = Math.sin(e.t * 9); e.body.setScale(k * (1 + f * .04), k * (1 - Math.abs(f) * .22)); e.body.y = -16 + Math.sin(e.t * 2.4) * 4; e.body.rotation = (mvx || 0) * .12; }
