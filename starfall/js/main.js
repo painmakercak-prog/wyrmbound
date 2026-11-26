@@ -1,16 +1,17 @@
-import { CALLINGS, ART } from './data.js?v=6';
-import { fresh, load, save, offlineRewards } from './state.js?v=6';
-import { UI } from './ui.js?v=6';
-import { portraitCanvas, LOOKS, DEFAULT_LOOKS } from './art.js?v=6';
-import { creator } from './creator.js?v=6';
-import { WorldScene } from './world.js?v=6';
-import { audioInit, audioResume, audioSuspend, sfx, playTrack, prefetchTrack } from './audio.js?v=6';
+import { CALLINGS, ART } from './data.js?v=6.1';
+import { fresh, load, save, offlineRewards } from './state.js?v=6.1';
+import { UI } from './ui.js?v=6.1';
+import { portraitCanvas, LOOKS, DEFAULT_LOOKS } from './art.js?v=6.1';
+import { creator } from './creator.js?v=6.1';
+import { WorldScene } from './world.js?v=6.1';
+import { audioInit, audioResume, audioSuspend, sfx, playTrack, prefetchTrack } from './audio.js?v=6.1';
 
 const $ = s => document.querySelector(s);
 let game = null, ui = null, st = null;
 
 function view() {
-  const W = window.innerWidth, H = window.innerHeight;
+  const de = document.documentElement;
+  const W = Math.max(1, de.clientWidth || window.innerWidth), H = Math.max(1, de.clientHeight || window.innerHeight);
   const dpr = Math.min(2, window.devicePixelRatio || 1);
   const Z = Math.max(.85, Math.min(1.5, W / 400));
   const TS = Math.min(3, Math.ceil(dpr * Z));
@@ -40,7 +41,7 @@ function stars() {
 function titleScreen() {
   const t = $('#title');
   const saved = load();
-  t.innerHTML = `<div class="home"><div><div class="logo">WYRMBOUND</div><div class="sub">STARFALL</div></div><div><div class="tag2">Bond an Echo. Hunt the bones of fallen stars.</div><button class="btn go">${saved ? 'Continue' : 'Begin'}</button></div></div><div class="foot">Build 6 · Act IV: The Heart Ashore</div>`;
+  t.innerHTML = `<div class="home"><div><div class="logo">WYRMBOUND</div><div class="sub">STARFALL</div></div><div><div class="tag2">Bond an Echo. Hunt the bones of fallen stars.</div><button class="btn go">${saved ? 'Continue' : 'Begin'}</button></div></div><div class="foot">Build 6.1 · Act IV: The Heart Ashore</div>`;
   stars();
   $('#title .go').onclick = () => {
     audioInit((saved || { settings: { sound: true, music: true } }).settings); audioResume(); sfx('quest'); playTrack('theme'); prefetchTrack(saved && saved.region === 'dunes' ? 'dunes' : 'verge');
@@ -78,6 +79,12 @@ function makeLook(existing, cls) {
 }
 
 function start(returning) {
+  const a = document.activeElement;
+  if (a && /INPUT|TEXTAREA/.test(a.tagName)) { a.blur(); setTimeout(() => boot(returning), 350); return; }
+  boot(returning);
+}
+
+function boot(returning) {
   const v = view();
   ui = new UI(st);
   const t = $('#title'); t.style.transition = 'opacity .6s'; t.style.opacity = '0'; setTimeout(() => t.remove(), 650);
@@ -97,11 +104,19 @@ function start(returning) {
     ui.show();
     game.scene.add('world', WorldScene, true, { ui, state: st, TS: v.TS, Z: v.Z, dpr: v.dpr, onReady });
   });
-  addEventListener('resize', () => {
-    const n = view(); v.W = n.W; v.H = n.H;
-    game.scale.resize(Math.round(n.W * v.dpr), Math.round(n.H * v.dpr)); fit();
-    const w = game.scene.getScene('world'); if (w && w.cameras) w.setZoom(n.Z, v.dpr);
-  });
+  const sync = () => {
+    if (!game || !game.canvas) return;
+    const n = view(), cw = Math.round(n.W * v.dpr), ch = Math.round(n.H * v.dpr);
+    if (game.canvas.width === cw && game.canvas.height === ch && v.W === n.W && v.H === n.H) return;
+    v.W = n.W; v.H = n.H;
+    game.scale.resize(cw, ch); fit();
+    const w = game.scene.getScene('world'); if (w && w.cameras) { w.cameras.resize(cw, ch); w.setZoom(n.Z, v.dpr); }
+  };
+  addEventListener('resize', sync);
+  addEventListener('orientationchange', () => setTimeout(sync, 300));
+  addEventListener('focusout', () => setTimeout(sync, 350));
+  if (window.visualViewport) visualViewport.addEventListener('resize', sync);
+  setInterval(sync, 800);
   document.addEventListener('visibilitychange', () => { if (document.hidden) { save(st); audioSuspend(); } else audioResume(); });
   addEventListener('pagehide', () => save(st));
   document.addEventListener('pointerdown', audioResume, { passive: true });
