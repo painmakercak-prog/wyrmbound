@@ -1,4 +1,4 @@
-import { CALLINGS, ECHOES, SLOTS, RARITY, GEAR_NAMES, QUESTS, RANKS, CALLING_PORTRAIT, TREES, TREE_THEMES, TREE_ROW_REQ } from './data.js?v=6.1';
+import { CALLINGS, ECHOES, SLOTS, RARITY, GEAR_NAMES, QUESTS, RANKS, CALLING_PORTRAIT, TREES, TREE_THEMES, TREE_ROW_REQ, ORDERS } from './data.js?v=7';
 
 const KEY = 'starfall.save.v1';
 
@@ -18,6 +18,25 @@ export function load() {
 }
 export function save(st) { try { st.lastSeen = Date.now(); localStorage.setItem(KEY, JSON.stringify(st)); } catch (e) {} }
 export function wipe() { try { localStorage.removeItem(KEY); } catch (e) {} }
+
+export const dayKey = (d = new Date()) => d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate();
+export function rollDaily(st) {
+  const day = dayKey();
+  if (st.daily && st.daily.day === day) return false;
+  const avail = ['ult', 'quest'];
+  if (Object.values(st.gear).some(Boolean)) avail.push('forge');
+  if (Object.values(st.echoes).some(e => e.lvl < 30)) avail.push('echo');
+  if (st.q > QUESTS.findIndex(q => q.id === 'boss')) avail.push('tower');
+  if (st.bossKills > 0) avail.push('boss');
+  let h = 2166136261; for (const ch of day + ':' + (st.created || 0)) h = Math.imul(h ^ ch.charCodeAt(0), 16777619) >>> 0;
+  const pick = ['kill'];
+  while (pick.length < 3 && avail.length) { h = Math.imul(h ^ (h >>> 13), 1274126177) >>> 0; pick.push(avail.splice(h % avail.length, 1)[0]); }
+  st.daily = { day, list: pick.map(k => ({ k, n: ORDERS[k].n, p: 0, got: false })), bonus: false };
+  return true;
+}
+export const orderReward = st => ({ lumen: 50 + 30 * st.lvl, shards: 4 + Math.floor(st.lvl / 6) });
+export const ORDER_BONUS = { geodes: 1, shards: 8 };
+export const ordersClaimable = st => !!st.daily && (st.daily.list.some(o => o.p >= o.n && !o.got) || (!st.daily.bonus && st.daily.list.every(o => o.got)));
 
 export const xpNeed = l => Math.round(24 * Math.pow(l, 1.55) + 26);
 

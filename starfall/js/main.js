@@ -1,10 +1,10 @@
-import { CALLINGS, ART } from './data.js?v=6.1';
-import { fresh, load, save, offlineRewards } from './state.js?v=6.1';
-import { UI } from './ui.js?v=6.1';
-import { portraitCanvas, LOOKS, DEFAULT_LOOKS } from './art.js?v=6.1';
-import { creator } from './creator.js?v=6.1';
-import { WorldScene } from './world.js?v=6.1';
-import { audioInit, audioResume, audioSuspend, sfx, playTrack, prefetchTrack } from './audio.js?v=6.1';
+import { CALLINGS, ART } from './data.js?v=7';
+import { fresh, load, save, offlineRewards } from './state.js?v=7';
+import { UI } from './ui.js?v=7';
+import { portraitCanvas, LOOKS, DEFAULT_LOOKS } from './art.js?v=7';
+import { creator } from './creator.js?v=7';
+import { WorldScene } from './world.js?v=7';
+import { audioInit, audioResume, audioSuspend, sfx, playTrack, prefetchTrack } from './audio.js?v=7';
 
 const $ = s => document.querySelector(s);
 let game = null, ui = null, st = null;
@@ -41,7 +41,7 @@ function stars() {
 function titleScreen() {
   const t = $('#title');
   const saved = load();
-  t.innerHTML = `<div class="home"><div><div class="logo">WYRMBOUND</div><div class="sub">STARFALL</div></div><div><div class="tag2">Bond an Echo. Hunt the bones of fallen stars.</div><button class="btn go">${saved ? 'Continue' : 'Begin'}</button></div></div><div class="foot">Build 6.1 · Act IV: The Heart Ashore</div>`;
+  t.innerHTML = `<div class="home"><div><div class="logo">WYRMBOUND</div><div class="sub">STARFALL</div></div><div><div class="tag2">Bond an Echo. Hunt the bones of fallen stars.</div><button class="btn go">${saved ? 'Continue' : 'Begin'}</button>${saved ? `<div class="savec">${String(saved.name || 'Hunter').replace(/[&<>]/g, '')} · ${CALLINGS[saved.cls].name} · Level ${saved.lvl}</div>` : ''}</div></div><div class="foot">Build 7 · Daily Orders</div>`;
   stars();
   $('#title .go').onclick = () => {
     audioInit((saved || { settings: { sound: true, music: true } }).settings); audioResume(); sfx('quest'); playTrack('theme'); prefetchTrack(saved && saved.region === 'dunes' ? 'dunes' : 'verge');

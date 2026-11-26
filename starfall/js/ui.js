@@ -1,21 +1,24 @@
-import { CALLINGS, ECHOES, HATCHABLE, SLOTS, RARITY, CODEX, QUESTS, NPCS, BOUNTIES, ACTS, ART, REGIONS, ENEMIES, TOWER_LINES, RANKS, CALLING_PORTRAIT, TREES, TREE_THEMES, TREE_ROW_REQ } from './data.js?v=6.1';
-import { portraitCanvas, LOOKS, iconCanvas, echoCanvas, lumenCanvas, shardIconCanvas, geodeCanvas, composeLook, RANK_THEMES } from './art.js?v=6.1';
-import { heroStats, power, xpNeed, gearLine, upgradeCost, echoStats, echoLevelCost, EVOLVE_COST, ASCEND_COST, STAR_MAX, refineCost, refineNeed, save, wipe, rankIndex, portraitDef, portraitUnlocked, treeOf, treePoints, branchSpent, nodeDef, canLearn, respecCost } from './state.js?v=6.1';
-import { sfx, setMusic, audioResume } from './audio.js?v=6.1';
-import { creator } from './creator.js?v=6.1';
+import { CALLINGS, ECHOES, HATCHABLE, SLOTS, RARITY, CODEX, QUESTS, NPCS, BOUNTIES, ACTS, ART, REGIONS, ENEMIES, TOWER_LINES, RANKS, CALLING_PORTRAIT, TREES, TREE_THEMES, TREE_ROW_REQ, ORDERS } from './data.js?v=7';
+import { portraitCanvas, LOOKS, iconCanvas, echoCanvas, lumenCanvas, shardIconCanvas, geodeCanvas, composeLook, RANK_THEMES } from './art.js?v=7';
+import { heroStats, power, xpNeed, gearLine, upgradeCost, echoStats, echoLevelCost, EVOLVE_COST, ASCEND_COST, STAR_MAX, refineCost, refineNeed, save, wipe, rankIndex, portraitDef, portraitUnlocked, treeOf, treePoints, branchSpent, nodeDef, canLearn, respecCost, rollDaily, orderReward, ORDER_BONUS, ordersClaimable } from './state.js?v=7';
+import { sfx, setMusic, audioResume } from './audio.js?v=7';
+import { creator } from './creator.js?v=7';
 
 const $ = (s, r = document) => r.querySelector(s);
 const el = (tag, cls, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; };
 const fmt = n => n >= 1e6 ? (n / 1e6).toFixed(1) + 'M' : n >= 1e4 ? (n / 1e3).toFixed(1) + 'K' : String(Math.floor(n));
 const url = c => c.toDataURL('image/png');
 const esc = s => String(s).replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c]);
+const hexRgb = h => { const n = parseInt(h.slice(1), 16); return [n >> 16 & 255, n >> 8 & 255, n & 255]; };
+const mix = (a, b, f) => { const A = hexRgb(a), B = hexRgb(b); return `rgb(${A.map((v, i) => Math.round(v + (B[i] - v) * f)).join(',')})`; };
 
 const ICONS = {
   hero: '<svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg>',
   echoes: '<svg viewBox="0 0 24 24"><path d="M4 14c2-6 6-9 9-9 4 0 7 3 7 6 0 4-4 5-6 3"/><circle cx="16" cy="9" r="1"/><path d="M4 14c3 2 6 4 9 3"/></svg>',
   forge: '<svg viewBox="0 0 24 24"><path d="M4 15h11l3-4H8z"/><path d="M8 15v5h6v-5"/><path d="M14 4l2 4M18 3l-1 5M10 5l2 3"/></svg>',
   codex: '<svg viewBox="0 0 24 24"><path d="M5 4h10a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3z"/><path d="M5 17a3 3 0 0 1 3-3h10"/></svg>',
-  lodge: '<svg viewBox="0 0 24 24"><path d="M12 3c-3 3-3 7 0 10 3-3 3-7 0-10z"/><path d="M7 21h10M12 13v8"/></svg>'
+  lodge: '<svg viewBox="0 0 24 24"><path d="M12 3c-3 3-3 7 0 10 3-3 3-7 0-10z"/><path d="M7 21h10M12 13v8"/></svg>',
+  orders: '<svg viewBox="0 0 24 24"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V3h6v1M8.5 10l1.5 1.5 3-3M8.5 16l1.5 1.5 3-3"/></svg>'
 };
 
 export class UI {
@@ -26,24 +29,115 @@ export class UI {
     this.t = 0;
   }
 
-  attach(w) { this.w = w; this.buildSkills(); this.stats(); this.quest(); this.echoBtn(); }
+  attach(w) { this.w = w; this.buildSkills(); this.stats(); this.quest(); this.echoBtn(); this.regionLabel(); this.mmDraw(); this.dailyCheck(true); }
+
+  dailyCheck(quiet) { this.dailyT = 20; if (rollDaily(this.st) && !quiet) { this.toast('New Daily Orders are on the Lodge board'); save(this.st); } }
+  order(k, amt = 1) {
+    const d = this.st.daily; if (!d) return;
+    const o = d.list.find(o => o.k === k && o.p < o.n); if (!o) return;
+    o.p = Math.min(o.n, o.p + amt);
+    if (o.p >= o.n) { this.toast(`Order done: <b>${esc(ORDERS[k].name)}</b> · claim it in Orders`, true); sfx('pickup2'); }
+  }
+
+  regionLabel() {
+    const R = this.w.R, rn = $('#mm .rn');
+    rn.innerHTML = R.tower ? `${esc(R.name)}<small>Floor ${this.w.floor || this.st.tower.best + 1}</small>` : `${esc(R.name)}<small>Lv ${esc(R.lvl.replace(' to ', '–'))}</small>`;
+  }
+  goalPos() {
+    const w = this.w; if (!w || !w.hero || w.R.tower) return null;
+    const g = w.goalFor(); if (!g) return null;
+    if (g.x != null) return { x: g.x, y: g.y - 30, kind: g.travel ? 'travel' : g.npc ? 'npc' : 'place' };
+    if (g.boss) { const b = w.boss && !w.boss.dead ? w.boss : null; const a = w.P.arena; return b ? { x: b.x, y: b.y, kind: 'boss' } : a ? { x: a.x, y: a.y, kind: 'boss' } : null; }
+    if (g.hunt) { const sp = w.R.spawns.find(s => s.type === g.hunt); if (sp) return { x: sp.x, y: sp.y, kind: 'hunt', r: sp.r }; }
+    return null;
+  }
+  mmDraw() {
+    const w = this.w; if (!w || !w.hero) return;
+    const c = this.mmC, x = this.mmX, S = c.width, R = w.R, h = w.hero;
+    const span = R.tower ? 1300 : 1100, k = S / span, cx = S / 2, cy = S / 2;
+    const tx = X => cx + (X - h.x) * k, ty = Y => cy + (Y - h.y) * k;
+    const t = performance.now() / 1000;
+    x.setTransform(1, 0, 0, 1, 0, 0); x.clearRect(0, 0, S, S);
+    x.fillStyle = '#03080c'; x.fillRect(0, 0, S, S);
+    x.fillStyle = mix(R.bg, '#ffffff', .16); x.fillRect(tx(0), ty(0), R.w * k, R.h * k);
+    x.lineCap = 'round'; x.lineJoin = 'round';
+    x.strokeStyle = mix(R.bg, '#fff2d8', .5); x.lineWidth = 80 * k;
+    for (const p of R.paths || []) { x.beginPath(); p.forEach(([X, Y], i) => i ? x.lineTo(tx(X), ty(Y)) : x.moveTo(tx(X), ty(Y))); x.stroke(); }
+    if (R.tower) { x.strokeStyle = 'rgba(255,230,160,.35)'; x.lineWidth = 3; x.beginPath(); x.arc(tx(R.places.arena.x), ty(R.places.arena.y), 420 * k, 0, 7); x.stroke(); }
+    if (R.silent) { x.fillStyle = 'rgba(160,170,180,.18)'; x.beginPath(); x.arc(tx(R.silent.x), ty(R.silent.y), R.silent.r * k, 0, 7); x.fill(); }
+    const sp = R.places.spire;
+    if (sp && !R.tower) { const X = tx(sp.x), Y = ty(sp.y - 20); x.fillStyle = '#5ff2d0'; x.strokeStyle = '#03141a'; x.lineWidth = 2; x.beginPath(); x.moveTo(X, Y - 9); x.lineTo(X + 6, Y); x.lineTo(X, Y + 9); x.lineTo(X - 6, Y); x.closePath(); x.fill(); x.stroke(); }
+    const q = QUESTS[this.st.q];
+    for (const id in w.npcs) {
+      const n = w.npcs[id]; if (!n.c.visible) continue;
+      const on = q && q.kind === 'talk' && q.npc === id && (q.region || 'verge') === this.st.region;
+      x.fillStyle = on ? '#ffcf5a' : '#e8d9b0'; x.strokeStyle = '#1a1206'; x.lineWidth = 1.5;
+      x.beginPath(); x.arc(tx(n.x), ty(n.y), on ? 5 : 3.2, 0, 7); x.fill(); x.stroke();
+    }
+    for (const e of w.enemies) {
+      if (e.dead) continue;
+      const X = tx(e.x), Y = ty(e.y); if (X < -8 || Y < -8 || X > S + 8 || Y > S + 8) continue;
+      if (e.D.boss) { x.fillStyle = '#ff8ab8'; x.strokeStyle = '#2a0614'; x.lineWidth = 2; x.beginPath(); x.arc(X, Y, 7 + Math.sin(t * 6), 0, 7); x.fill(); x.stroke(); }
+      else if (e.D.object) { x.fillStyle = '#9ff6ff'; x.fillRect(X - 3.5, Y - 3.5, 7, 7); }
+      else { x.fillStyle = e.aggro ? '#ff5a6e' : '#d8485a'; x.beginPath(); x.arc(X, Y, 2.8, 0, 7); x.fill(); }
+    }
+    const g = this.goalPos();
+    if (g && g.kind !== 'boss') {
+      let X = tx(g.x), Y = ty(g.y); const dx = X - cx, dy = Y - cy, d = Math.hypot(dx, dy), lim = S / 2 - 10;
+      x.strokeStyle = '#ffcf5a'; x.fillStyle = '#ffcf5a';
+      if (d > lim) { const a = Math.atan2(dy, dx); X = cx + Math.cos(a) * lim; Y = cy + Math.sin(a) * lim; x.save(); x.translate(X, Y); x.rotate(a); x.beginPath(); x.moveTo(8, 0); x.lineTo(-5, -6); x.lineTo(-5, 6); x.closePath(); x.fill(); x.restore(); }
+      else { x.lineWidth = 2.5; x.globalAlpha = .6 + .4 * Math.sin(t * 5); x.beginPath(); x.arc(X, Y, g.kind === 'hunt' ? Math.max(8, Math.min(30, (g.r || 200) * k * .6)) : 7, 0, 7); x.stroke(); x.globalAlpha = 1; }
+    }
+    x.save(); x.translate(cx, cy); x.scale(h.facing || 1, 1);
+    x.fillStyle = '#5ff2ff'; x.strokeStyle = '#ffffff'; x.lineWidth = 2; x.shadowColor = '#5ff2ff'; x.shadowBlur = 8;
+    x.beginPath(); x.moveTo(9, 0); x.lineTo(-6, -6.5); x.lineTo(-3, 0); x.lineTo(-6, 6.5); x.closePath(); x.fill(); x.stroke();
+    x.restore();
+  }
+  goalPtr() {
+    const a = $('#goal'), w = this.w;
+    const g = (!w || !w.hero || w.hero.dead || this.cur || $('#modal.on')) ? null : this.goalPos();
+    if (!g || (g.kind === 'hunt' && Math.hypot(w.hero.x - g.x, w.hero.y - g.y) < (g.r || 200) + 160)) { a.classList.remove('on'); return; }
+    const cam = w.cameras.main, wv = cam.worldView, de = document.documentElement, W = de.clientWidth, H = de.clientHeight;
+    const sx = (g.x - wv.x) / wv.width * W, sy = (g.y - wv.y) / wv.height * H;
+    if (!this.goalBox || this.goalT <= 0) {
+      this.goalT = 1;
+      const bb = $('#boss.on'), top = Math.max($('#qt').getBoundingClientRect().bottom, $('#mm').getBoundingClientRect().bottom, bb ? bb.getBoundingClientRect().bottom : 0) + 26;
+      const bot = Math.min($('#skills').getBoundingClientRect().top, $('#left').getBoundingClientRect().top) - 26;
+      this.goalBox = { l: 30, r: W - 30, t: top, b: Math.max(top + 80, bot) };
+    }
+    const B = this.goalBox;
+    if (sx > B.l && sx < B.r && sy > B.t && sy < B.b) { a.classList.remove('on'); return; }
+    const cx = (B.l + B.r) / 2, cy = (B.t + B.b) / 2, dx = sx - cx, dy = sy - cy;
+    const kx = dx ? ((dx > 0 ? B.r : B.l) - cx) / dx : Infinity, ky = dy ? ((dy > 0 ? B.b : B.t) - cy) / dy : Infinity, kk = Math.min(kx, ky);
+    a.style.transform = `translate(${cx + dx * kk}px,${cy + dy * kk}px)`;
+    const an = Math.atan2(dy, dx), P = (r, o) => (15 + r * Math.cos(an + o)).toFixed(1) + ' ' + (15 + r * Math.sin(an + o)).toFixed(1);
+    $('path', a).setAttribute('d', `M${P(10, 0)} L${P(9, 2.45)} L${P(3, Math.PI)} L${P(9, -2.45)}Z`);
+    const m = Math.round(Math.hypot(w.hero.x - g.x, w.hero.y - g.y) / 30);
+    $('span', a).textContent = (g.kind === 'travel' ? 'Spire · ' : g.kind === 'boss' ? 'Waker · ' : '') + m + 'm';
+    a.classList.add('on');
+  }
 
   buildHud() {
     const hud = el('div'); hud.id = 'hud'; hud.hidden = true;
     hud.innerHTML = `
-      <div id="pc"><div class="av"><img alt=""></div><div class="lv">1</div><div class="bars"><div class="nm"></div><div class="bar hp" style="margin-top:4px"><b></b><i></i></div><div class="hpn"></div><div class="bar xp"><i></i></div></div></div>
-      <div id="res"><div class="pill" id="lumen"><img src="${this.lumenIcon}" alt="">0</div><div class="pill" id="shards"><img src="${this.shardIcon}" alt="">0</div><div class="pw">POWER <b>0</b></div></div>
+      <div id="pc"><div class="av"><img alt=""></div><div class="lv">1</div><div class="bars"><div class="nm"></div><div class="bar hp" style="margin-top:4px"><b></b><i></i></div><div class="sub"><span class="hpn"></span><span class="pw">POWER <b>0</b></span></div></div></div>
+      <div id="res"><div class="pill" id="lumen"><img src="${this.lumenIcon}" alt="">0</div><div class="pill" id="shards"><img src="${this.shardIcon}" alt="">0</div></div>
+      <button id="mm" aria-label="Map and travel"><div class="disc"><canvas width="184" height="184"></canvas></div><div class="rn"></div></button>
+      <div id="goal"><i><svg viewBox="0 0 30 30"><path d="M23 15 10 7.5 13 15 10 22.5z"/></svg></i><span></span></div>
+      <div id="xpb"><i></i></div>
       <button id="qt"><div class="k">Main · Act I <span>auto ▸</span></div><div class="t"></div><div class="g"></div></button>
       <div id="boss"><div class="n">The Thornmother</div><div class="bar"><i></i></div></div>
       <div id="skills"><button class="sk" id="sk0"><img alt=""><div class="cd"></div><div class="cdn"></div><div class="lb"></div></button><button class="sk" id="sk1"><img alt=""><div class="cd"></div><div class="cdn"></div><div class="lb"></div></button><button class="sk" id="sk2"><img alt=""><div class="cd"></div><div class="cdn"></div><div class="lb"></div></button><button id="ult"><img alt=""><div class="lb"></div></button></div>
       <div id="left"><button id="echob"><img alt=""><div class="cd sk" style="position:absolute;inset:0;width:auto;height:auto"></div><div class="lb"></div></button><button class="tog on" id="autob">AUTO</button><button class="tog on" id="askb">SKILLS</button></div>
-      <nav id="nav">${['hero', 'echoes', 'forge', 'codex', 'lodge'].map(k => `<button data-p="${k}">${ICONS[k]}<span>${k[0].toUpperCase() + k.slice(1)}</span><i class="dot"></i></button>`).join('')}</nav>`;
+      <nav id="nav">${['hero', 'echoes', 'forge', 'orders', 'codex', 'lodge'].map(k => `<button data-p="${k}">${ICONS[k]}<span>${k[0].toUpperCase() + k.slice(1)}</span><i class="dot"></i></button>`).join('')}</nav>`;
     document.body.appendChild(hud);
     for (const id of ['vignette', 'hurtfx', 'toasts', 'banner', 'sheetbg', 'dlgcatch']) if (!$('#' + id)) { const d = el('div'); d.id = id; document.body.appendChild(d); }
     const joy = el('div', null, '<div class="base"></div><div class="knob"></div>'); joy.id = 'joy'; document.body.appendChild(joy);
     const dlg = el('div', null, '<div class="por"></div><div class="who"></div><div class="ttl"></div><div class="tx"></div><div class="nx">TAP ▸</div>'); dlg.id = 'dlg'; document.body.appendChild(dlg);
     const sheet = el('div', null, '<div class="hd"><h2></h2><button class="x" aria-label="Close">✕</button></div><div class="bd"></div>'); sheet.id = 'sheet'; document.body.appendChild(sheet);
     const modal = el('div'); modal.id = 'modal'; document.body.appendChild(modal);
+    this.mmC = $('#mm canvas'); this.mmX = this.mmC.getContext('2d'); this.mmT = 0; this.goalT = 0;
+    $('#mm').onclick = () => { if (!this.w || this.w.R.tower) return this.toast('The Spire floor is the only map up here'); this.travelMenu(); };
     $('#qt').onclick = () => { this.st.auto = true; this.w.tapPoint = null; this.w.tapTarget = null; this.w.manualUntil = 0; this.autoBtn(); sfx('ui'); };
     $('#autob').onclick = () => { this.st.auto = this.st.auto === false; this.autoBtn(); sfx('ui'); if (this.st.auto) this.w.manualUntil = 0; };
     $('#askb').onclick = () => { this.st.settings.autoSkill = !this.st.settings.autoSkill; this.autoBtn(); sfx('ui'); };
@@ -110,10 +204,10 @@ export class UI {
     $('#pc .hp i').style.width = (100 * Math.max(0, h.hp) / h.hpMax) + '%';
     $('#pc .hp b').style.width = (100 * Math.min(1, (Math.max(0, h.hp) + this.w.shield) / h.hpMax)) + '%';
     $('#pc .hpn').textContent = `${Math.max(0, Math.ceil(h.hp))} / ${h.hpMax}`;
-    $('#pc .xp i').style.width = (100 * st.xp / xpNeed(st.lvl)) + '%';
+    $('#xpb i').style.width = (100 * st.xp / xpNeed(st.lvl)) + '%';
     $('#lumen').lastChild.textContent = fmt(st.lumen);
     $('#shards').lastChild.textContent = fmt(st.shards);
-    $('#res .pw b').textContent = fmt(power(st));
+    $('#pc .pw b').textContent = fmt(power(st));
     const canForge = Object.values(st.gear).some(g => g && st.lumen >= upgradeCost(g));
     const e = st.activeEcho && st.echoes[st.activeEcho];
     const es = e && echoStats(st, st.activeEcho);
@@ -121,6 +215,7 @@ export class UI {
     if (this.cur !== 'forge') $('#nav button[data-p="forge"]').classList.toggle('new', canForge);
     if (this.cur !== 'echoes') $('#nav button[data-p="echoes"]').classList.toggle('new', !!canEcho);
     if (this.cur !== 'hero') $('#nav button[data-p="hero"]').classList.toggle('new', treePoints(st) > 0);
+    if (this.cur !== 'orders') $('#nav button[data-p="orders"]').classList.toggle('new', ordersClaimable(st));
   }
   skills() { this.t = 1; }
   lumenBump() { const p = $('#lumen'); p.classList.remove('bump'); void p.offsetWidth; p.classList.add('bump'); this.stats(); }
@@ -131,7 +226,8 @@ export class UI {
     for (let i = 0; i < 3; i++) { const cd = w.cds[i], tot = C.skills[i].cd; $(`#sk${i} .cd`).style.setProperty('--p', (cd > 0 ? 100 * cd / tot : 0) + '%'); $(`#sk${i} .cdn`).textContent = cd > 0 ? Math.ceil(cd) : ''; }
     const u = $('#ult'); u.style.setProperty('--r', w.res + '%'); u.classList.toggle('ready', w.res >= 100);
     if (w.echo) { const tot = ECHOES[w.echo.id].skill.cd; $('#echob .cd').style.setProperty('--p', (w.echoCd > 0 ? 100 * w.echoCd / tot : 0) + '%'); }
-    this.stats();
+    this.stats(); this.mmDraw(); this.goalT -= .08; this.goalPtr();
+    this.dailyT -= .08; if (this.dailyT <= 0) this.dailyCheck();
   }
 
   quest() {
@@ -142,7 +238,7 @@ export class UI {
       $('.k', b).firstChild.textContent = 'Ossivar\u2019s Spire ';
       $('.t', b).textContent = 'Floor ' + (this.w.floor || 1);
       $('.g', b).innerHTML = this.w.towerState === 'fight' ? `Enemies left <b>${left}</b> · Best ${st.tower.best}` : `Best floor <b>${st.tower.best}</b>`;
-      this.hintNav(null);
+      this.hintNav(null); this.regionLabel();
     } else if (q) {
       $('.k', b).firstChild.textContent = 'Main · Act ' + ['I', 'II', 'III', 'IV', 'V'][(q.act || 1) - 1] + ' ';
       $('.t', b).textContent = q.title;
@@ -172,6 +268,7 @@ export class UI {
   bossBar(e) {
     const b = $('#boss');
     if (!e || e.dead) { b.classList.remove('on'); return; }
+    if (!b.classList.contains('on')) this.goalT = 0;
     b.classList.add('on'); $('.n', b).textContent = e.D.name + '  ·  Lv ' + e.lvl; $('.bar i', b).style.width = (100 * Math.max(0, e.hp) / e.hpMax) + '%';
   }
 
@@ -229,8 +326,8 @@ export class UI {
     this.cur = p; sfx('ui');
     $(`#nav button[data-p="${p}"]`).classList.remove('new');
     for (const b of document.querySelectorAll('#nav button')) b.classList.toggle('act', b.dataset.p === p);
-    $('#sheet h2').textContent = { hero: 'Hero', echoes: 'Echoes', forge: 'Forge', codex: 'Codex', lodge: 'Beacon Lodge' }[p];
-    this.render();
+    $('#sheet h2').textContent = { hero: 'Hero', echoes: 'Echoes', forge: 'Forge', orders: 'Daily Orders', codex: 'Codex', lodge: 'Beacon Lodge' }[p];
+    this.render(); $('#sheet .bd').scrollTop = 0;
     $('#sheet').classList.add('on'); $('#sheetbg').classList.add('on'); document.body.classList.add('sheet-open');
   }
   close() {
@@ -245,14 +342,14 @@ export class UI {
     const tabs = el('div', 'tabs');
     for (const [k, n] of [['over', 'Overview'], ['tree', 'Talents'], ['look', 'Appearance']]) {
       const b = el('button', (this.heroTab || 'over') === k ? 'on' : '', n + (k === 'tree' && treePoints(this.st) ? ` <i class="badge">${treePoints(this.st)}</i>` : ''));
-      b.onclick = () => { this.heroTab = k; sfx('ui'); this.render(); }; tabs.appendChild(b);
+      b.onclick = () => { this.heroTab = k; sfx('ui'); this.render(); $('#sheet .bd').scrollTop = 0; }; tabs.appendChild(b);
     }
     bd.appendChild(tabs);
     const tab = this.heroTab || 'over';
     if (tab === 'tree') return this.p_tree(bd);
     if (tab === 'look') return this.p_look(bd);
     const st = this.st, C = CALLINGS[st.cls], s = heroStats(st), ri = rankIndex(st.lvl), R = RANKS[ri], nx = RANKS[ri + 1];
-    const top = el('div', 'hero-top', `<div class="hp-av" style="border-color:${(RANKS.find(r => r.id === st.frame) || R).color}"><img src="${this.portrait('you')}" alt=""></div><div class="grow"><div class="n">${esc(st.name || C.name)}</div><div class="r">${C.name} · Rank ${R.n} ${R.name}</div><div class="p">Level ${st.lvl} · Power ${fmt(power(st))}</div></div>`);
+    const top = el('div', 'hero-top', `<div class="hp-av" style="border-color:${(RANKS.find(r => r.id === st.frame) || R).color}"><img src="${this.portrait('you')}" alt=""></div><div class="grow"><div class="n">${esc(st.name || C.name)}</div><div class="r">${C.name} · Rank ${R.n} ${R.name}</div><div class="p">Level ${st.lvl} · Power ${fmt(power(st))}</div><div class="bar xp hxp"><i style="width:${100 * st.xp / xpNeed(st.lvl)}%"></i></div><div class="small muted">${fmt(st.xp)} / ${fmt(xpNeed(st.lvl))} XP to level ${st.lvl + 1}</div></div>`);
     const rn = el('button', 'btn ghost small', 'Rename'); rn.onclick = () => this.renameModal(); top.appendChild(rn);
     bd.appendChild(top);
     bd.appendChild(el('div', 'card small rankcard', `<b class="d" style="color:${R.color}">Ascension Rank ${R.n}: ${R.name}</b><div class="muted">${nx ? `Next: <b>${nx.name}</b> at level ${nx.lvl}. Unlocks a portrait, a frame and ${esc(nx.permText.toLowerCase())}.` : 'Highest rank reached.'}</div>`));
@@ -355,9 +452,9 @@ export class UI {
         <div class="stats"><div class="stat"><div class="k">Echo attack</div><div class="v">${Math.round(S.atk)}</div></div><div class="stat"><div class="k">${esc(D.skill.name)}</div><div class="small">${esc(D.skill.desc)}</div></div></div>
         <div class="row" style="margin-top:12px"></div>`);
       const row = $('.row', card);
-      if (e.lvl < cap) { const b = el('button', 'btn grow', `Level up · <span class="c"><img src="${this.shardIcon}" alt="">${cost}</span>`); b.disabled = st.shards < cost; b.onclick = () => { st.shards -= cost; e.lvl++; sfx('level'); this.stats(); this.render(); }; row.appendChild(b); }
-      else if (S.evo === 0) { const b = el('button', 'btn gold grow', `Evolve to Recall · <span class="c"><img src="${this.shardIcon}" alt="">${EVOLVE_COST}</span>`); b.disabled = st.shards < EVOLVE_COST; b.onclick = () => { st.shards -= EVOLVE_COST; e.evo = 1; sfx('hatch'); this.w.setEcho(id); this.evolveModal(id); this.render(); this.stats(); }; row.appendChild(b); }
-      else if (S.evo === 1) { const b = el('button', 'btn gold grow', `Ascend · <span class="c"><img src="${this.shardIcon}" alt="">${ASCEND_COST}</span>`); b.disabled = st.shards < ASCEND_COST; b.onclick = () => { st.shards -= ASCEND_COST; e.evo = 2; sfx('hatch'); this.w.setEcho(id); this.evolveModal(id, true); this.render(); this.stats(); }; row.appendChild(b); }
+      if (e.lvl < cap) { const b = el('button', 'btn grow', `Level up · <span class="c"><img src="${this.shardIcon}" alt="">${cost}</span>`); b.disabled = st.shards < cost; b.onclick = () => { st.shards -= cost; e.lvl++; sfx('level'); this.order('echo'); this.stats(); this.render(); }; row.appendChild(b); }
+      else if (S.evo === 0) { const b = el('button', 'btn gold grow', `Evolve to Recall · <span class="c"><img src="${this.shardIcon}" alt="">${EVOLVE_COST}</span>`); b.disabled = st.shards < EVOLVE_COST; b.onclick = () => { st.shards -= EVOLVE_COST; e.evo = 1; sfx('hatch'); this.order('echo'); this.w.setEcho(id); this.evolveModal(id); this.render(); this.stats(); }; row.appendChild(b); }
+      else if (S.evo === 1) { const b = el('button', 'btn gold grow', `Ascend · <span class="c"><img src="${this.shardIcon}" alt="">${ASCEND_COST}</span>`); b.disabled = st.shards < ASCEND_COST; b.onclick = () => { st.shards -= ASCEND_COST; e.evo = 2; sfx('hatch'); this.order('echo'); this.w.setEcho(id); this.evolveModal(id, true); this.render(); this.stats(); }; row.appendChild(b); }
       else row.appendChild(el('div', 'muted small', 'Fully remembered, for now.'));
       bd.appendChild(card);
       bd.appendChild(el('div', 'small muted', `Memory shards: <b>${st.shards}</b>. They drop from hunts and quests.`)).style.marginTop = '8px';
@@ -416,7 +513,7 @@ export class UI {
         info.innerHTML = `<div class="n r${g.rar}">${esc(g.name)}${g.up ? ' +' + g.up : ''}</div><div class="s">${esc(gearLine(sl.id, g))} → <b style="color:var(--green)">${esc(gearLine(sl.id, nx))}</b></div>`;
         r.appendChild(info);
         const b = el('button', 'btn', `<span class="c"><img src="${this.lumenIcon}" alt="">${cost}</span>`); b.disabled = st.lumen < cost;
-        b.onclick = () => { st.lumen -= cost; g.up = (g.up || 0) + 1; this.w.refreshStats(false); sfx('gear'); this.w.onUiEvent('forge'); this.render(); this.stats(); };
+        b.onclick = () => { st.lumen -= cost; g.up = (g.up || 0) + 1; this.w.refreshStats(false); sfx('gear'); this.w.onUiEvent('forge'); this.order('forge'); this.render(); this.stats(); };
         r.appendChild(b);
       } else { info.innerHTML = `<div class="n muted">${sl.name}</div><div class="s">Nothing to upgrade yet.</div>`; r.appendChild(info); }
       bd.appendChild(r);
@@ -433,6 +530,28 @@ export class UI {
       if (!maxed) { const b = el('button', 'btn', `<span class="c"><img src="${this.shardIcon}" alt="">${cost}</span>`); b.disabled = !ready || st.shards < cost; b.onclick = () => { st.shards -= cost; g.star = star + 1; this.w.refreshStats(false); sfx('hatch'); this.render(); this.stats(); }; r.appendChild(b); }
       bd.appendChild(r);
     }
+  }
+
+  p_orders(bd) {
+    const st = this.st; rollDaily(st);
+    const d = st.daily, rw = orderReward(st), now = new Date(), mid = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+    const mins = Math.max(1, Math.round((mid - now) / 60000)), left = mins >= 60 ? `${Math.floor(mins / 60)}h ${mins % 60}m` : `${mins}m`;
+    bd.appendChild(el('div', 'card row', `<img src="${this.portrait('marr')}" style="width:52px;height:52px;border-radius:12px;object-fit:cover;flex:none" alt=""><div class="grow"><b class="d">Lodge board</b><div class="small muted">Three jobs a day from Captain Marr. New orders in <b>${left}</b>.</div></div>`));
+    const lum = n => `<span class="c"><img src="${this.lumenIcon}" alt="">${fmt(n)}</span>`, sh = n => `<span class="c"><img src="${this.shardIcon}" alt="">${n}</span>`;
+    for (const o of d.list) {
+      const O = ORDERS[o.k], done = o.p >= o.n;
+      const c = el('div', 'card ord' + (o.got ? ' got' : done ? ' ready' : ''), `<div class="row"><img class="oi" src="${this.icon(O.icon, o.got ? 0x5d7480 : done ? 0xffcf5a : 0x5ff2ff)}" alt=""><div class="grow"><b class="d">${esc(O.name)}</b><div class="small muted">${esc(O.goal.replace('{n}', o.n))}</div><div class="orw small">${lum(rw.lumen)} ${sh(rw.shards)}</div></div></div><div class="prog"><i style="width:${100 * o.p / o.n}%"></i></div><div class="opn small">${o.p} / ${o.n}</div>`);
+      const b = el('button', 'btn' + (done && !o.got ? ' gold' : ' ghost'), o.got ? 'Claimed' : done ? 'Claim' : 'In progress');
+      b.disabled = o.got || !done;
+      b.onclick = () => { if (o.got || o.p < o.n) return; o.got = true; st.lumen += rw.lumen; st.shards += rw.shards; sfx('quest'); this.lumenBump(); save(st); this.render(); };
+      $('.row', c).appendChild(b); bd.appendChild(c);
+    }
+    const all = d.list.every(o => o.got);
+    const bc = el('div', 'card row ord bonus' + (d.bonus ? ' got' : all ? ' ready' : ''), `<img src="${this.geodeIcon}" style="width:52px;height:44px;flex:none" alt=""><div class="grow"><b class="d">All three</b><div class="small muted">Claim every order today for a bonus.</div><div class="orw small"><span class="c"><img src="${this.geodeIcon}" alt="">${ORDER_BONUS.geodes} geode</span> ${sh(ORDER_BONUS.shards)}</div></div>`);
+    const bb = el('button', 'btn' + (all && !d.bonus ? ' gold' : ' ghost'), d.bonus ? 'Claimed' : `${d.list.filter(o => o.got).length}/3`);
+    bb.disabled = d.bonus || !all;
+    bb.onclick = () => { if (d.bonus || !d.list.every(o => o.got)) return; d.bonus = true; st.geodes += ORDER_BONUS.geodes; st.shards += ORDER_BONUS.shards; sfx('hatch'); this.dotNav('echoes'); save(st); this.stats(); this.render(); this.toast('A Lumen geode from the Lodge. Hatch it in Echoes.'); };
+    bc.appendChild(bb); bd.appendChild(bc);
   }
 
   p_codex(bd) {
@@ -473,7 +592,7 @@ export class UI {
     const rs = el('button', 'btn ghost', 'Start over'); rs.style.marginTop = '16px'; rs.style.width = '100%';
     rs.onclick = () => { if (rs.dataset.c) { wipe(); location.reload(); } else { rs.dataset.c = 1; rs.textContent = 'Tap again to erase your save'; rs.style.color = 'var(--red)'; } };
     bd.appendChild(rs);
-    bd.appendChild(el('div', 'small muted', 'Wyrmbound: Starfall · build 4. Engine: Phaser (MIT). Font: Chakra Petch (OFL). Art: Grok and drawn in code. Music: made with Suno.')).style.marginTop = '14px';
+    bd.appendChild(el('div', 'small muted', 'Wyrmbound: Starfall · build 7. Engine: Phaser (MIT). Font: Chakra Petch (OFL). Art: Grok and drawn in code. Music: made with Suno.')).style.marginTop = '14px';
   }
 
   actEnd(n = 1) {

@@ -619,6 +619,16 @@ export const ACTS = {
 };
 export const ACT_END = ACTS[1];
 
+export const ORDERS = {
+  kill: { name: 'Clear the field', goal: 'Defeat {n} enemies', n: 80, icon: 'cleave' },
+  ult: { name: 'Let it ring', goal: 'Unleash your Resonance {n} times', n: 6, icon: 'starbreaker' },
+  quest: { name: 'Lodge business', goal: 'Finish {n} quests or bounties', n: 2, icon: 'lance' },
+  forge: { name: 'Keep Sparks busy', goal: 'Upgrade gear {n} times at the Forge', n: 3, icon: 'weapon' },
+  echo: { name: 'Feed the bond', goal: 'Level up or evolve an Echo {n} times', n: 2, icon: 'echo' },
+  tower: { name: 'Climb', goal: 'Clear {n} floors of Ossivar\u2019s Spire', n: 3, icon: 'tower' },
+  boss: { name: 'Wake-breaker', goal: 'Defeat a Waker or Spire guardian', n: 1, icon: 'eclipse' }
+};
+
 export const BOUNTIES = [
   { id: 'b1', enemy: 'shardling', count: 15, lumen: 60, shards: 2, minLvl: 1 },
   { id: 'b2', enemy: 'glowmoth', count: 15, lumen: 110, shards: 3, minLvl: 4 },
