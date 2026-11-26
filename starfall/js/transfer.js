@@ -1,4 +1,4 @@
-import { CALLINGS } from './data.js?v=7.3';
+import { CALLINGS } from './data.js?v=8';
 
 const KEY = 'starfall.save.v1';
 const enc = s => { let r = ''; for (const b of new TextEncoder().encode(s)) r += String.fromCharCode(b); return btoa(r); };

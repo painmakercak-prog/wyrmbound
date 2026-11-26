@@ -1,6 +1,6 @@
-import { CALLINGS, NAMES } from './data.js?v=7.3';
-import { composeLook, drawChar, DEFAULT_LOOKS, SKINS, HAIR_COLORS, LOOK_NAMES } from './art.js?v=7.3';
-import { sfx } from './audio.js?v=7.3';
+import { CALLINGS, NAMES } from './data.js?v=8';
+import { composeLook, drawChar, DEFAULT_LOOKS, SKINS, HAIR_COLORS, LOOK_NAMES } from './art.js?v=8';
+import { sfx } from './audio.js?v=8';
 
 const el = (tag, cls, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; };
 export const cleanName = s => String(s || '').replace(/[^A-Za-z0-9 '\-.]/g, '').replace(/\s+/g, ' ').trim().slice(0, 16);
