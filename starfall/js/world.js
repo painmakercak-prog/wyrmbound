@@ -1,13 +1,13 @@
-import { CALLINGS, ENEMIES, REGIONS, NPCS, ECHOES, QUESTS, SLOTS, RARITY, CODEX, BOUNTIES, TOWER_POOL, TOWER_GUARDS, GEAR_NAMES, IDLE } from './data.js?v=5.1';
-import { buildArt, ANCHORS, heroCanvas } from './art.js?v=5.1';
-import { heroStats, echoStats, xpNeed, makeGear, rollRarity, gearValue, save, rankIndex } from './state.js?v=5.1';
-import { sfx, duck, playTrack } from './audio.js?v=5.1';
+import { CALLINGS, ENEMIES, REGIONS, NPCS, ECHOES, QUESTS, SLOTS, RARITY, CODEX, BOUNTIES, TOWER_POOL, TOWER_GUARDS, GEAR_NAMES, IDLE } from './data.js?v=6';
+import { buildArt, ANCHORS, heroCanvas } from './art.js?v=6';
+import { heroStats, echoStats, xpNeed, makeGear, rollRarity, gearValue, save, rankIndex } from './state.js?v=6';
+import { sfx, duck, playTrack } from './audio.js?v=6';
 
 const dist = (a, b, c, d) => Math.hypot(c - a, d - b);
 const rnd = (a, b) => a + Math.random() * (b - a);
 const ri = (a, b) => Math.floor(rnd(a, b + 1));
 
-const HIT = { thornmother: [60, 120], marrowking: [110, 210], choir: [110, 240] };
+const HIT = { thornmother: [60, 120], marrowking: [110, 210], choir: [110, 240], firstcaptain: [70, 150] };
 const hy = e => (HIT[e.type] || [16, 44])[0];
 const topY = e => (HIT[e.type] || [16, 44])[1];
 
@@ -97,7 +97,7 @@ export class WorldScene extends Phaser.Scene {
     g.setDepth(-1e6);
     const tint = (x, y, r, col, a, mode = 'ADD') => { const s = this.add.image(x, y, 'soft').setScale(r / 32).setTint(col).setAlpha(a).setBlendMode(mode); s.setDepth(-9e5); return s; };
     this.tall = [];
-    const placeProp = (key, x, y, s = 1, flip = false) => { const [ax, ay] = ANCHORS[key] || [.5, .9]; const p = this.img(x, y, key, ax, ay, s); if (flip) p.setFlipX(true); p.setDepth(y); if (/^tree|^rib|^spire|^rig|^mesa|^cage/.test(key)) this.tall.push(p); return p; };
+    const placeProp = (key, x, y, s = 1, flip = false) => { const [ax, ay] = ANCHORS[key] || [.5, .9]; const p = this.img(x, y, key, ax, ay, s); if (flip) p.setFlipX(true); p.setDepth(y); if (/^tree|^rib|^spire|^rig|^mesa|^cage|^bigheart|^mill|^vaultdoor/.test(key)) this.tall.push(p); return p; };
     for (const PATH of R.paths) for (let i = 0; i < PATH.length - 1; i++) {
       const [ax, ay] = PATH[i], [bx, by] = PATH[i + 1], n = Math.ceil(dist(ax, ay, bx, by) / 24);
       for (let k = 0; k < n; k++) { const t = k / n; const d = this.img(ax + (bx - ax) * t + rnd(-6, 6), ay + (by - ay) * t + rnd(-4, 4), R.path, .5, .5, rnd(1.1, 1.5)); d.setDepth(-8e5); d.setAlpha(i < 2 && R === REGIONS.verge && PATH === R.paths[0] ? 0 : 1); }
@@ -108,7 +108,7 @@ export class WorldScene extends Phaser.Scene {
     tint(P.spire.x, P.spire.y, 180, 0x9ff6ff, .18);
     const R0 = (() => { let a = 1234; return () => { a = (a * 16807) % 2147483647; return a / 2147483647; }; })();
     this.caustic = null;
-    if (this.R.tower) this.buildTower(tint, placeProp, R0); else if (this.st.region === 'dunes') this.buildDunes(tint, placeProp, R0); else if (this.st.region === 'lattice') this.buildLattice(tint, placeProp, R0); else this.buildVerge(tint, placeProp, R0);
+    if (this.R.tower) this.buildTower(tint, placeProp, R0); else if (this.st.region === 'dunes') this.buildDunes(tint, placeProp, R0); else if (this.st.region === 'lattice') this.buildLattice(tint, placeProp, R0); else if (this.st.region === 'heartstrand') this.buildHeartstrand(tint, placeProp, R0); else this.buildVerge(tint, placeProp, R0);
   }
 
   buildVerge(tint, placeProp, R) {
@@ -169,6 +169,37 @@ export class WorldScene extends Phaser.Scene {
     if (this.st.q > QUESTS.findIndex(q => q.id === 'ii_dig')) { this.chained.setVisible(false); ch.setVisible(false); }
     for (let i = 0; i < 12; i++) { const a = rnd(Math.PI * 1.05, Math.PI * 1.95), rr = rnd(260, 340); placeProp('mesa', P.arena.x + Math.cos(a) * rr, P.arena.y + Math.sin(a) * rr * .7, rnd(.9, 1.3), R() < .5); }
     for (let i = 0; i < 10; i++) { const a = rnd(0, Math.PI * 2), rr = rnd(60, Z.r - 20); placeProp('rock', Z.x + Math.cos(a) * rr, Z.y + Math.sin(a) * rr * .8, rnd(.9, 1.3)).setTint(0x8a8e94); }
+    this.door = null; this.geodeGlow = null;
+  }
+
+  buildHeartstrand(tint, placeProp, R) {
+    const P = this.P, PATHS = this.R.paths, W = this.R.w;
+    const sea = this.add.graphics().setDepth(-8.6e5);
+    for (let i = 0; i < 14; i++) { sea.fillStyle(0x0a1a2a, .95 - i * .06); sea.fillRect(0, 0, W, 300 - i * 6); }
+    const foam = this.add.graphics().setDepth(-8.55e5); foam.lineStyle(3, 0xd8e8f0, .45);
+    foam.beginPath(); foam.moveTo(0, 230); for (let x = 0; x <= W; x += 40) foam.lineTo(x, 226 + Math.sin(x / 70) * 10); foam.strokePath();
+    this.tweens.add({ targets: foam, y: 10, alpha: .5, duration: 2400, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
+    for (const [x, y, sx, sy] of [[380, 1500, 2.2, 1.4], [330, 1250, 1.6, 2.2], [300, 980, 1.6, 2.4], [280, 700, 1.7, 2.4], [300, 430, 2, 2.2]]) { const p = this.img(x, y, 'pool', .5, .5, 1).setScale(this.sx('pool') * sx, this.sx('pool') * sy).setTint(0x8ab8d8).setAlpha(.85).setDepth(-8.6e5); this.tweens.add({ targets: p, alpha: .65, duration: rnd(1800, 2600), yoyo: true, repeat: -1 }); }
+    tint(1000, 2600, 300, 0xffb870, .14); tint(1000, 1640, 420, 0x4ab8ff, .16); tint(1000, 420, 420, 0x0a0a1a, .4, 'NORMAL'); tint(1600, 640, 160, 0xffcf5a, .12);
+    const heart = placeProp('bigheart', P.core.x, P.core.y + 110, 1.5);
+    const hg = this.img(P.core.x, P.core.y - 20, 'heartglow', .5, .5, 3.2).setBlendMode('ADD').setAlpha(.25).setDepth(P.core.y + 111);
+    const beat = () => { if (!hg.scene) return; this.tweens.add({ targets: [hg], alpha: .55, duration: 120, yoyo: true, onComplete: () => this.time.delayedCall(140, () => { if (hg.scene) this.tweens.add({ targets: hg, alpha: .45, duration: 120, yoyo: true }); }) }); this.tweens.add({ targets: heart, scaleX: heart.scaleX * 1.02, scaleY: heart.scaleY * 1.025, duration: 120, yoyo: true }); };
+    this.time.addEvent({ delay: 1600, loop: true, callback: beat });
+    const okSpot = (x, y, pad) => y > 320 && distToPath(PATHS, x, y) > pad && dist(x, y, 1000, 2600) > 280 && dist(x, y, P.core.x, P.core.y) > 300 && dist(x, y, P.arena.x, P.arena.y) > 280 && Object.keys(P).every(k => ['start', 'arrive', 'spire', 'arena', 'core'].includes(k) || dist(x, y, P[k].x, P[k].y) > 110);
+    for (let i = 0, n = 0; i < 500 && n < 46; i++) { const x = rnd(-20, 2020), y = rnd(320, 2740); if (!okSpot(x, y, 80)) continue; placeProp(R() < .6 ? 'drift' : 'rock', x, y, rnd(.8, 1.3), R() < .5).setTint(0xb0b4ba); n++; }
+    for (let i = 0, n = 0; i < 400 && n < 22; i++) { const x = rnd(20, 1980), y = rnd(320, 2700); if (!okSpot(x, y, 90)) continue; placeProp('crystal', x, y, rnd(.7, 1.1), R() < .5); n++; }
+    for (let i = 0, n = 0; i < 300 && n < 18; i++) { const x = rnd(20, 1980), y = rnd(320, 1200); if (!okSpot(x, y, 60)) continue; placeProp('kelp', x, y, rnd(.8, 1.1), R() < .5).setTint(0x8ab8a8); n++; }
+    for (let x = 120; x < 2000; x += 260) placeProp('rib', x + rnd(-40, 40), 300 + rnd(-20, 20), rnd(1.6, 2.1), x > 1000).setTint(0x8a8e98);
+    for (const [x, y] of [[860, 2690], [1150, 2690], [770, 2600], [1240, 2620]]) placeProp('tent', x, y, rnd(.85, 1)).setTint(0xc8ccd4);
+    this.campfire = placeProp('fire', 1000, 2630, 1.1);
+    const fl = this.add.image(1000, 2610, 'soft').setTint(0xffa040).setBlendMode('ADD').setScale(3).setAlpha(.45).setDepth(2631); this.tweens.add({ targets: fl, alpha: .7, scale: 3.4, duration: 260, yoyo: true, repeat: -1 });
+    for (const [x, y] of [[820, 2490], [1180, 2490], [1560, 1440], [640, 1080], [1000, 1310]]) { placeProp('lamp', x, y, 1); const l = this.add.image(x, y - 80, 'soft').setTint(0xffcf8a).setBlendMode('ADD').setScale(2.2).setAlpha(.4).setDepth(y + 1); this.tweens.add({ targets: l, alpha: .6, duration: rnd(900, 1500), yoyo: true, repeat: -1 }); }
+    placeProp('crate', 720, 2660, 1); placeProp('crate', 744, 2684, .9); placeProp('crate', 1290, 2700, .9);
+    placeProp('cone', P.nose.x + 40, P.nose.y - 40, 1.2);
+    placeProp('vaultdoor', P.vault.x + 30, P.vault.y - 70, 1.1);
+    placeProp('mill', P.mill.x - 20, P.mill.y - 60, 1.1);
+    placeProp('marker', P.marker.x - 30, P.marker.y - 30, 1.1);
+    for (let i = 0; i < 6; i++) placeProp('rock', P.canyon.x - 80 + rnd(-60, 20), P.canyon.y + rnd(-140, 140), rnd(1.4, 2), R() < .5).setTint(0x8a7a6a);
     this.door = null; this.geodeGlow = null;
   }
 
@@ -358,8 +389,8 @@ export class WorldScene extends Phaser.Scene {
     if (at) { x = at.x; y = at.y; }
     const lvl = sp.lvl || ri(D.lvl[0], D.lvl[1]);
     const c = this.add.container(x, y);
-    const shadow = this.img(0, 0, 'shadow', .5, .5, D.boss ? ({ marrowking: 5.2, choir: 5.6 }[sp.type] || 4.4) : D.radius / 16);
-    const key = sp.type === 'glowmoth' ? 'moth' : sp.type;
+    const shadow = this.img(0, 0, 'shadow', .5, .5, D.boss ? ({ marrowking: 5.2, choir: 5.6, firstcaptain: 2.6 }[sp.type] || 4.4) : D.radius / 16);
+    const key = sp.type === 'glowmoth' ? 'moth' : sp.type === 'firstcaptain' ? 'captain' : sp.type;
     const parts = [shadow];
     let wl, wr;
     if (sp.type === 'glowmoth') {
@@ -367,10 +398,12 @@ export class WorldScene extends Phaser.Scene {
       const gl = this.add.image(0, -28, 'soft').setTint(0xc58bff).setBlendMode('ADD').setAlpha(.4).setScale(1.3);
       parts.push(gl, wl, wr);
     }
-    const fly = ['glowmoth', 'sdrone', 'skimmer', 'leech'].includes(sp.type);
+    const fly = ['glowmoth', 'sdrone', 'skimmer', 'leech', 'archivist'].includes(sp.type);
     const body = this.img(0, fly ? -14 : 0, key, .5, fly ? .9 : .95);
     if (sp.type === 'marrowking') { body.setOrigin(.56, .93); }
+    if (sp.type === 'firstcaptain') { const g = this.add.image(0, -70, 'soft').setTint(0x5ff2ff).setBlendMode('ADD').setAlpha(.35).setScale(5); parts.push(g); }
     parts.push(body);
+    if (sp.type === 'firstcaptain') { body.setScale(this.sx('captain') * 2.5).setTint(0xcff6ff); body.keepScale = true; const rf = this.img(26, -60, 'c_rifle', .3, .5, 2).setTint(0xcff6ff); parts.push(rf); }
     c.add(parts);
     const hpMul = sp.hpMul || (D.boss ? 1 : (1 + .2 * (lvl - 1))), atkMul = sp.atkMul || (D.boss ? 1 : (1 + .13 * (lvl - 1)));
     const bar = this.add.graphics().setDepth(4.4e5);
@@ -474,6 +507,7 @@ export class WorldScene extends Phaser.Scene {
   }
   bestHunt() {
     const l = this.st.lvl;
+    if (this.st.region === 'heartstrand') return l >= 38 ? 'dredger' : l >= 36 ? 'archivist' : 'mauler';
     if (this.st.region === 'lattice') return l >= 28 ? 'leech' : l >= 26 ? 'husker' : 'skitter';
     if (this.st.region === 'dunes') return l >= 18 ? 'sdrone' : l >= 16 ? 'hound' : 'skimmer';
     return l >= 9 ? 'crawler' : l >= 5 ? 'glowmoth' : 'shardling';
@@ -499,7 +533,7 @@ export class WorldScene extends Phaser.Scene {
     this.halo.setPosition(h.x, h.y - 26).setDepth(h.y + 2).setAlpha(this.shield > 0 ? .55 + Math.sin(this.now * 6) * .15 : 0);
     let mvx = 0, mvy = 0;
     const speed = C.speed;
-    const tele = this.teles.find(t => !t.done && !t.friendlyOnly && dist(h.x, h.y, t.x, t.y) < t.r + 12);
+    const tele = this.teles.find(t => !t.done && !t.friendlyOnly && !t.noDodge && dist(h.x, h.y, t.x, t.y) < t.r + 12);
     if (this.joy && this.joy.moved) {
       const m = Math.hypot(this.joy.dx, this.joy.dy) || 1; mvx = this.joy.dx / m; mvy = this.joy.dy / m;
       this.tapPoint = null; this.tapTarget = null; this.manualUntil = this.now + 2.2;
@@ -519,8 +553,8 @@ export class WorldScene extends Phaser.Scene {
           if (!h.target || h.target.dead) h.target = this.nearestEnemy(h.x, h.y, 3000);
           if (!h.target) goal = { x: this.P.arena.x, y: this.P.arena.y + 160 };
         } else if (G.boss) {
-          const b = this.enemies.find(e => e.D.boss && !e.dead);
-          if (b) h.target = b; else { h.target = this.nearestEnemy(h.x, h.y, 90, e => e.aggro); if (!h.target) goal = { x: this.P.arena.x, y: this.P.arena.y + 120 }; }
+          const b = this.enemies.find(e => e.D.boss && !e.dead), bc = this.enemies.find(e => e.D.object && !e.dead);
+          if (bc) h.target = bc; else if (b) h.target = b; else { h.target = this.nearestEnemy(h.x, h.y, 90, e => e.aggro); if (!h.target) goal = { x: this.P.arena.x, y: this.P.arena.y + 120 }; }
         } else if (G.hunt) {
           if (!h.target || h.target.dead || (h.target.type !== G.hunt && !h.target.aggro)) h.target = this.nearestEnemy(h.x, h.y, 2000, e => e.type === G.hunt) || this.nearestEnemy(h.x, h.y, 120, e => e.aggro);
           if (!h.target) { const sp = this.R.spawns.find(s => s.type === G.hunt) || this.R.spawns[0]; goal = { x: sp.x, y: sp.y }; }
@@ -643,7 +677,7 @@ export class WorldScene extends Phaser.Scene {
     this.num(e.x + rnd(-8, 8), e.y - topY(e), crit ? dmg + '!' : '' + dmg, crit ? '#ffcf5a' : (color || '#ffffff'), crit ? 22 : 16, crit);
     this.burstE.setParticleTint(crit ? 0xffcf5a : 0x9ff6ff); this.burstE.explode(crit ? 10 : 5, e.x, e.y - hy(e));
     if (crit) this.cameras.main.shake(90, .0025);
-    if (!e.D.boss) { const a = Math.atan2(e.y - this.hero.y, e.x - this.hero.x); e.x += Math.cos(a) * 4; e.y += Math.sin(a) * 3; }
+    if (!e.D.boss && !e.D.object) { const a = Math.atan2(e.y - this.hero.y, e.x - this.hero.x); e.x += Math.cos(a) * 4; e.y += Math.sin(a) * 3; }
     sfx(crit ? 'crit' : 'hit');
     if (e.hp <= 0) this.kill(e);
     else if (e.D.boss) this.ui.bossBar(e);
@@ -692,8 +726,9 @@ export class WorldScene extends Phaser.Scene {
   }
 
   kill(e) {
+    if (e.D.object) { e.dead = true; e.bar.destroy(); if (e.tele) e.tele.cancel = true; this.ring(e.x, e.y - 20, 0x9ff6ff, 1.6); this.num(e.x, e.y - 70, 'Beacon destroyed', '#9ff6ff', 14); sfx('pickup2'); this.tweens.add({ targets: e, alpha: 0, duration: 200, onComplete: () => e.destroy() }); this.enemies = this.enemies.filter(x => x !== e); return; }
     e.dead = true; e.bar.destroy();
-    this.shardE.setParticleTint({ glowmoth: 0xd9a8ff, crawler: 0xff8ab8, skimmer: 0xfff0d8, hound: 0xff8a4a, sdrone: 0xff5a3a, marrowking: 0xffcf8a, thornmother: 0xff8ab8, skitter: 0x7fc8ff, husker: 0x9fd8ff, leech: 0xbfe8ff, choir: 0x7fc8ff }[e.type] || 0x9ff6ff);
+    this.shardE.setParticleTint({ glowmoth: 0xd9a8ff, crawler: 0xff8ab8, skimmer: 0xfff0d8, hound: 0xff8a4a, sdrone: 0xff5a3a, marrowking: 0xffcf8a, thornmother: 0xff8ab8, skitter: 0x7fc8ff, husker: 0x9fd8ff, leech: 0xbfe8ff, choir: 0x7fc8ff, mauler: 0x9ff6ff, archivist: 0xe8fbff, dredger: 0x5ff2ff, firstcaptain: 0x9ff6ff }[e.type] || 0x9ff6ff);
     this.shardE.explode(e.D.boss ? 40 : 10, e.x, e.y - 16);
     e.body.setTintFill(0xffffff);
     this.tweens.add({ targets: e, alpha: 0, scaleX: e.scaleX * 1.25, scaleY: e.scaleY * .6, duration: 260, onComplete: () => e.destroy() });
@@ -1006,6 +1041,7 @@ export class WorldScene extends Phaser.Scene {
   }
   updateTeles(dt) {
     for (const t of this.teles) {
+      if (t.cancel) { t.done = true; t.g.destroy(); continue; }
       t.t -= dt; const k = 1 - Math.max(0, t.t) / t.max;
       t.g.clear(); t.g.fillStyle(t.col, .16 + k * .14); t.g.fillEllipse(t.x, t.y, t.r * 2, t.r * 1.5); t.g.lineStyle(2, t.col, .9); t.g.strokeEllipse(t.x, t.y, t.r * 2, t.r * 1.5);
       t.g.fillStyle(t.col, .35); t.g.fillEllipse(t.x, t.y, t.r * 2 * k, t.r * 1.5 * k);
@@ -1023,7 +1059,8 @@ export class WorldScene extends Phaser.Scene {
     for (const e of this.enemies) {
       if (e.dead) continue;
       e.t += dt; e.cd -= dt; e.flash -= dt; e.stun = Math.max(0, e.stun - dt); e.slow = Math.max(0, e.slow - dt);
-      if (e.flash > 0) { if (e.D.boss) e.body.setTint(0xffc8c8); else e.body.setTintFill(0xffffff); } else if (!e.keepTint) e.body.clearTint();
+      if (e.D.object) { this.updateBeacon(e, dt); continue; }
+      if (e.flash > 0) { if (e.D.boss) e.body.setTint(0xffc8c8); else e.body.setTintFill(0xffffff); } else if (e.type === 'firstcaptain') e.body.setTint(0xcff6ff); else if (!e.keepTint && !e.chargeT) e.body.clearTint();
       const D = e.D, sp = D.spd * (e.slow > 0 ? .5 : 1) * (D.boss && e.hp < e.hpMax * .25 ? 1.3 : 1);
       const dh = dist(e.x, e.y, h.x, h.y);
       let mvx = 0, mvy = 0;
@@ -1044,13 +1081,22 @@ export class WorldScene extends Phaser.Scene {
         if (e.wt <= 0) { e.wt = rnd(2, 5); const a = rnd(0, Math.PI * 2); e.wander = { x: e.home.x + Math.cos(a) * rnd(10, 70), y: e.home.y + Math.sin(a) * rnd(10, 50) }; }
         if (e.wander) { const d = dist(e.x, e.y, e.wander.x, e.wander.y); if (d > 4) { mvx = (e.wander.x - e.x) / d * .4; mvy = (e.wander.y - e.y) / d * .4; } else e.wander = null; }
       }
+      if (D.charge && e.state === 'chase' && !h.dead && !e.stun) {
+        e.chargeCd = (e.chargeCd ?? rnd(1, 3)) - dt;
+        if (e.chargeT > 0) {
+          e.chargeT -= dt;
+          if (e.chargeT > .38) { mvx = 0; mvy = 0; e.body.setTint(0xffd0a0); e.body.x = Math.sin(e.t * 60) * 1.5; }
+          else { if (!e.dashDir) { const d = dist(e.x, e.y, h.x, h.y) || 1; e.dashDir = { x: (h.x - e.x) / d, y: (h.y - e.y) / d }; e.body.clearTint(); } mvx = e.dashDir.x * 5; mvy = e.dashDir.y * 5; if (!e.hitDone && dist(e.x, e.y, h.x, h.y) < 44) { e.hitDone = true; this.hurtHero(e.atk * 1.4); this.cameras.main.shake(120, .004); } }
+          if (e.chargeT <= 0) { e.chargeT = 0; e.dashDir = null; e.hitDone = false; e.chargeCd = rnd(4, 6); e.body.x = 0; }
+        } else if (e.chargeCd <= 0 && dh > 70 && dh < 240) { e.chargeT = 1; this.num(e.x, e.y - 70, '!', '#ffb070', 18); }
+      }
       if (!D.boss) for (const o of this.enemies) { if (o === e || o.dead) continue; const d = dist(e.x, e.y, o.x, o.y); if (d < 26 && d > 0) { mvx += (e.x - o.x) / d * .5; mvy += (e.y - o.y) / d * .5; } }
       e.x += mvx * sp * dt; e.y += mvy * sp * dt;
       this.animEnemy(e, dt, Math.abs(mvx) + Math.abs(mvy) > .05, mvx);
       e.setDepth(e.y);
       e.bar.clear();
       if (!D.boss && e.hp < e.hpMax) {
-        const w = 34, y = e.y - ({ glowmoth: 66, skimmer: 52, sdrone: 66, hound: 56, husker: 82, leech: 64, skitter: 52 }[e.type] || 50);
+        const w = 34, y = e.y - ({ glowmoth: 66, skimmer: 52, sdrone: 66, hound: 56, husker: 82, leech: 64, skitter: 52, mauler: 70, archivist: 104, dredger: 100 }[e.type] || 50);
         e.bar.fillStyle(0x061016, .85); e.bar.fillRoundedRect(e.x - w / 2 - 1, y - 1, w + 2, 6, 3);
         e.bar.fillStyle(0xff5a6e, 1); e.bar.fillRoundedRect(e.x - w / 2, y, Math.max(2, w * e.hp / e.hpMax), 4, 2);
       }
@@ -1069,6 +1115,10 @@ export class WorldScene extends Phaser.Scene {
     else if (e.type === 'skitter') { e.body.rotation = moving ? Math.sin(e.t * 26) * .07 : 0; e.body.x = moving ? Math.sin(e.t * 13) * 2 : 0; e.body.y = moving ? -Math.abs(Math.sin(e.t * 26)) * 1.2 : 0; }
     else if (e.type === 'husker') { e.body.rotation = moving ? Math.sin(e.t * 4) * .06 : Math.sin(e.t * 1.2) * .02; e.body.y = moving ? -Math.abs(Math.sin(e.t * 4)) * 2 : 0; }
     else if (e.type === 'leech') { e.body.y = -18 + Math.sin(e.t * 2.6) * 6; e.body.rotation = Math.sin(e.t * 3) * .12; e.body.scaleX = k * (1 + Math.sin(e.t * 6) * .05) * (e.body.flipX ? 1 : 1); }
+    else if (e.type === 'mauler') { e.body.y = moving ? -Math.abs(Math.sin(e.t * 7)) * 2.4 : Math.sin(e.t * 1.6) * .6; e.body.rotation = moving ? Math.sin(e.t * 7) * .04 : 0; }
+    else if (e.type === 'archivist') { e.body.y = -20 + Math.sin(e.t * 2.2) * 5; e.body.rotation = Math.sin(e.t * 1.4) * .08; }
+    else if (e.type === 'dredger') { e.body.rotation = moving ? Math.sin(e.t * 5) * .08 : Math.sin(e.t * 1.2) * .03; e.body.y = moving ? -Math.abs(Math.sin(e.t * 5)) * 2 : 0; }
+    else if (e.type === 'firstcaptain') { e.body.y = moving ? -Math.abs(Math.sin(e.t * 6)) * 3 : Math.sin(e.t * 1.4) * 1.2; e.body.alpha = .82 + Math.sin(e.t * 3) * .1; const rf = e.list.find(o => o.texture && o.texture.key === 'c_rifle'); if (rf) { const fx = e.body.flipX; rf.setFlipX(fx); rf.x = fx ? -26 : 26; rf.setOrigin(fx ? .7 : .3, .5); rf.y = -60 + e.body.y; } }
     else if (e.type === 'choir') { e.body.rotation = Math.sin(e.t * .9) * .03; if (e.body.scaleY > 0) e.body.scaleX = k * (1 + Math.sin(e.t * 1.6) * .015); }
     else if (e.type === 'marrowking') { if (!e.burrowed) { e.body.rotation = Math.sin(e.t * 1.4) * .05; e.body.scaleX = k * (1 + Math.sin(e.t * 2) * .02); } }
     else { e.body.setScale(k * (1 + Math.sin(e.t * 2) * .015), k * (1 + Math.sin(e.t * 2 + 1) * .02)); }
@@ -1077,6 +1127,12 @@ export class WorldScene extends Phaser.Scene {
   enemyAttack(e) {
     const D = e.D, h = this.hero; e.cd = D.atkCd * rnd(.9, 1.15);
     if (D.ranged) {
+      if (D.shot === 'page' || D.shot === 'rifle') {
+        const rifle = D.shot === 'rifle';
+        e.body.setTintFill(rifle ? 0xffffff : 0x9ff6ff); this.time.delayedCall(90, () => e.body && (rifle ? e.body.setTint(0xcff6ff) : e.body.clearTint()));
+        this.time.delayedCall(rifle ? 180 : 250, () => { if (!e.dead) this.proj({ x: e.x + (rifle ? (e.body.flipX ? 40 : -40) : 0), y: e.y - (rifle ? 70 : 44), toHero: true, key: 'pageshot', spd: rifle ? 420 : 300, dmg: e.atk * (rifle ? .7 : 1), tint: rifle ? 0xcff6ff : 0x5ff2ff, life: 2.2, scale: rifle ? 1.4 : 1 }); });
+        return;
+      }
       const red = D.shot === 'red', blue = D.shot === 'blue';
       e.body.setTintFill(red ? 0xff6a4a : blue ? 0x9fe0ff : 0xff8ac8); this.time.delayedCall(90, () => e.body && e.body.clearTint());
       this.time.delayedCall(250, () => { if (!e.dead) this.proj({ x: e.x, y: e.y - (red ? 30 : 40), toHero: true, key: red ? 'redshot' : blue ? 'blueshot' : 'spore', spd: red ? 300 : blue ? 260 : 230, dmg: e.atk, tint: red ? 0xff4a3a : blue ? 0x7fc8ff : 0xff6ab0, life: 2, drain: blue ? 8 : 0 }); });
@@ -1084,12 +1140,13 @@ export class WorldScene extends Phaser.Scene {
     }
     const lunge = Math.atan2(h.y - e.y, h.x - e.x);
     this.tweens.add({ targets: e.body, x: Math.cos(lunge) * (D.boss ? 16 : 8), duration: 110, yoyo: true });
-    this.time.delayedCall(110, () => { if (!e.dead && !h.dead && dist(e.x, e.y, h.x, h.y) < D.range + 30 + (D.boss ? 40 : 0)) { this.hurtHero(e.atk); if (D.boss) this.cameras.main.shake(140, .004); } });
+    this.time.delayedCall(110, () => { if (!e.dead && !h.dead && dist(e.x, e.y, h.x, h.y) < D.range + 30 + (D.boss ? 40 : 0)) { this.hurtHero(e.atk); if (D.boss) this.cameras.main.shake(140, .004); if (D.steal && (this.shield > 0 || this.veilT > 0 || this.overT > 0 || this.critShots > 0)) { this.shield = 0; this.shieldT = 0; this.veilT = 0; h.body.setAlpha(1); this.overT = 0; this.critShots = 0; this.num(h.x, h.y - 96, 'Buffs stolen', '#5ff2ff', 14); } } });
   }
 
   bossLogic(e, dt) {
     if (e.type === 'marrowking') return this.marrowLogic(e, dt);
     if (e.type === 'choir') return this.choirLogic(e, dt);
+    if (e.type === 'firstcaptain') return this.captainLogic(e, dt);
     e.special -= dt;
     const h = this.hero, frac = e.hp / e.hpMax;
     if (!e.broodA && frac < .6) { e.broodA = true; this.brood(e); }
@@ -1122,6 +1179,42 @@ export class WorldScene extends Phaser.Scene {
 
   sandBurst(x, y, n = 12) {
     for (let i = 0; i < n; i++) { const p = this.img(x + rnd(-40, 40), y + rnd(-10, 10), 'sandpuff', .5, .5, rnd(1, 2)).setDepth(y + 20); this.tweens.add({ targets: p, x: p.x + rnd(-60, 60), y: p.y - rnd(10, 50), alpha: 0, scale: p.scale * 1.8, duration: rnd(500, 900), onComplete: () => p.destroy() }); }
+  }
+
+  captainLogic(e, dt) {
+    e.special -= dt;
+    const h = this.hero, frac = e.hp / e.hpMax;
+    if (!e.broodA && frac < .5) { e.broodA = true; this.brood(e, 'archivist', .5, 'Old orders wake'); }
+    if (e.beacon && e.beacon.dead) e.beacon = null;
+    if (e.special > 0 || h.dead) return;
+    e.special = frac < .3 ? 3.8 : 4.8;
+    e.alt = ((e.alt || 0) + 1) % 3;
+    if (e.alt === 1) {
+      this.num(e.x, e.y - 190, 'Chest pulses', '#9ff6ff', 16);
+      for (const d of [0, 480]) this.time.delayedCall(d, () => { if (!e.dead) { this.ring(e.x, e.y - 70, 0x9ff6ff, 1.8); sfx('spike'); } });
+      const t = this.addTele(e.x, e.y, 210, 1.4, 0x9ff6ff);
+      t.onHit = tt => { this.ring(tt.x, tt.y - 30, 0xffffff, 4.4); this.num(tt.x, tt.y - 200, 'FORM UP!', '#ffffff', 18, true); this.cameras.main.shake(260, .007); sfx('boss'); if (!h.dead && dist(h.x, h.y, tt.x, tt.y) < tt.r + 6) this.hurtHero(e.atk * 1.8); };
+    } else if (e.alt === 2) {
+      this.num(e.x, e.y - 190, 'Takes aim', '#ff9a7a', 16);
+      const a = Math.atan2(h.y - e.y, h.x - e.x), ox = e.x, oy = e.y; let hit = false;
+      for (let k = 1; k <= 11; k++) { const t = this.addTele(ox + Math.cos(a) * k * 56, oy + Math.sin(a) * k * 56, 34, 1.15, 0xff9a7a); t.onHit = tt => { if (k === 1) { this.beam(ox, oy - 60, ox + Math.cos(a) * 660, oy + Math.sin(a) * 660, 0xffd0c0, 7, 260); sfx('rail'); this.cameras.main.shake(120, .004); } if (!hit && !h.dead && dist(h.x, h.y, tt.x, tt.y) < tt.r + 8) { hit = true; this.hurtHero(e.atk * 2.1); } }; }
+    } else {
+      if (e.beacon) { e.special = .8; return; }
+      this.num(e.x, e.y - 190, 'Plants a beacon', '#ff7a6a', 16); sfx('skill');
+      const bx = Phaser.Math.Clamp(h.x + rnd(-110, 110), 60, this.R.w - 60), by = Phaser.Math.Clamp(h.y + rnd(-70, 70), 360, this.R.h - 60);
+      const b = this.spawnEnemy({ type: 'beacon', x: bx, y: by, r: 1, count: 0, boss: true, once: true }, { x: bx, y: by });
+      b.hpMax = b.hp = Math.round(e.hpMax * .035); b.fuse = 6; b.owner = e; b.aggro = true; e.beacon = b; b.lastSec = 7;
+      b.tele = this.addTele(bx, by, 220, 6, 0xff5a4a); b.tele.noDodge = true;
+      b.tele.onHit = tt => { if (b.dead) return; this.ring(bx, by - 20, 0xff5a4a, 5); this.cameras.main.shake(320, .009); sfx('bossdie'); if (!h.dead && dist(h.x, h.y, bx, by) < 226) this.hurtHero(e.atk * 2.8); if (!e.dead) { e.hp = Math.min(e.hpMax, e.hp + e.hpMax * .05); this.num(e.x, e.y - 210, 'Recalled', '#9ff6ff', 14); } b.dead = true; b.bar.destroy(); this.tweens.add({ targets: b, alpha: 0, duration: 200, onComplete: () => b.destroy() }); this.enemies = this.enemies.filter(x => x !== b); };
+    }
+  }
+  updateBeacon(e, dt) {
+    e.t += dt; e.fuse -= dt; e.flash -= dt;
+    e.body.setTint(e.flash > 0 ? 0xffffff : 0xffb0a0); e.body.y = Math.sin(e.t * 8) * 1.5;
+    const sec = Math.ceil(e.fuse); if (sec < e.lastSec && sec > 0) { e.lastSec = sec; this.num(e.x, e.y - 74, String(sec), '#ff7a6a', 18, true); sfx('tap'); }
+    e.setDepth(e.y); e.bar.clear();
+    const w = 40, y = e.y - 70; e.bar.fillStyle(0x061016, .85); e.bar.fillRoundedRect(e.x - w / 2 - 1, y - 1, w + 2, 6, 3); e.bar.fillStyle(0xff5a4a, 1); e.bar.fillRoundedRect(e.x - w / 2, y, Math.max(2, w * e.hp / e.hpMax), 4, 2);
+    if (this.hero.target === e) { e.bar.lineStyle(1.5, 0xffcf5a, .9); e.bar.strokeEllipse(e.x, e.y, 46, 16); }
   }
 
   choirLogic(e, dt) {
