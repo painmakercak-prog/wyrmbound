@@ -1,6 +1,6 @@
 # Wyrmbound: Starfall — Project Status
 
-Last updated: 2026-11-27 (build 8.1.1 shipped)
+Last updated: 2026-11-27 (build 8.2 shipped)
 
 Play it: https://painmakercak-prog.github.io/wyrmbound/starfall/
 Code: `starfall/` on `main`. Deploys go to the `gh-pages` branch under `/starfall/`.
@@ -31,6 +31,7 @@ Owner: Kasey. Code is written by Claude. Art comes from Grok, story from Muse, m
 | 8 | 2026-11-26 | Graphic overhaul slice: Glasswood Verge repainted with Muse's art (ground, dirt paths, glasswood trees, rocks, moss, bulbs, mushrooms, ribs, Landfall camp, the Spire, the Meridian hull, geode, roots and root door). Painted Railwarden from Grok's puppet parts, with 3 hair styles per sex and hair colour from Appearance. Painted Shardling, Glow-moth (flapping 4-wing rig) and Thorn-crawler. Railwarden effects: painted rail beam with muzzle flash and impact, Scatter Volley bolts, Recon Drone and Orbital Lance |
 | 8.1 | 2026-11-26 | Test mode in the Lodge: God mode (no damage, full health, 0.4s skill cooldowns, Resonance refills), One-hit kills, and buttons for +100K Lumen, +1K Memory, +10 Geodes, +5 Levels, Skip quest and Full heal. The HUD shows a GOD / 1-HIT tag while either is on. Remove or hide before launch |
 | 8.1.1 | 2026-11-27 | Fix: Skein's dialogue squeezed into one word per line and ran out of the box. Its text class clashed with the skill-button style |
+| 8.2 | 2026-11-27 | Polish pass from a screenshot audit of every screen at 375x667, 393x852 and 430x932. Quest banners, toasts and the boss bar no longer pile on top of each other. Skill and Echo labels get a dark backing so they read over the other buttons. The Frame picker fits on one row. Forge cost icons are the right size. Talent "Spend for me" no longer wraps. The Codex shows one "entries still hidden" line instead of 47 locked rows. On small phones the creator keeps Cancel and Begin pinned on screen. The creator and Appearance tab show the painted Railwarden, hide the options it can't use yet (face, body, gear, skin) and name the female styles correctly (Ponytail, Long, Bob) |
 
 ## In progress
 
@@ -47,7 +48,7 @@ Nothing. Build 7.1 is live. Open question for Kasey: art direction for the in-ga
 - [x] Graphic overhaul slice (Glasswood Verge, Railwarden, Shardling, Glow-moth, Thorn-crawler). Shipped in build 8.
 - [ ] Judge build 8 on the iPhone: if the painted Verge and Railwarden are the look, the next batches are the Verge NPCs (Marr, Sparks, Okafor), the Thornmother, the other 5 Callings, then the other regions.
 - [ ] Before launch: remove or hide the Lodge Test mode section (build 8.1).
-- [ ] Known gaps in the slice: the painted Railwarden ignores skin tone, face and body type, and the character creator and Hero portrait still show the old drawn version.
+- [ ] Known gaps in the slice: the painted Railwarden has one skin tone per sex (batch 2 asks Grok for 3), and no walk cycle yet.
 - [ ] Grok: Recruit rank portraits (male and female) so Rank I matches the others.
 - [ ] Try build 7 on the iPhone: does the minimap, the objective arrow and the Orders tab feel right? Are the daily rewards too small or too big?
 - [ ] Optional: Muse can write flavour names and lines for the Daily Orders (currently plain names like "Clear the field").
