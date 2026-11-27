@@ -1,0 +1,19 @@
+{
+  "name": "wyrmbound-starfall",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Wyrmbound: Starfall iOS app shell. The game itself lives in starfall/.",
+  "scripts": {
+    "sync": "cap sync ios"
+  },
+  "dependencies": {
+    "@capacitor/core": "8.6.3",
+    "@capacitor/haptics": "8.0.2",
+    "@capacitor/ios": "8.6.3",
+    "@capacitor/local-notifications": "8.3.1",
+    "@capacitor/preferences": "8.0.1"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "8.6.3"
+  }
+}

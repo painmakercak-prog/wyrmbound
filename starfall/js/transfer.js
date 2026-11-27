@@ -1,4 +1,5 @@
-import { CALLINGS } from './data.js?v=9';
+import { CALLINGS } from './data.js?v=10';
+import { nativeSet } from './native.js?v=10';
 
 const KEY = 'starfall.save.v1';
 const enc = s => { let r = ''; for (const b of new TextEncoder().encode(s)) r += String.fromCharCode(b); return btoa(r); };
@@ -38,7 +39,8 @@ export function pasteModal(m, onLoad) {
     const s = readCode(ta.value);
     if (!s) { err.textContent = 'That code did not work. Copy the whole code again and paste it here.'; return; }
     if (!ok.dataset.c) { ok.dataset.c = 1; ok.textContent = `Load ${esc(s.name || 'Hunter')}, Lv ${s.lvl}?`; return; }
-    try { localStorage.setItem(KEY, JSON.stringify(s)); } catch (e) { err.textContent = 'This device would not store the save.'; return; }
-    ta.blur(); onLoad(s);
+    const j = JSON.stringify(s);
+    try { localStorage.setItem(KEY, j); } catch (e) { err.textContent = 'This device would not store the save.'; return; }
+    ta.blur(); nativeSet(KEY, j).then(() => onLoad(s));
   };
 }

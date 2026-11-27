@@ -1,0 +1,10 @@
+node_modules/
+ios/App/App/public/
+ios/App/build/
+ios/DerivedData/
+*.xcarchive
+*.ipa
+*.p8
+*.p12
+*.mobileprovision
+.DS_Store

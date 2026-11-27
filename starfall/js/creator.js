@@ -1,7 +1,7 @@
-import { CALLINGS, NAMES } from './data.js?v=9';
-import { composeLook, drawChar, DEFAULT_LOOKS, SKINS, HAIR_COLORS, LOOK_NAMES } from './art.js?v=9';
-import { sfx } from './audio.js?v=9';
-import { heroPreview, PAINTED_CLS, PHAIR_NAMES } from './heroart.js?v=9';
+import { CALLINGS, NAMES } from './data.js?v=10';
+import { composeLook, drawChar, DEFAULT_LOOKS, SKINS, HAIR_COLORS, LOOK_NAMES } from './art.js?v=10';
+import { sfx } from './audio.js?v=10';
+import { heroPreview, PAINTED_CLS, PHAIR_NAMES } from './heroart.js?v=10';
 
 const el = (tag, cls, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; };
 export const cleanName = s => String(s || '').replace(/[^A-Za-z0-9 '\-.]/g, '').replace(/\s+/g, ' ').trim().slice(0, 16);

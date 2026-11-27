@@ -1,9 +1,11 @@
-import { CALLINGS, ECHOES, HATCHABLE, SLOTS, RARITY, CODEX, QUESTS, NPCS, BOUNTIES, ACTS, ART, REGIONS, ENEMIES, TOWER_LINES, RANKS, CALLING_PORTRAIT, TREES, TREE_THEMES, TREE_ROW_REQ, ORDERS } from './data.js?v=9';
-import { portraitCanvas, LOOKS, iconCanvas, echoCanvas, lumenCanvas, shardIconCanvas, geodeCanvas, composeLook, RANK_THEMES } from './art.js?v=9';
-import { heroStats, power, xpNeed, gearLine, upgradeCost, echoStats, echoLevelCost, EVOLVE_COST, ASCEND_COST, STAR_MAX, refineCost, refineNeed, save, wipe, rankIndex, portraitDef, portraitUnlocked, treeOf, treePoints, branchSpent, nodeDef, canLearn, respecCost, autoSpend, lockSaves, rollDaily, orderReward, ORDER_BONUS, ordersClaimable } from './state.js?v=9';
-import { sfx, setMusic, audioResume } from './audio.js?v=9';
-import { creator } from './creator.js?v=9';
-import { copyModal, pasteModal } from './transfer.js?v=9';
+import { CALLINGS, ECHOES, HATCHABLE, SLOTS, RARITY, CODEX, QUESTS, NPCS, BOUNTIES, ACTS, ART, REGIONS, ENEMIES, TOWER_LINES, RANKS, CALLING_PORTRAIT, TREES, TREE_THEMES, TREE_ROW_REQ, ORDERS } from './data.js?v=10';
+import { portraitCanvas, LOOKS, iconCanvas, echoCanvas, lumenCanvas, shardIconCanvas, geodeCanvas, composeLook, RANK_THEMES } from './art.js?v=10';
+import { heroStats, power, xpNeed, gearLine, upgradeCost, echoStats, echoLevelCost, EVOLVE_COST, ASCEND_COST, STAR_MAX, refineCost, refineNeed, save, wipe, rankIndex, portraitDef, portraitUnlocked, treeOf, treePoints, branchSpent, nodeDef, canLearn, respecCost, autoSpend, lockSaves, rollDaily, orderReward, ORDER_BONUS, ordersClaimable } from './state.js?v=10';
+import { sfx, setMusic, audioResume } from './audio.js?v=10';
+import { creator } from './creator.js?v=10';
+import { IS_APP, hasHaptics, hasNotes, setHaptics, askNotes } from './native.js?v=10';
+import { PRIVACY, PRIVACY_DATE } from './privacy.js?v=10';
+import { copyModal, pasteModal } from './transfer.js?v=10';
 
 const $ = (s, r = document) => r.querySelector(s);
 const el = (tag, cls, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; };
@@ -450,6 +452,12 @@ export class UI {
     bd.appendChild(box);
     creator(box, { cls: st.cls, look: st.look, name: st.name, mode: 'edit', onDone: (look, name) => { st.look = look; st.name = name; save(st); this.img = Object.fromEntries(Object.entries(this.img).filter(([k]) => !k.startsWith('pr_'))); this.hudId(); this.heroTab = 'over'; this.close(); this.w.restyle(); } });
   }
+  privacyModal() {
+    const m = $('#modal');
+    m.innerHTML = `<div class="box priv"><div class="k">Updated ${PRIVACY_DATE}</div><h3>Privacy policy</h3><div class="pbody">${PRIVACY.map(([h, t]) => `<b>${esc(h)}</b><p>${esc(t)}</p>`).join('')}</div><div class="row" style="justify-content:flex-end"><button class="btn">Close</button></div></div>`;
+    m.classList.add('on');
+    $('.btn', m).onclick = () => m.classList.remove('on');
+  }
   renameModal() {
     const st = this.st, m = $('#modal');
     m.innerHTML = `<div class="box"><div class="k">Beacon Lodge registry</div><h3>Rename</h3><div class="cre-name"><input type="text" maxlength="16" value="${esc(st.name || '')}" autocomplete="off" spellcheck="false"></div><div class="row" style="justify-content:center;gap:10px;margin-top:12px"><button class="btn ghost">Cancel</button><button class="btn gold">Save</button></div></div>`;
@@ -611,10 +619,13 @@ export class UI {
       bd.appendChild(c);
     }
     bd.appendChild(el('div', 'sec', 'Settings'));
-    const sw = (label, get, set) => { const r = el('div', 'set', `<span>${label}</span>`); const b = el('button', 'sw' + (get() ? ' on' : '')); b.setAttribute('aria-label', label); b.onclick = () => { set(!get()); b.classList.toggle('on', get()); sfx('ui'); }; r.appendChild(b); bd.appendChild(r); };
+    const sw = (label, get, set) => { const r = el('div', 'set', `<span>${label}</span>`); const b = el('button', 'sw' + (get() ? ' on' : '')); b.setAttribute('aria-label', label); b.onclick = () => { set(!get()); b.classList.toggle('on', get()); sfx('ui'); }; r.appendChild(b); bd.appendChild(r); return b; };
     sw('Sound effects', () => st.settings.sound, v => st.settings.sound = v);
     sw('Music', () => st.settings.music, v => { st.settings.music = v; setMusic(v); });
     sw('Auto skills', () => st.settings.autoSkill, v => { st.settings.autoSkill = v; this.autoBtn(); });
+    if (hasHaptics) sw('Vibration', () => st.settings.haptics !== false, v => { st.settings.haptics = v; setHaptics(v); save(st); });
+    if (hasNotes) { const nb = sw('Remind me when offline loot is full', () => !!st.settings.notes, v => { st.settings.notes = v; save(st); if (v) askNotes().then(ok => { if (!ok) { st.settings.notes = false; nb.classList.remove('on'); save(st); this.toast('Notifications are turned off for Starfall in iPhone Settings.', false); } }); }); }
+    if (!IS_APP) {
     bd.appendChild(el('div', 'sec', 'Test mode'));
     bd.appendChild(el('div', 'small muted', 'For the test phase. God mode: you take no damage, health stays full, skills recharge in 0.4s and Resonance refills on its own.'));
     sw('God mode', () => !!st.god, v => { st.god = v; this.stats(); save(st); });
@@ -624,6 +635,7 @@ export class UI {
       const b = el('button', 'btn ghost', label); b.onclick = () => { sfx('ui'); fn(); this.stats(); save(st); b.classList.remove('bump'); void b.offsetWidth; b.classList.add('bump'); }; tg.appendChild(b);
     }
     bd.appendChild(tg);
+    }
     bd.appendChild(el('div', 'sec', 'Move your save'));
     bd.appendChild(el('div', 'small muted', 'Safari and the Home Screen app keep separate saves. Copy a code here, then load it in the other one.'));
     const tr = el('div', 'row'); tr.style.gap = '10px'; tr.style.marginTop = '10px';
@@ -631,9 +643,10 @@ export class UI {
     const ldb = el('button', 'btn ghost grow', 'Load a save code'); ldb.onclick = () => { sfx('ui'); pasteModal($('#modal'), () => { lockSaves(); location.reload(); }); };
     tr.appendChild(cpb); tr.appendChild(ldb); bd.appendChild(tr);
     const rs = el('button', 'btn ghost', 'Start over'); rs.style.marginTop = '16px'; rs.style.width = '100%';
-    rs.onclick = () => { if (rs.dataset.c) { wipe(); location.reload(); } else { rs.dataset.c = 1; rs.textContent = 'Tap again to erase your save'; rs.style.color = 'var(--red)'; } };
+    rs.onclick = () => { if (rs.dataset.c) { Promise.resolve(wipe()).then(() => location.reload()); } else { rs.dataset.c = 1; rs.textContent = 'Tap again to erase your save'; rs.style.color = 'var(--red)'; } };
     bd.appendChild(rs);
-    bd.appendChild(el('div', 'small muted', 'Wyrmbound: Starfall · build 9. Engine: Phaser (MIT). Font: Chakra Petch (OFL). Art: Grok, drawn in code, and the Sci Fi Game UI collection by SunGraphica (GameDev Market). Music: made with Suno.')).style.marginTop = '14px';
+    const pv = el('button', 'btn ghost', 'Privacy policy'); pv.style.marginTop = '10px'; pv.style.width = '100%'; pv.onclick = () => { sfx('ui'); this.privacyModal(); }; bd.appendChild(pv);
+    bd.appendChild(el('div', 'small muted', 'Wyrmbound: Starfall · build 10. Engine: Phaser (MIT). Font: Chakra Petch (OFL). Art: Grok, drawn in code, and the Sci Fi Game UI collection by SunGraphica (GameDev Market). Music: made with Suno.')).style.marginTop = '14px';
   }
 
   actEnd(n = 1) {

@@ -1,0 +1,12 @@
+{
+  "appId": "com.painmakercak.starfall",
+  "appName": "Wyrmbound: Starfall",
+  "webDir": "starfall",
+  "backgroundColor": "#061017",
+  "ios": {
+    "contentInset": "never",
+    "backgroundColor": "#061017",
+    "scrollEnabled": false,
+    "allowsLinkPreview": false
+  }
+}

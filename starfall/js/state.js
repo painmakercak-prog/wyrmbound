@@ -1,6 +1,8 @@
-import { CALLINGS, ECHOES, SLOTS, RARITY, GEAR_NAMES, QUESTS, RANKS, CALLING_PORTRAIT, TREES, TREE_THEMES, TREE_ROW_REQ, ORDERS } from './data.js?v=9';
+import { CALLINGS, ECHOES, SLOTS, RARITY, GEAR_NAMES, QUESTS, RANKS, CALLING_PORTRAIT, TREES, TREE_THEMES, TREE_ROW_REQ, ORDERS } from './data.js?v=10';
 
-const KEY = 'starfall.save.v1';
+import { nativeSet, nativeRemove } from './native.js?v=10';
+
+export const KEY = 'starfall.save.v1';
 
 export function fresh(cls, look, name) {
   return {
@@ -18,8 +20,8 @@ export function load() {
 }
 let saveLocked = false;
 export const lockSaves = () => { saveLocked = true; };
-export function save(st) { if (saveLocked) return; try { st.lastSeen = Date.now(); localStorage.setItem(KEY, JSON.stringify(st)); } catch (e) {} }
-export function wipe() { saveLocked = true; try { localStorage.removeItem(KEY); } catch (e) {} }
+export function save(st) { if (saveLocked) return; try { st.lastSeen = Date.now(); const j = JSON.stringify(st); localStorage.setItem(KEY, j); nativeSet(KEY, j); } catch (e) {} }
+export function wipe() { saveLocked = true; try { localStorage.removeItem(KEY); } catch (e) {} return nativeRemove(KEY); }
 
 export const dayKey = (d = new Date()) => d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate();
 export function rollDaily(st) {

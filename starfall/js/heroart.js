@@ -1,4 +1,4 @@
-import { PA, RIG, PV } from './painted.js?v=9';
+import { PA, RIG, PV } from './painted.js?v=10';
 
 export const PAINTED_CLS = { railwarden: 'rw', vanguard: 'vg' };
 const PHAIR = { rw: { m: [0, 1, 2], f: [1, 2, 0] }, vg: { m: [0, 1, 2], f: [0, 1, 2] } };

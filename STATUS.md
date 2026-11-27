@@ -1,6 +1,6 @@
 # Wyrmbound: Starfall — Project Status
 
-Last updated: 2026-11-27 (build 9 shipped)
+Last updated: 2026-11-27 (build 10 shipped)
 
 Play it: https://painmakercak-prog.github.io/wyrmbound/starfall/
 Code: `starfall/` on `main`. Deploys go to the `gh-pages` branch under `/starfall/`.
@@ -33,6 +33,7 @@ Owner: Kasey. Code is written by Claude. Art comes from Grok, story from Muse, m
 | 8.1.1 | 2026-11-27 | Fix: Skein's dialogue squeezed into one word per line and ran out of the box. Its text class clashed with the skill-button style |
 | 8.2 | 2026-11-27 | Polish pass from a screenshot audit of every screen at 375x667, 393x852 and 430x932. Quest banners, toasts and the boss bar no longer pile on top of each other. Skill and Echo labels get a dark backing so they read over the other buttons. The Frame picker fits on one row. Forge cost icons are the right size. Talent "Spend for me" no longer wraps. The Codex shows one "entries still hidden" line instead of 47 locked rows. On small phones the creator keeps Cancel and Begin pinned on screen. The creator and Appearance tab show the painted Railwarden, hide the options it can't use yet (face, body, gear, skin) and name the female styles correctly (Ponytail, Long, Bob) |
 | 9 | 2026-11-27 | Art batch 2. Painted Vanguard (male and female) with 3 hairstyles each, hair colour, and 4 skin tones; the Railwarden gets the same 4 skin tones. Painted Vanguard effects: basic swipe, Arc Cleave, Bulwark hex flash plus a dome that stays up while the shield holds, Shockwave ring and ground crack, and Starbreaker falling star with a crater. Painted Marr, Sparks and Okafor (with her drone) in the Landfall camp. Painted Thornmother with idle motion and a stronger light, a dressed arena (root nest, root arches, thorn clusters, purple crystals), painted warning rings for her attacks, root spikes for Root Burst and a spore cloud for Brood Call |
+| 10 | 2026-11-27 | iPhone app prep. Capacitor iOS project in `ios/` (iPhone only, portrait, status bar hidden, privacy manifest, 1024 icon, launch splash). In the app: saves also go to native storage, vibration on key moments, optional offline-loot reminder, Test mode hidden. Privacy policy in the Lodge and at `starfall/privacy.html`. Manual GitHub Actions workflow builds on a macOS 26 runner and uploads to TestFlight once Kasey adds 4 secrets (see RELEASE.md). Fixed a rare error in the quest pointer while a region was still loading |
 
 ## In progress
 
@@ -48,7 +49,9 @@ Nothing. Build 7.1 is live. Open question for Kasey: art direction for the in-ga
 - [ ] Tell Claude if the tower or the Choir Below feels too easy or too hard.
 - [x] Graphic overhaul slice (Glasswood Verge, Railwarden, Shardling, Glow-moth, Thorn-crawler). Shipped in build 8.
 - [ ] Judge build 8 on the iPhone: if the painted Verge and Railwarden are the look, the next batches are the Verge NPCs (Marr, Sparks, Okafor), the Thornmother, the other 5 Callings, then the other regions.
-- [ ] Before launch: remove or hide the Lodge Test mode section (build 8.1).
+- [x] Test mode is hidden in the iPhone app (build 10); it stays on the web version.
+- [ ] iPhone release: Kasey enrolls in the Apple Developer Program, creates the app record and API key, and adds the 4 GitHub secrets (RELEASE.md). The cloud build hasn't been run yet.
+- [ ] Still needed for the App Store listing: support URL or email, screenshots, price and monetization decision, a sharper 1024 icon (the current one is upscaled from 512).
 - [ ] Known gaps: painted heroes slide instead of walking, face and body options are hidden for painted Callings, and the Hero tab portrait is still the old drawn one.
 - [ ] Walk cycle: Grok's 4 male Vanguard walk frames line up (upper body identical, only the legs move), so they can be wired in. There are no female or Railwarden walk frames yet.
 - [ ] Unused from batch 2: Grok's separate Thornmother parts and Muse's thorn bolt (no Thornmother attack shoots one yet).
