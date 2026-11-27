@@ -1,6 +1,7 @@
-import { CALLINGS, NAMES } from './data.js?v=8.1.1';
-import { composeLook, drawChar, DEFAULT_LOOKS, SKINS, HAIR_COLORS, LOOK_NAMES } from './art.js?v=8.1.1';
-import { sfx } from './audio.js?v=8.1.1';
+import { CALLINGS, NAMES } from './data.js?v=8.2';
+import { composeLook, drawChar, DEFAULT_LOOKS, SKINS, HAIR_COLORS, LOOK_NAMES } from './art.js?v=8.2';
+import { sfx } from './audio.js?v=8.2';
+import { heroPreview, PAINTED_CLS, PHAIR_NAMES } from './heroart.js?v=8.2';
 
 const el = (tag, cls, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; };
 export const cleanName = s => String(s || '').replace(/[^A-Za-z0-9 '\-.]/g, '').replace(/\s+/g, ' ').trim().slice(0, 16);
@@ -16,12 +17,19 @@ export function creator(root, { cls, look, name, mode = 'new', onDone, onCancel 
   const pw = 200, ph = 176, dpr = Math.min(3, window.devicePixelRatio || 1);
   cv.width = pw * dpr; cv.height = ph * dpr; cv.style.width = pw + 'px'; cv.style.height = ph + 'px';
   wrap.appendChild(cv);
+  const PNT = !!PAINTED_CLS[cls]; let tok = 0;
   const draw = () => {
     const x = cv.getContext('2d'); x.setTransform(1, 0, 0, 1, 0, 0); x.clearRect(0, 0, cv.width, cv.height);
     const g = x.createRadialGradient(cv.width / 2, cv.height * .55, 0, cv.width / 2, cv.height * .55, cv.width * .6); g.addColorStop(0, 'rgba(95,242,255,.22)'); g.addColorStop(1, 'rgba(95,242,255,0)'); x.fillStyle = g; x.fillRect(0, 0, cv.width, cv.height);
     x.fillStyle = 'rgba(0,0,0,.3)'; x.beginPath(); x.ellipse(cv.width / 2, cv.height * .93, 46 * dpr, 9 * dpr, 0, 0, Math.PI * 2); x.fill();
-    const k = 2.45 * dpr; x.translate(cv.width / 2 - 32 * k, cv.height - 70 * k); x.scale(k, k); x.lineJoin = 'round'; x.lineCap = 'round';
-    drawChar(x, composeLook(cls, L));
+    const t = ++tok;
+    const old = () => { const k = 2.45 * dpr; x.save(); x.translate(cv.width / 2 - 32 * k, cv.height - 70 * k); x.scale(k, k); x.lineJoin = 'round'; x.lineCap = 'round'; drawChar(x, composeLook(cls, L)); x.restore(); };
+    if (!PNT) return old();
+    heroPreview(cls, L, HAIR_COLORS).then(r => {
+      if (!r || t !== tok) return;
+      const c = r.c, s = 150 * dpr / (r.h * c.width / c.unitW);
+      x.drawImage(c, cv.width / 2 - r.a[1] * c.width * s, cv.height * .935 - r.a[2] * c.height * s, c.width * s, c.height * s);
+    }).catch(() => { if (t === tok) old(); });
   };
   const rows = el('div', 'cre-rows');
   const seg = (label, key, opts, after) => {
@@ -35,7 +43,7 @@ export function creator(root, { cls, look, name, mode = 'new', onDone, onCancel 
     r.appendChild(g); rows.appendChild(r);
   };
   let headSeg;
-  const headOpts = () => LOOK_NAMES.head[L.sex].map((t, i) => ({ t, v: i }));
+  const headOpts = () => (PNT ? PHAIR_NAMES : LOOK_NAMES.head)[L.sex].map((t, i) => ({ t, v: i }));
   const rebuildHead = () => { headSeg.innerHTML = ''; headOpts().forEach((o) => { const b = el('button', L.head === o.v ? 'on' : '', o.t); b.onclick = () => { L.head = o.v; for (const c of headSeg.children) c.classList.toggle('on', c === b); sfx('ui'); draw(); }; headSeg.appendChild(b); }); };
   seg('Body type', 'sex', [{ t: 'Male', v: 'm' }, { t: 'Female', v: 'f' }], () => rebuildHead());
   headSeg = seg('Head', 'head', headOpts());
@@ -44,6 +52,7 @@ export function creator(root, { cls, look, name, mode = 'new', onDone, onCancel 
   seg('Gear', 'gear', [{ t: 'Show', v: true }, { t: 'Hide', v: false }]);
   sw('Skin', 'skin', SKINS);
   sw('Hair', 'hairc', HAIR_COLORS);
+  if (PNT) for (const r of rows.children) if (['Face', 'Body', 'Gear', 'Skin'].includes(r.firstChild.textContent)) r.classList.add('hide');
   wrap.appendChild(rows);
   const nr = el('div', 'cre-name');
   const inp = el('input'); inp.type = 'text'; inp.maxLength = 16; inp.placeholder = 'Your name'; inp.value = nm; inp.autocomplete = 'off'; inp.spellcheck = false;

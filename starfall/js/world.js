@@ -1,9 +1,10 @@
-import { CALLINGS, ENEMIES, REGIONS, NPCS, ECHOES, QUESTS, SLOTS, RARITY, CODEX, BOUNTIES, TOWER_POOL, TOWER_GUARDS, GEAR_NAMES, IDLE } from './data.js?v=8.1.1';
-import { buildArt, ANCHORS, heroCanvas, HAIR_COLORS, DEFAULT_LOOKS } from './art.js?v=8.1.1';
-import { PA, RIG, PKEYS, PV } from './painted.js?v=8.1.1';
-import { heroStats, echoStats, xpNeed, makeGear, rollRarity, gearValue, save, rankIndex } from './state.js?v=8.1.1';
-import { sfx, duck, playTrack } from './audio.js?v=8.1.1';
-import { Lighting } from './lighting.js?v=8.1.1';
+import { CALLINGS, ENEMIES, REGIONS, NPCS, ECHOES, QUESTS, SLOTS, RARITY, CODEX, BOUNTIES, TOWER_POOL, TOWER_GUARDS, GEAR_NAMES, IDLE } from './data.js?v=8.2';
+import { buildArt, ANCHORS, heroCanvas, HAIR_COLORS, DEFAULT_LOOKS } from './art.js?v=8.2';
+import { PA, RIG, PKEYS, PV } from './painted.js?v=8.2';
+import { paintKey, heroCompose } from './heroart.js?v=8.2';
+import { heroStats, echoStats, xpNeed, makeGear, rollRarity, gearValue, save, rankIndex } from './state.js?v=8.2';
+import { sfx, duck, playTrack } from './audio.js?v=8.2';
+import { Lighting } from './lighting.js?v=8.2';
 
 const dist = (a, b, c, d) => Math.hypot(c - a, d - b);
 const rnd = (a, b) => a + Math.random() * (b - a);
@@ -344,7 +345,7 @@ export class WorldScene extends Phaser.Scene {
     const fl = this.img(-7, -2, 'foot', .5, .5), fr = this.img(7, -2, 'foot', .5, .5);
     this.heroKey = this.heroTex();
     const PN = this.painted;
-    const body = this.img(0, 0, this.heroKey, PN ? PA['rw_' + PN][1] : .5, PN ? PA['rw_' + PN][2] : .97);
+    const body = this.img(0, 0, this.heroKey, PN ? PA[PN][1] : .5, PN ? PA[PN][2] : .97);
     const wkey = { slash: 'w_blade', rail: 'w_rifle', orb: 'w_orb', knife: 'w_knife', pistol: 'w_pistol', pulse: 'w_staff' }[C.attack];
     const weapon = this.img(0, 0, wkey, .5, { slash: .85, knife: .8, pulse: .85 }[C.attack] || .5);
     h.add([shadow, fl, fr, body, weapon]);
@@ -356,19 +357,17 @@ export class WorldScene extends Phaser.Scene {
 
   restyle() {
     const h = this.hero; this.heroKey = this.heroTex(); const PN = this.painted; h.painted = PN;
-    h.body.setTexture(this.heroKey); h.body.setScale(this.sx(this.heroKey)).setOrigin(PN ? PA['rw_' + PN][1] : .5, PN ? PA['rw_' + PN][2] : .97);
+    h.body.setTexture(this.heroKey); h.body.setScale(this.sx(this.heroKey)).setOrigin(PN ? PA[PN][1] : .5, PN ? PA[PN][2] : .97);
     for (const o of [h.fl, h.fr, h.weapon]) o.setVisible(!PN);
     this.ring(h.x, h.y - 20, 0x9ff6ff, 2.2); sfx('sync');
   }
   heroTex() {
     this.painted = null;
-    if (this.st.cls === 'railwarden' && this.pt('rw_m') && this.pt('rw_f')) {
-      const L = Object.assign({}, DEFAULT_LOOKS.railwarden, this.st.look || {}), sex = L.sex === 'f' ? 'f' : 'm', hi = (+L.head || 0) % 3, hc = HAIR_COLORS[(+L.hairc || 0) % HAIR_COLORS.length];
-      const key = 'rwp_' + sex + hi + hc.slice(1);
-      if (this.textures.exists('rw_' + sex + '_h' + hi)) {
-        if (!this.textures.exists(key)) { this.art[key] = this.rwCanvas(sex, hi, hc); this.textures.addCanvas(key, this.art[key]); }
-        this.painted = sex; return key;
-      }
+    const P = paintKey(this.st.cls, Object.assign({}, DEFAULT_LOOKS[this.st.cls], this.st.look || {}));
+    if (P && this.pt(P.key) && this.textures.exists(P.key + '_h' + P.hi)) {
+      const L = Object.assign({}, DEFAULT_LOOKS[this.st.cls], this.st.look || {}), hc = HAIR_COLORS[(+L.hairc || 0) % HAIR_COLORS.length], key = 'pnt_' + P.key + P.hi + hc.slice(1);
+      if (!this.textures.exists(key)) { this.art[key] = heroCompose(this.textures.get(P.key).getSourceImage(), this.textures.get(P.key + '_h' + P.hi).getSourceImage(), P.key, P.hi, hc); this.textures.addCanvas(key, this.art[key]); }
+      this.painted = P.key; return key;
     }
     const lk = this.st.look || null, key = 'hero_' + this.st.cls + '_' + (lk ? [lk.sex, lk.head, lk.face, lk.body, lk.skin, lk.hairc, lk.gear === false ? 0 : 1].join('') : 'd');
     if (!this.art[key]) this.art[key] = heroCanvas(this.TS, this.st.cls, lk);
@@ -376,17 +375,6 @@ export class WorldScene extends Phaser.Scene {
     return key;
   }
 
-  rwCanvas(sex, hi, hc) {
-    const b = this.textures.get('rw_' + sex).getSourceImage(), hr = this.textures.get('rw_' + sex + '_h' + hi).getSourceImage(), [hx, hy2] = RIG[sex].hair[hi];
-    const c = document.createElement('canvas'); c.width = b.width; c.height = b.height; const x = c.getContext('2d');
-    const t = document.createElement('canvas'); t.width = hr.width; t.height = hr.height; const y = t.getContext('2d');
-    y.drawImage(hr, 0, 0); y.globalCompositeOperation = 'multiply'; y.fillStyle = hc; y.fillRect(0, 0, t.width, t.height);
-    y.globalCompositeOperation = 'screen'; y.globalAlpha = .16; y.drawImage(hr, 0, 0);
-    y.globalAlpha = 1; y.globalCompositeOperation = 'destination-in'; y.drawImage(hr, 0, 0);
-    x.drawImage(t, Math.round(hx), Math.round(hy2)); x.drawImage(b, 0, 0);
-    c.unitW = PA['rw_' + sex][0]; c.unitH = c.unitW * c.height / c.width;
-    return c;
-  }
   muzzle() { const h = this.hero; if (h.painted) { const m = RIG[h.painted].muz; return { x: h.x + h.facing * m[0], y: h.y + m[1] + h.body.y }; } return { x: h.x + h.facing * 26, y: h.y - 24 }; }
   rail(x1, y1, x2, y2, th = 1, dur = 140) {
     const a = Math.atan2(y2 - y1, x2 - x1), L = dist(x1, y1, x2, y2), k = this.sx('fx_rail');

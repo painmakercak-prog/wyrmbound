@@ -1,9 +1,9 @@
-import { CALLINGS, ECHOES, HATCHABLE, SLOTS, RARITY, CODEX, QUESTS, NPCS, BOUNTIES, ACTS, ART, REGIONS, ENEMIES, TOWER_LINES, RANKS, CALLING_PORTRAIT, TREES, TREE_THEMES, TREE_ROW_REQ, ORDERS } from './data.js?v=8.1.1';
-import { portraitCanvas, LOOKS, iconCanvas, echoCanvas, lumenCanvas, shardIconCanvas, geodeCanvas, composeLook, RANK_THEMES } from './art.js?v=8.1.1';
-import { heroStats, power, xpNeed, gearLine, upgradeCost, echoStats, echoLevelCost, EVOLVE_COST, ASCEND_COST, STAR_MAX, refineCost, refineNeed, save, wipe, rankIndex, portraitDef, portraitUnlocked, treeOf, treePoints, branchSpent, nodeDef, canLearn, respecCost, autoSpend, lockSaves, rollDaily, orderReward, ORDER_BONUS, ordersClaimable } from './state.js?v=8.1.1';
-import { sfx, setMusic, audioResume } from './audio.js?v=8.1.1';
-import { creator } from './creator.js?v=8.1.1';
-import { copyModal, pasteModal } from './transfer.js?v=8.1.1';
+import { CALLINGS, ECHOES, HATCHABLE, SLOTS, RARITY, CODEX, QUESTS, NPCS, BOUNTIES, ACTS, ART, REGIONS, ENEMIES, TOWER_LINES, RANKS, CALLING_PORTRAIT, TREES, TREE_THEMES, TREE_ROW_REQ, ORDERS } from './data.js?v=8.2';
+import { portraitCanvas, LOOKS, iconCanvas, echoCanvas, lumenCanvas, shardIconCanvas, geodeCanvas, composeLook, RANK_THEMES } from './art.js?v=8.2';
+import { heroStats, power, xpNeed, gearLine, upgradeCost, echoStats, echoLevelCost, EVOLVE_COST, ASCEND_COST, STAR_MAX, refineCost, refineNeed, save, wipe, rankIndex, portraitDef, portraitUnlocked, treeOf, treePoints, branchSpent, nodeDef, canLearn, respecCost, autoSpend, lockSaves, rollDaily, orderReward, ORDER_BONUS, ordersClaimable } from './state.js?v=8.2';
+import { sfx, setMusic, audioResume } from './audio.js?v=8.2';
+import { creator } from './creator.js?v=8.2';
+import { copyModal, pasteModal } from './transfer.js?v=8.2';
 
 const $ = (s, r = document) => r.querySelector(s);
 const el = (tag, cls, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; };
@@ -132,7 +132,8 @@ export class UI {
       <div id="left"><button id="echob"><img alt=""><div class="cd sk" style="position:absolute;inset:0;width:auto;height:auto"></div><div class="lb"></div></button><button class="tog on" id="autob">AUTO</button><button class="tog on" id="askb">SKILLS</button></div>
       <nav id="nav">${['hero', 'echoes', 'forge', 'orders', 'codex', 'lodge'].map(k => `<button data-p="${k}">${ICONS[k]}<span>${k[0].toUpperCase() + k.slice(1)}</span><i class="dot"></i></button>`).join('')}</nav>`;
     document.body.appendChild(hud);
-    for (const id of ['vignette', 'hurtfx', 'toasts', 'banner', 'sheetbg', 'dlgcatch']) if (!$('#' + id)) { const d = el('div'); d.id = id; document.body.appendChild(d); }
+    for (const id of ['vignette', 'hurtfx', 'notes', 'sheetbg', 'dlgcatch']) if (!$('#' + id)) { const d = el('div'); d.id = id; document.body.appendChild(d); }
+    for (const id of ['banner', 'toasts']) if (!$('#' + id)) { const d = el('div'); d.id = id; $('#notes').appendChild(d); }
     const joy = el('div', null, '<div class="base"></div><div class="knob"></div>'); joy.id = 'joy'; document.body.appendChild(joy);
     const dlg = el('div', null, '<div class="por"></div><div class="who"></div><div class="ttl"></div><div class="tx"></div><div class="nx">TAP ▸</div>'); dlg.id = 'dlg'; document.body.appendChild(dlg);
     const sheet = el('div', null, '<div class="hd"><h2></h2><button class="x" aria-label="Close">✕</button></div><div class="bd"></div>'); sheet.id = 'sheet'; document.body.appendChild(sheet);
@@ -582,11 +583,12 @@ export class UI {
     const st = this.st, keys = Object.keys(CODEX), have = keys.filter(k => st.codex[k]).length;
     bd.appendChild(el('div', 'small muted', `${have} of ${keys.length} entries found. Hunt, explore and follow the story to find more.`));
     for (const k of keys) {
-      const c = CODEX[k], open = st.codex[k];
-      const it = el('div', 'codex-item' + (open ? '' : ' lock') + (open && st.codexNew && st.codexNew[k] ? ' new' : ''));
-      it.innerHTML = open ? `${ART.codex[k] ? `<img class="cx" src="${ART.codex[k]}" alt="">` : ''}<div class="t">${esc(c.title)}</div><div class="src">${esc(c.src)}</div><div class="tx">${esc(c.text)}</div>` : `<div class="t">??? <small>LOCKED</small></div>`;
+      const c = CODEX[k]; if (!st.codex[k]) continue;
+      const it = el('div', 'codex-item' + (st.codexNew && st.codexNew[k] ? ' new' : ''));
+      it.innerHTML = `${ART.codex[k] ? `<img class="cx" src="${ART.codex[k]}" alt="">` : ''}<div class="t">${esc(c.title)}</div><div class="src">${esc(c.src)}</div><div class="tx">${esc(c.text)}</div>`;
       bd.appendChild(it);
     }
+    if (have < keys.length) bd.appendChild(el('div', 'codex-item lock', `<div class="t">??? <small>${keys.length - have} ${keys.length - have === 1 ? 'entry' : 'entries'} still hidden</small></div>`));
   }
 
   p_lodge(bd) {
@@ -631,7 +633,7 @@ export class UI {
     const rs = el('button', 'btn ghost', 'Start over'); rs.style.marginTop = '16px'; rs.style.width = '100%';
     rs.onclick = () => { if (rs.dataset.c) { wipe(); location.reload(); } else { rs.dataset.c = 1; rs.textContent = 'Tap again to erase your save'; rs.style.color = 'var(--red)'; } };
     bd.appendChild(rs);
-    bd.appendChild(el('div', 'small muted', 'Wyrmbound: Starfall · build 8.1.1. Engine: Phaser (MIT). Font: Chakra Petch (OFL). Art: Grok, drawn in code, and the Sci Fi Game UI collection by SunGraphica (GameDev Market). Music: made with Suno.')).style.marginTop = '14px';
+    bd.appendChild(el('div', 'small muted', 'Wyrmbound: Starfall · build 8.2. Engine: Phaser (MIT). Font: Chakra Petch (OFL). Art: Grok, drawn in code, and the Sci Fi Game UI collection by SunGraphica (GameDev Market). Music: made with Suno.')).style.marginTop = '14px';
   }
 
   actEnd(n = 1) {
