@@ -55,7 +55,7 @@ export class Lighting {
     if (hh && !hh.dead) { stamp(hh.x, hh.y - 24, 200, 0xd8dce8, .62); stamp(hh.x, hh.y - 24, 90, 0xffffff, .3); }
     if (sc.echo && sc.echo.visible !== false) stamp(sc.echo.x, sc.echo.y - 20, 70, sc.echoColor || 0x9ff6ff, .45);
     for (const p of sc.projs) stamp(p.x, p.y, 60, p.tint || 0xffffff, .7);
-    if (sc.boss && !sc.boss.dead) stamp(sc.boss.x, sc.boss.y - 40, 160, 0xffc0d8, .3);
+    if (sc.boss && !sc.boss.dead) stamp(sc.boss.x, sc.boss.y - 60, sc.boss.pm ? 230 : 160, 0xffc0d8, sc.boss.pm ? .45 : .3);
     for (const p of sc.pickups) if (p.o && p.o.active) stamp(p.o.x, p.o.y, 34, p.kind === 'shards' ? 0xc58bff : 0x5ff2d0, .5);
     for (let i = this.flashes.length - 1; i >= 0; i--) {
       const f = this.flashes[i]; f.life -= dt;
