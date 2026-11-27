@@ -470,3 +470,7 @@ body.sheet-open #notes #toasts { top: auto; }
 .cre-row.hide { display: none; }
 body:has(#boss.on) #notes { top: calc(var(--st) + 248px); }
 @media (max-height: 720px) { #toasts .toast:nth-last-child(n+3) { display: none; } }
+#modal .box.priv { max-height: calc(100vh - var(--st) - var(--sb) - 60px); display: flex; flex-direction: column; }
+#modal .box.priv .pbody { overflow-y: auto; -webkit-overflow-scrolling: touch; margin: 6px 0 12px; padding-right: 4px; }
+#modal .box.priv .pbody b { display: block; margin-top: 10px; color: var(--gold); font-size: 14px; }
+#modal .box.priv .pbody p { margin: 4px 0 0; font-size: 14px; line-height: 1.45; color: #c8d6e0; }

@@ -1,3 +1,4 @@
+import { haptic } from './native.js?v=10';
 let ctx = null, master = null, musicGain = null, on = { sound: true, music: true };
 const MUSIC_LEVEL = .75, XF = 2.5;
 const TRACKS = {
@@ -101,6 +102,7 @@ function noise(dur, vol = .2, freq = 2000, delay = 0) {
 }
 const last = {};
 export function sfx(name) {
+  haptic(name);
   if (!ctx || !on.sound) return;
   const now = performance.now(); if (last[name] && now - last[name] < 45) return; last[name] = now;
   switch (name) {

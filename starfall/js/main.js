@@ -1,11 +1,12 @@
-import { CALLINGS, ART } from './data.js?v=9';
-import { fresh, load, save, offlineRewards, lockSaves } from './state.js?v=9';
-import { UI } from './ui.js?v=9';
-import { portraitCanvas, LOOKS, DEFAULT_LOOKS } from './art.js?v=9';
-import { creator } from './creator.js?v=9';
-import { pasteModal, copyModal } from './transfer.js?v=9';
-import { WorldScene } from './world.js?v=9';
-import { audioInit, audioResume, audioSuspend, sfx, playTrack, prefetchTrack } from './audio.js?v=9';
+import { CALLINGS, ART } from './data.js?v=10';
+import { fresh, load, save, offlineRewards, lockSaves, KEY } from './state.js?v=10';
+import { IS_APP, nativeRestore, setHaptics, offlineNote } from './native.js?v=10';
+import { UI } from './ui.js?v=10';
+import { portraitCanvas, LOOKS, DEFAULT_LOOKS } from './art.js?v=10';
+import { creator } from './creator.js?v=10';
+import { pasteModal, copyModal } from './transfer.js?v=10';
+import { WorldScene } from './world.js?v=10';
+import { audioInit, audioResume, audioSuspend, sfx, playTrack, prefetchTrack } from './audio.js?v=10';
 
 const $ = s => document.querySelector(s);
 let game = null, ui = null, st = null;
@@ -42,8 +43,8 @@ function stars() {
 function titleScreen() {
   const t = $('#title');
   const saved = load();
-  const ios = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1), inSafari = ios && navigator.standalone === false;
-  t.innerHTML = `<div class="home"><div><div class="logo">WYRMBOUND</div><div class="sub">STARFALL</div></div><div><div class="tag2">Bond an Echo. Hunt the bones of fallen stars.</div><button class="btn go">${saved ? 'Continue' : 'Begin'}</button>${saved ? `<div class="savec">${String(saved.name || 'Hunter').replace(/[&<>]/g, '')} · ${CALLINGS[saved.cls].name} · Level ${saved.lvl}</div>` : '<button class="linkb">Have a save code?</button>'}${inSafari ? `<div class="a2hs">Play full screen: tap <b>Share</b>, then <b>Add to Home Screen</b>.${saved ? ' Copy your save code first, then load it there.' : ''}</div>` : ''}${saved ? '<button class="linkb cpy">Copy save code</button>' : ''}</div></div><div class="foot">Build 9 · Painted Vanguard</div><div id="tmodal"></div>`;
+  const ios = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1), inSafari = !IS_APP && ios && navigator.standalone === false;
+  t.innerHTML = `<div class="home"><div><div class="logo">WYRMBOUND</div><div class="sub">STARFALL</div></div><div><div class="tag2">Bond an Echo. Hunt the bones of fallen stars.</div><button class="btn go">${saved ? 'Continue' : 'Begin'}</button>${saved ? `<div class="savec">${String(saved.name || 'Hunter').replace(/[&<>]/g, '')} · ${CALLINGS[saved.cls].name} · Level ${saved.lvl}</div>` : '<button class="linkb">Have a save code?</button>'}${inSafari ? `<div class="a2hs">Play full screen: tap <b>Share</b>, then <b>Add to Home Screen</b>.${saved ? ' Copy your save code first, then load it there.' : ''}</div>` : ''}${saved ? '<button class="linkb cpy">Copy save code</button>' : ''}</div></div><div class="foot">Build 10 · iPhone app prep</div><div id="tmodal"></div>`;
   const lb = $('#title .linkb:not(.cpy)'); if (lb) lb.onclick = () => pasteModal($('#tmodal'), () => { lockSaves(); location.reload(); });
   const cb = $('#title .linkb.cpy'); if (cb) cb.onclick = () => copyModal($('#tmodal'), saved);
   stars();
@@ -89,6 +90,8 @@ function start(returning) {
 }
 
 function boot(returning) {
+  if (IS_APP) { delete st.god; delete st.ohk; }
+  setHaptics(st.settings.haptics);
   const v = view();
   ui = new UI(st);
   const t = $('#title'); t.style.transition = 'opacity .6s'; t.style.opacity = '0'; setTimeout(() => t.remove(), 650);
@@ -121,12 +124,14 @@ function boot(returning) {
   addEventListener('focusout', () => setTimeout(sync, 350));
   if (window.visualViewport) visualViewport.addEventListener('resize', sync);
   setInterval(sync, 800);
-  document.addEventListener('visibilitychange', () => { if (document.hidden) { save(st); audioSuspend(); } else audioResume(); });
+  document.addEventListener('visibilitychange', () => { if (document.hidden) { save(st); audioSuspend(); offlineNote(!!st.settings.notes, st.name, 8 * 3600); } else { audioResume(); offlineNote(false); } });
   addEventListener('pagehide', () => save(st));
   document.addEventListener('pointerdown', audioResume, { passive: true });
 }
 
 (async () => {
+  if (IS_APP) document.documentElement.classList.add('app');
+  await nativeRestore(KEY);
   try { await Promise.race([Promise.all(['500', '600', '700'].map(w => document.fonts.load(`${w} 16px "Chakra Petch"`))), new Promise(r => setTimeout(r, 1500))]); } catch (e) {}
   titleScreen();
 })();

@@ -1,10 +1,10 @@
-import { CALLINGS, ENEMIES, REGIONS, NPCS, ECHOES, QUESTS, SLOTS, RARITY, CODEX, BOUNTIES, TOWER_POOL, TOWER_GUARDS, GEAR_NAMES, IDLE } from './data.js?v=9';
-import { buildArt, ANCHORS, heroCanvas, HAIR_COLORS, DEFAULT_LOOKS } from './art.js?v=9';
-import { PA, RIG, PKEYS, PV } from './painted.js?v=9';
-import { paintKey, heroCompose } from './heroart.js?v=9';
-import { heroStats, echoStats, xpNeed, makeGear, rollRarity, gearValue, save, rankIndex } from './state.js?v=9';
-import { sfx, duck, playTrack } from './audio.js?v=9';
-import { Lighting } from './lighting.js?v=9';
+import { CALLINGS, ENEMIES, REGIONS, NPCS, ECHOES, QUESTS, SLOTS, RARITY, CODEX, BOUNTIES, TOWER_POOL, TOWER_GUARDS, GEAR_NAMES, IDLE } from './data.js?v=10';
+import { buildArt, ANCHORS, heroCanvas, HAIR_COLORS, DEFAULT_LOOKS } from './art.js?v=10';
+import { PA, RIG, PKEYS, PV } from './painted.js?v=10';
+import { paintKey, heroCompose } from './heroart.js?v=10';
+import { heroStats, echoStats, xpNeed, makeGear, rollRarity, gearValue, save, rankIndex } from './state.js?v=10';
+import { sfx, duck, playTrack } from './audio.js?v=10';
+import { Lighting } from './lighting.js?v=10';
 
 const dist = (a, b, c, d) => Math.hypot(c - a, d - b);
 const rnd = (a, b) => a + Math.random() * (b - a);
@@ -570,9 +570,9 @@ export class WorldScene extends Phaser.Scene {
     if (!q) { const b = this.bounty(); return { hunt: b && this.R.spawns.some(s => s.type === b.enemy) ? b.enemy : this.bestHunt() }; }
     const qr = q.region || 'verge';
     if (q.kind === 'travel' && qr === this.st.region) return { hunt: this.bestHunt() };
-    if (qr !== this.st.region || q.kind === 'travel') return { x: P.spire.x, y: P.spire.y + 46, travel: qr };
-    if (q.kind === 'talk') { const n = this.npcs[q.npc]; return { x: n.x, y: n.y + 26, npc: q.npc }; }
-    if (q.kind === 'inspect' || q.kind === 'goto') { const p = P[q.place]; return { x: p.x, y: p.y + 30, place: q.place }; }
+    if (qr !== this.st.region || q.kind === 'travel') return P && P.spire ? { x: P.spire.x, y: P.spire.y + 46, travel: qr } : { hunt: this.bestHunt() };
+    if (q.kind === 'talk') { const n = this.npcs && this.npcs[q.npc]; return n ? { x: n.x, y: n.y + 26, npc: q.npc } : { hunt: this.bestHunt() }; }
+    if (q.kind === 'inspect' || q.kind === 'goto') { const p = P && P[q.place]; return p ? { x: p.x, y: p.y + 30, place: q.place } : { hunt: this.bestHunt() }; }
     if (q.kind === 'hunt') return { hunt: q.enemy };
     if (q.kind === 'boss') return { boss: true };
     return { hunt: this.bestHunt() };
