@@ -1,9 +1,9 @@
-import { CALLINGS, ENEMIES, REGIONS, NPCS, ECHOES, QUESTS, SLOTS, RARITY, CODEX, BOUNTIES, TOWER_POOL, TOWER_GUARDS, GEAR_NAMES, IDLE } from './data.js?v=8.1';
-import { buildArt, ANCHORS, heroCanvas, HAIR_COLORS, DEFAULT_LOOKS } from './art.js?v=8.1';
-import { PA, RIG, PKEYS, PV } from './painted.js?v=8.1';
-import { heroStats, echoStats, xpNeed, makeGear, rollRarity, gearValue, save, rankIndex } from './state.js?v=8.1';
-import { sfx, duck, playTrack } from './audio.js?v=8.1';
-import { Lighting } from './lighting.js?v=8.1';
+import { CALLINGS, ENEMIES, REGIONS, NPCS, ECHOES, QUESTS, SLOTS, RARITY, CODEX, BOUNTIES, TOWER_POOL, TOWER_GUARDS, GEAR_NAMES, IDLE } from './data.js?v=8.1.1';
+import { buildArt, ANCHORS, heroCanvas, HAIR_COLORS, DEFAULT_LOOKS } from './art.js?v=8.1.1';
+import { PA, RIG, PKEYS, PV } from './painted.js?v=8.1.1';
+import { heroStats, echoStats, xpNeed, makeGear, rollRarity, gearValue, save, rankIndex } from './state.js?v=8.1.1';
+import { sfx, duck, playTrack } from './audio.js?v=8.1.1';
+import { Lighting } from './lighting.js?v=8.1.1';
 
 const dist = (a, b, c, d) => Math.hypot(c - a, d - b);
 const rnd = (a, b) => a + Math.random() * (b - a);
