@@ -140,7 +140,7 @@ body.sheet-open #toasts { top: calc(var(--st) + 12px); }
 #dlg .who { font: 700 15px/1 var(--display); color: var(--c, var(--gold)); }
 #dlg .ttl { font: 600 11px/1 var(--display); color: var(--dim); margin: 3px 0 8px; letter-spacing: .06em; text-transform: uppercase; }
 #dlg .tx { font-size: 15.5px; line-height: 1.45; min-height: 44px; }
-#dlg .tx.sk { font-style: italic; color: #cdeeff; letter-spacing: .02em; }
+#dlg .tx.skn { font-style: italic; color: #cdeeff; letter-spacing: .02em; }
 #dlg .nx { position: absolute; right: 14px; bottom: 10px; font: 700 12px var(--display); color: var(--cyan); animation: blink 1s infinite; }
 @keyframes blink { 50% { opacity: .3; } }
 #dlgcatch { position: fixed; inset: 0; z-index: 39; display: none; }
