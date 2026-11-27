@@ -1,10 +1,10 @@
-import { CALLINGS, ENEMIES, REGIONS, NPCS, ECHOES, QUESTS, SLOTS, RARITY, CODEX, BOUNTIES, TOWER_POOL, TOWER_GUARDS, GEAR_NAMES, IDLE } from './data.js?v=8.2';
-import { buildArt, ANCHORS, heroCanvas, HAIR_COLORS, DEFAULT_LOOKS } from './art.js?v=8.2';
-import { PA, RIG, PKEYS, PV } from './painted.js?v=8.2';
-import { paintKey, heroCompose } from './heroart.js?v=8.2';
-import { heroStats, echoStats, xpNeed, makeGear, rollRarity, gearValue, save, rankIndex } from './state.js?v=8.2';
-import { sfx, duck, playTrack } from './audio.js?v=8.2';
-import { Lighting } from './lighting.js?v=8.2';
+import { CALLINGS, ENEMIES, REGIONS, NPCS, ECHOES, QUESTS, SLOTS, RARITY, CODEX, BOUNTIES, TOWER_POOL, TOWER_GUARDS, GEAR_NAMES, IDLE } from './data.js?v=9';
+import { buildArt, ANCHORS, heroCanvas, HAIR_COLORS, DEFAULT_LOOKS } from './art.js?v=9';
+import { PA, RIG, PKEYS, PV } from './painted.js?v=9';
+import { paintKey, heroCompose } from './heroart.js?v=9';
+import { heroStats, echoStats, xpNeed, makeGear, rollRarity, gearValue, save, rankIndex } from './state.js?v=9';
+import { sfx, duck, playTrack } from './audio.js?v=9';
+import { Lighting } from './lighting.js?v=9';
 
 const dist = (a, b, c, d) => Math.hypot(c - a, d - b);
 const rnd = (a, b) => a + Math.random() * (b - a);
@@ -27,7 +27,7 @@ function distToPath(paths, x, y) {
 const TREES = ['v_tree0', 'v_tree1', 'v_tree2', 'v_tree3'];
 const VMAP = { tree0: TREES, tree1: TREES, tree2: TREES, tree3: ['v_tree4', 'v_tree5'], rock: ['v_rock0', 'v_rock1', 'v_rock2'], moss: ['v_moss0', 'v_moss1', 'v_moss2'], bulb: ['v_bulb0', 'v_bulb1', 'v_bulb2', 'v_shroom0', 'v_shroom1'], rib: ['v_rib0', 'v_rib1'], hull: ['v_hull'], lamp: ['v_lamp'], banner: ['v_banner'], forge: ['v_forge'], tent: ['v_tent'], stall: ['v_stall0', 'v_stall1'], crate: ['v_crate'], geode: ['v_geode'], door: ['v_door'], spire: ['v_spire'], root: ['v_roots'] };
 const VK = { tree0: .8, tree1: .8, tree2: .8, tree3: .8 };
-const PE = { shardling: ['e_shardling', [24, 64], 66], crawler: ['e_crawler', [24, 70], 74], glowmoth: ['e_moth_b', [44, 96], 98] };
+const PE = { shardling: ['e_shardling', [24, 64], 66], crawler: ['e_crawler', [24, 70], 74], glowmoth: ['e_moth_b', [44, 96], 98], thornmother: ['e_thornmother', [60, 130], 150] };
 
 const SHADOWED = /^tree|^rib|^rock|^mesa|^crate|^tent|^stall|^lamp|^forge|^banner|^rig|^cage|^wreck|^mill|^vaultdoor|^marker|^crystal|^coral|^kelp|^scrap|^cone|^fence|^spire/;
 
@@ -61,7 +61,7 @@ export class WorldScene extends Phaser.Scene {
     this.lit = new Lighting(this, this.R.tower ? 'tower' : this.st.region);
     this.enemies = []; this.projs = []; this.zones = []; this.teles = []; this.drones = []; this.pickups = [];
     this.manualUntil = 0; this.joy = null; this.tapTarget = null; this.tapPoint = null;
-    this.res = 0; this.shield = 0; this.shieldT = 0; this.veilT = 0; this.iframeT = 0; this.critShots = 0; this.overT = 0; this.swReady = 0; this.regenUi = 0;
+    this.dome = null; this.res = 0; this.shield = 0; this.shieldT = 0; this.veilT = 0; this.iframeT = 0; this.critShots = 0; this.overT = 0; this.swReady = 0; this.regenUi = 0;
     this.cds = [0, 0, 0]; this.echoCd = 0; this.atkCd = 0;
     this.buildWorld();
     this.makeHero();
@@ -159,7 +159,14 @@ export class WorldScene extends Phaser.Scene {
     for (const [x, y] of [[690, 2540], [1110, 2540], [620, 2700], [1180, 2700], [830, 2470], [970, 2470]]) { placeProp('lamp', x, y, 1); const l = this.add.image(x + (this.pv ? 6 : 0), y - (this.pv ? 100 : 80), 'soft').setTint(0xffb85a).setBlendMode('ADD').setScale(2.2).setAlpha(.45).setDepth(y + 1); this.tweens.add({ targets: l, alpha: .6, duration: rnd(900, 1500), yoyo: true, repeat: -1 }); }
     placeProp('banner', 728, 2572, 1); placeProp('forge', 1112, 2582, 1); placeProp('tent', 1090, 2712, .9); placeProp('stall', 700, 2700, .9); placeProp('stall', 560, 2600, .85, true);
     for (const [x, y] of [[600, 2640], [624, 2668], [1180, 2610], [1204, 2640], [1240, 2760]]) placeProp('crate', x, y, rnd(.9, 1.1));
-    if (this.pv) for (let i = 0; i < 9; i++) { const a = Math.PI * (.95 + i / 8 * 1.1) + rnd(-.08, .08), rr = rnd(190, 250); placeProp('root', P.arena.x + Math.cos(a) * rr, P.arena.y + Math.sin(a) * rr * .75, rnd(.7, .95), R() < .5); }
+    if (this.pv && this.pt('v_tarch0')) {
+      const ax = P.arena.x, ay = P.arena.y, pp = (k, x, y, s = 1, fl = false) => { const m = PA[k], o = this.img(ax + x, ay + y, k, m[1], m[2], s); if (fl) o.setFlipX(true); o.setDepth(ay + y); return o; };
+      const nest = this.img(ax, ay + 10, 'v_tnest', .5, .5, 1.15); nest.setDepth(-7e5);
+      pp('v_tarch0', -230, -150, 1); pp('v_tarch1', 225, -160, 1); pp('v_tarch0', 0, -250, .85, true);
+      for (const [k, x, y, sc, fl] of [['v_thorns0', -300, 10, .9, false], ['v_thorns1', 290, 30, .9, true], ['v_thorns1', -150, -205, .75, false], ['v_thorns0', 150, -215, .7, true], ['v_tcrystal', 115, -190, .9, false], ['v_tcrystal', -95, -215, .75, true], ['v_tcrystal', 320, -70, .8, false], ['v_thorns0', -250, 150, .8, true], ['v_thorns1', 240, 165, .75, false]]) { const o = pp(k, x, y, sc, fl); if (k === 'v_tcrystal') this.lit.pool(ax + x, ay + y - 30, 90, 0xc58bff, .55); }
+      for (let i = 0; i < 5; i++) { const a = Math.PI * (1.05 + i / 4 * .9) + rnd(-.08, .08), rr = rnd(250, 290); placeProp('root', ax + Math.cos(a) * rr, ay + Math.sin(a) * rr * .75, rnd(.6, .8), R() < .5); }
+    }
+    else if (this.pv) for (let i = 0; i < 9; i++) { const a = Math.PI * (.95 + i / 8 * 1.1) + rnd(-.08, .08), rr = rnd(190, 250); placeProp('root', P.arena.x + Math.cos(a) * rr, P.arena.y + Math.sin(a) * rr * .75, rnd(.7, .95), R() < .5); }
     else for (let i = 0; i < 14; i++) { const a = i / 14 * Math.PI * 2 + rnd(-.1, .1); const rr = rnd(150, 260); const x = P.arena.x + Math.cos(a) * rr, y = P.arena.y + Math.sin(a) * rr * .75; const r = this.img(x, y, 'root', .5, .5, rnd(.8, 1.3)); r.setRotation(a + rnd(-.3, .3)); r.setDepth(-7e5); }
     for (let i = 0; i < 10; i++) { const a = rnd(Math.PI * 1.05, Math.PI * 1.95), rr = rnd(250, 330); placeProp('tree' + (i % 2 ? 3 : 1), P.arena.x + Math.cos(a) * rr, P.arena.y + Math.sin(a) * rr * .7, rnd(1, 1.3)); }
     this.geodeSpr = placeProp('geode', P.geode.x, P.geode.y, 1.1);
@@ -363,10 +370,10 @@ export class WorldScene extends Phaser.Scene {
   }
   heroTex() {
     this.painted = null;
-    const P = paintKey(this.st.cls, Object.assign({}, DEFAULT_LOOKS[this.st.cls], this.st.look || {}));
-    if (P && this.pt(P.key) && this.textures.exists(P.key + '_h' + P.hi)) {
-      const L = Object.assign({}, DEFAULT_LOOKS[this.st.cls], this.st.look || {}), hc = HAIR_COLORS[(+L.hairc || 0) % HAIR_COLORS.length], key = 'pnt_' + P.key + P.hi + hc.slice(1);
-      if (!this.textures.exists(key)) { this.art[key] = heroCompose(this.textures.get(P.key).getSourceImage(), this.textures.get(P.key + '_h' + P.hi).getSourceImage(), P.key, P.hi, hc); this.textures.addCanvas(key, this.art[key]); }
+    const L = Object.assign({}, DEFAULT_LOOKS[this.st.cls], this.st.look || {}), P = paintKey(this.st.cls, L), ok = k => !k || this.textures.exists(k);
+    if (P && PA[P.key] && ok(P.base) && this.textures.exists(P.base) && ok(P.back) && ok(P.front)) {
+      const hc = HAIR_COLORS[(+L.hairc || 0) % HAIR_COLORS.length], key = 'pnt_' + P.base + P.hi + hc.slice(1), src = k => k ? this.textures.get(k).getSourceImage() : null;
+      if (!this.textures.exists(key)) { this.art[key] = heroCompose(P, src(P.base), src(P.back), src(P.front), hc); this.textures.addCanvas(key, this.art[key]); }
       this.painted = P.key; return key;
     }
     const lk = this.st.look || null, key = 'hero_' + this.st.cls + '_' + (lk ? [lk.sex, lk.head, lk.face, lk.body, lk.skin, lk.hairc, lk.gear === false ? 0 : 1].join('') : 'd');
@@ -392,16 +399,18 @@ export class WorldScene extends Phaser.Scene {
     for (const id of this.R.npcs) {
       const p = this.P[id];
       const c = this.add.container(p.x, p.y);
-      const shadow = this.img(0, 0, 'shadow', .5, .5, 1.1), body = this.img(0, 0, 'ch_' + id, .5, .97);
-      c.add([shadow, this.img(-7, -2, 'foot'), this.img(7, -2, 'foot'), body]);
-      if (id === 'sparks') { const w = this.img(16, -20, 'wrench', .5, .8); w.setRotation(.5); c.add(w); }
+      const pn = this.pt('n_' + id) ? 'n_' + id : null;
+      const shadow = this.img(0, 0, 'shadow', .5, .5, pn ? 1.25 : 1.1), body = pn ? this.img(0, 0, pn, PA[pn][1], PA[pn][2]) : this.img(0, 0, 'ch_' + id, .5, .97);
+      if (pn) c.add([shadow, body]); else c.add([shadow, this.img(-7, -2, 'foot'), this.img(7, -2, 'foot'), body]);
+      if (id === 'sparks' && !pn) { const w = this.img(16, -20, 'wrench', .5, .8); w.setRotation(.5); c.add(w); }
+      if (id === 'okafor' && pn && this.pt('n_okdrone')) { const d = this.img(24, -60, 'n_okdrone', .5, .5); c.add(d); this.tweens.add({ targets: d, y: -68, duration: 1100, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' }); }
       if (id === 'marr' || id === 'corvin') body.setFlipX(true);
       if (id === 'hush') { c.setAlpha(.85); body.setTint(0xd8dce4); }
       if (id === 'pell') body.setScale(body.scaleX * .84);
       c.setDepth(p.y);
       const name = this.add.text(p.x, p.y + 6, NPCS[id].short, this.txt(11, '#e8f6ff')).setOrigin(.5, 0).setDepth(p.y + 1).setAlpha(.85);
-      const mark = this.add.text(p.x, p.y - 82, '!', this.txt(26, '#ffcf5a', 5)).setOrigin(.5).setDepth(4.5e5).setVisible(false);
-      this.tweens.add({ targets: mark, y: p.y - 90, duration: 600, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
+      const mark = this.add.text(p.x, p.y - (this.pt('n_' + id) ? 96 : 82), '!', this.txt(26, '#ffcf5a', 5)).setOrigin(.5).setDepth(4.5e5).setVisible(false);
+      this.tweens.add({ targets: mark, y: mark.y - 8, duration: 600, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
       this.tweens.add({ targets: body, scaleY: body.scaleY * 1.025, duration: 1300 + Math.random() * 400, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
       this.npcs[id] = { c, body, mark, name, x: p.x, y: p.y };
     }
@@ -591,6 +600,15 @@ export class WorldScene extends Phaser.Scene {
     this.atkCd -= dt; for (let i = 0; i < 3; i++) this.cds[i] = Math.max(0, this.cds[i] - dt);
     if (this.st.god) { this.res = Math.min(100, this.res + dt * 60); if (h.hp < h.hpMax) { h.hp = h.hpMax; this.ui.stats(); } }
     if (this.shieldT > 0) { this.shieldT -= dt; if (this.shieldT <= 0) this.shield = 0; }
+    if (this.pt('fx_dome')) {
+      const on = this.shield > 0 && !h.dead;
+      if (on && !this.dome) { this.dome = this.img(h.x, h.y + 8, 'fx_dome', .5, PA.fx_dome[2], .2).setBlendMode('ADD').setAlpha(0); this.tweens.add({ targets: this.dome, scale: this.sx('fx_dome'), alpha: .5, duration: 220, ease: 'Back.easeOut' }); }
+      if (this.dome) {
+        this.dome.setPosition(h.x, h.y + 8).setDepth(h.y + 12);
+        if (on) { if (!this.tweens.isTweening(this.dome)) this.dome.setAlpha(.3 + Math.sin(this.now * 5) * .07); }
+        else if (!this.dome.fading) { this.dome.fading = true; const d = this.dome; this.dome = null; this.tweens.killTweensOf(d); this.tweens.add({ targets: d, alpha: 0, scale: d.scale * 1.15, duration: 260, onComplete: () => d.destroy() }); }
+      }
+    }
     this.iframeT = Math.max(0, this.iframeT - dt); this.overT = Math.max(0, this.overT - dt);
     const HM = h.mods; if (HM && HM.regen && h.hp < h.hpMax) { h.hp = Math.min(h.hpMax, h.hp + h.hpMax * HM.regen * dt); this.regenUi -= dt; if (this.regenUi <= 0) { this.regenUi = .5; this.ui.stats(); } }
     if (this.veilT > 0) { this.veilT -= dt; h.body.setAlpha(.5 + Math.sin(this.now * 10) * .1); if (this.veilT <= 0) h.body.setAlpha(1); }
@@ -658,7 +676,7 @@ export class WorldScene extends Phaser.Scene {
     } else {
       h.body.y = 0; h.body.rotation = 0; h.body.setScale(k, k * (1 + Math.sin(h.walkT) * .018)); h.fl.x = -7; h.fr.x = 7; h.fl.y = h.fr.y = -2;
     }
-    if (h.painted) { const r = h.swing * h.swing * h.swing; h.body.x = -r * 4; h.body.rotation -= r * .07; }
+    if (h.painted) { const r = h.swing * h.swing * h.swing; if (h.kind === 'rail') { h.body.x = -r * 4; h.body.rotation -= r * .07; } else { h.body.x = r * 6; h.body.rotation += r * .1; } }
     const w = h.weapon, wk = this.sx(w.texture.key);
     h.swing = Math.max(0, h.swing - dt * 4);
     if (h.kind === 'slash') { w.setPosition(13, -20 + h.body.y); w.rotation = .55 - Math.sin(h.swing * Math.PI) * 2.3 + (h.swing > 0 ? 1.2 * h.swing : 0); }
@@ -678,8 +696,9 @@ export class WorldScene extends Phaser.Scene {
     const h = this.hero;
     if (C.attack === 'slash') {
       const a = Math.atan2(t.y - 14 - (h.y - 22), t.x - h.x);
-      const s = this.img(h.x + Math.cos(a) * 20, h.y - 22 + Math.sin(a) * 12, 'slash', .5, .5, .9).setRotation(a).setTint(0x9ff6ff).setBlendMode('ADD').setDepth(h.y + 5);
-      this.tweens.add({ targets: s, alpha: 0, scale: s.scale * 1.3, duration: 220, onComplete: () => s.destroy() });
+      if (this.pt('fx_swipe')) this.swipe(h.x + Math.cos(a) * 26, h.y - 30 + Math.sin(a) * 12, a, 'fx_swipe', rnd(.9, 1.1), 200, h.y + 5);
+      else { const s = this.img(h.x + Math.cos(a) * 20, h.y - 22 + Math.sin(a) * 12, 'slash', .5, .5, .9).setRotation(a).setTint(0x9ff6ff).setBlendMode('ADD').setDepth(h.y + 5);
+      this.tweens.add({ targets: s, alpha: 0, scale: s.scale * 1.3, duration: 220, onComplete: () => s.destroy() }); }
       sfx('slash');
       this.hit(t, 1, 'basic');
     } else if (C.attack === 'rail') {
@@ -900,6 +919,26 @@ export class WorldScene extends Phaser.Scene {
     this.tweens.add({ targets: g, alpha: 0, duration: dur, onComplete: () => g.destroy() });
   }
 
+  swipe(x, y, a, key, k, dur, depth) {
+    const fl = Math.random() < .5, s = this.img(x, y, key, PA[key][1], .5, k).setRotation(a - (fl ? -.35 : .35)).setFlipY(fl).setBlendMode('ADD').setDepth(depth);
+    this.tweens.add({ targets: s, rotation: a + (fl ? -.25 : .25), scale: s.scale * 1.18, duration: dur * .55, ease: 'Quad.easeOut' });
+    this.tweens.add({ targets: s, alpha: 0, duration: dur, delay: dur * .25, onComplete: () => s.destroy() });
+  }
+  quake(x, y, k) {
+    const c = this.img(x, y + 2, 'fx_crack', .5, .5, .75 * k).setBlendMode('ADD').setDepth(-6e5).setAlpha(.95);
+    this.tweens.add({ targets: c, alpha: 0, duration: 900, delay: 200, onComplete: () => c.destroy() });
+    const r = this.img(x, y, 'fx_ring', .5, .5, .25 * k).setBlendMode('ADD').setDepth(y + 4);
+    this.tweens.add({ targets: r, scale: this.sx('fx_ring') * .95 * k, alpha: 0, duration: 420, ease: 'Quad.easeOut', onComplete: () => r.destroy() });
+    this.lit.flash(x, y, 200 * k, 0x5ff2ff, .35, .9);
+  }
+  starfall(x, y) {
+    const st = this.img(x, y + 4, 'fx_star', PA.fx_star[1], PA.fx_star[2], 1).setBlendMode('ADD').setDepth(5e5 + 1); st.scaleY = 0;
+    this.tweens.add({ targets: st, scaleY: this.sx('fx_star') * 1.1, duration: 90, ease: 'Quad.easeOut', onComplete: () => this.tweens.add({ targets: st, alpha: 0, scaleX: st.scaleX * .4, duration: 480, delay: 120, onComplete: () => st.destroy() }) });
+    const cr = this.img(x, y + 2, 'fx_crater', .5, .5, 1).setBlendMode('ADD').setDepth(-6e5);
+    this.tweens.add({ targets: cr, alpha: 0, duration: 1300, delay: 300, onComplete: () => cr.destroy() });
+    this.quake(x, y, 1.4);
+    this.lit.flash(x, y - 120, 340, 0xffe2a0, .6, 1);
+  }
   lance(x, y) {
     const k = this.sx('fx_lance'), l = this.add.image(x, y + 6, 'fx_lance').setOrigin(.5, PA.fx_lance[2]).setScale(0, k * 2.4).setBlendMode('ADD').setDepth(5e5 + 1);
     this.lit.flash(x, y - 200, 340, 0x9ff6ff, .6, 1); this.lit.flash(x, y, 220, 0xffd08a, .5, 1);
@@ -946,13 +985,14 @@ export class WorldScene extends Phaser.Scene {
     switch (S.id) {
       case 'cleave': {
         const a = Math.atan2(t.y - h.y, t.x - h.x);
-        const s = this.img(h.x + Math.cos(a) * 26, h.y - 22 + Math.sin(a) * 14, 'slash', .5, .5, 1.8).setRotation(a).setTint(0xffcf5a).setBlendMode('ADD').setDepth(h.y + 5);
-        this.tweens.add({ targets: s, alpha: 0, scale: s.scale * 1.4, duration: 300, onComplete: () => s.destroy() });
+        if (this.pt('fx_cleave')) { this.swipe(h.x + Math.cos(a) * 34, h.y - 28 + Math.sin(a) * 14, a, 'fx_cleave', 1.15, 320, h.y + 5); this.lit.flash(h.x + Math.cos(a) * 50, h.y - 24, 160, 0x5ff2ff, .3, .8); }
+        else { const s = this.img(h.x + Math.cos(a) * 26, h.y - 22 + Math.sin(a) * 14, 'slash', .5, .5, 1.8).setRotation(a).setTint(0xffcf5a).setBlendMode('ADD').setDepth(h.y + 5);
+        this.tweens.add({ targets: s, alpha: 0, scale: s.scale * 1.4, duration: 300, onComplete: () => s.destroy() }); }
         for (const e of this.enemiesIn(h.x, h.y, 95)) { const d = Math.abs(Phaser.Math.Angle.Wrap(Math.atan2(e.y - h.y, e.x - h.x) - a)); if (d < 1.3) this.hit(e, 1.9 * P, 'skill'); }
         break;
       }
-      case 'bulwark': this.shield = Math.round(h.hpMax * .3 * P); this.shieldT = 6; this.ring(h.x, h.y - 26, 0x5ff2ff, 1.4); this.num(h.x, h.y - 84, 'Bulwark', '#9ff6ff', 14); break;
-      case 'slam': this.ring(h.x, h.y - 4, 0xffcf5a, 2.2); this.cameras.main.shake(180, .005); for (const e of this.enemiesIn(h.x, h.y, 100)) { this.hit(e, 1.5 * P, 'skill'); e.stun = 1.2; } break;
+      case 'bulwark': this.shield = Math.round(h.hpMax * .3 * P); this.shieldT = 6; if (this.pt('fx_hex')) { const x = this.img(h.x + h.facing * 30, h.y - 36, 'fx_hex', .5, .5, .3).setBlendMode('ADD').setDepth(h.y + 6); this.tweens.add({ targets: x, scale: x.scale * 3.4, alpha: 0, duration: 420, ease: 'Quad.easeOut', onComplete: () => x.destroy() }); this.lit.flash(h.x, h.y - 30, 180, 0x5ff2ff, .35, .9); } else this.ring(h.x, h.y - 26, 0x5ff2ff, 1.4); this.num(h.x, h.y - 96, 'Bulwark', '#9ff6ff', 14); break;
+      case 'slam': if (this.pt('fx_ring')) this.quake(h.x, h.y, 1); else this.ring(h.x, h.y - 4, 0xffcf5a, 2.2); this.cameras.main.shake(180, .005); for (const e of this.enemiesIn(h.x, h.y, 100)) { this.hit(e, 1.5 * P, 'skill'); e.stun = 1.2; } break;
       case 'pierce': {
         const a = Math.atan2(t.y - h.y, t.x - h.x);
         if (h.painted) this.rail(ax, ay, ax + Math.cos(a) * 340, ay + Math.sin(a) * 340, 2.3, 280); else this.beam(ax, ay, ax + Math.cos(a) * 340, ay + Math.sin(a) * 340, 0x9ff6ff, 7, 260); this.cameras.main.shake(100, .003);
@@ -1005,7 +1045,7 @@ export class WorldScene extends Phaser.Scene {
     if (h.mods && h.mods.keys.overdrive) { this.overT = 6; this.num(h.x, h.y - 96, 'Overdrive', '#ffcf5a', 15, true); }
     if (C.ult.id === 'starbreaker') {
       this.tweens.add({ targets: h.body, y: -60, duration: 220, yoyo: true, ease: 'Quad.easeOut', onComplete: () => {
-        this.ring(h.x, h.y, 0xffcf5a, 4); this.ring(h.x, h.y, 0xffffff, 2.6); this.cameras.main.shake(350, .01);
+        if (this.pt('fx_star')) this.starfall(h.x, h.y); else { this.ring(h.x, h.y, 0xffcf5a, 4); this.ring(h.x, h.y, 0xffffff, 2.6); } this.cameras.main.shake(350, .01);
         for (const e of this.enemiesIn(h.x, h.y, 150)) this.hit(e, 5.2, 'ult');
       } });
     } else if (C.ult.id === 'lance') {
@@ -1117,17 +1157,18 @@ export class WorldScene extends Phaser.Scene {
   addTele(x, y, r, time, col = 0xff3a5a, friendly = false) {
     const g = this.add.graphics().setDepth(-4e5);
     const t = { x, y, r, t: time, max: time, g, col, done: false, friendly };
+    if (!friendly && this.pt('fx_warn')) { t.img = this.img(x, y, 'fx_warn', .5, .5, r * 2.25 / 120).setBlendMode('ADD').setDepth(-3.9e5).setAlpha(.6); t.img.scaleY = t.img.scaleX * .82; }
     if (!friendly) this.teles.push(t); else this.teles.push(Object.assign(t, { friendlyOnly: true }));
     return t;
   }
   updateTeles(dt) {
     for (const t of this.teles) {
-      if (t.cancel) { t.done = true; t.g.destroy(); continue; }
+      if (t.cancel) { t.done = true; t.g.destroy(); if (t.img) t.img.destroy(); continue; }
       t.t -= dt; const k = 1 - Math.max(0, t.t) / t.max;
-      t.g.clear(); t.g.fillStyle(t.col, .16 + k * .14); t.g.fillEllipse(t.x, t.y, t.r * 2, t.r * 1.5); t.g.lineStyle(2, t.col, .9); t.g.strokeEllipse(t.x, t.y, t.r * 2, t.r * 1.5);
+      t.g.clear(); t.g.fillStyle(t.col, .16 + k * .14); t.g.fillEllipse(t.x, t.y, t.r * 2, t.r * 1.5); if (t.img) t.img.setAlpha(.55 + .45 * Math.abs(Math.sin(k * 9))); else { t.g.lineStyle(2, t.col, .9); t.g.strokeEllipse(t.x, t.y, t.r * 2, t.r * 1.5); }
       t.g.fillStyle(t.col, .35); t.g.fillEllipse(t.x, t.y, t.r * 2 * k, t.r * 1.5 * k);
       if (t.t <= 0 && !t.done) {
-        t.done = true; t.g.destroy();
+        t.done = true; t.g.destroy(); if (t.img) { const im = t.img; this.tweens.add({ targets: im, alpha: 0, scale: im.scale * 1.15, duration: 160, onComplete: () => im.destroy() }); }
         if (!t.friendlyOnly) { if (t.onHit) t.onHit(t); }
       }
     }
@@ -1202,6 +1243,7 @@ export class WorldScene extends Phaser.Scene {
     else if (e.type === 'dredger') { e.body.rotation = moving ? Math.sin(e.t * 5) * .08 : Math.sin(e.t * 1.2) * .03; e.body.y = moving ? -Math.abs(Math.sin(e.t * 5)) * 2 : 0; }
     else if (e.type === 'firstcaptain') { e.body.y = moving ? -Math.abs(Math.sin(e.t * 6)) * 3 : Math.sin(e.t * 1.4) * 1.2; e.body.alpha = .82 + Math.sin(e.t * 3) * .1; const rf = e.list.find(o => o.texture && o.texture.key === 'c_rifle'); if (rf) { const fx = e.body.flipX; rf.setFlipX(fx); rf.x = fx ? -26 : 26; rf.setOrigin(fx ? .7 : .3, .5); rf.y = -60 + e.body.y; } }
     else if (e.type === 'choir') { e.body.rotation = Math.sin(e.t * .9) * .03; if (e.body.scaleY > 0) e.body.scaleX = k * (1 + Math.sin(e.t * 1.6) * .015); }
+    else if (e.type === 'thornmother' && e.pm) { e.body.rotation = moving ? Math.sin(e.t * 9) * .035 : Math.sin(e.t * 1.1) * .012; e.body.y = moving ? -Math.abs(Math.sin(e.t * 9)) * 3 : 0; e.body.setScale(k * (1 + Math.sin(e.t * 1.8) * .012), k * (1 + Math.sin(e.t * 1.8 + 1) * .02)); }
     else if (e.type === 'marrowking') { if (!e.burrowed) { e.body.rotation = Math.sin(e.t * 1.4) * .05; e.body.scaleX = k * (1 + Math.sin(e.t * 2) * .02); } }
     else { e.body.setScale(k * (1 + Math.sin(e.t * 2) * .015), k * (1 + Math.sin(e.t * 2 + 1) * .02)); }
   }
@@ -1243,7 +1285,8 @@ export class WorldScene extends Phaser.Scene {
         const t = this.addTele(x, y, 54, 1.25);
         t.onHit = tt => {
           this.shardE.setParticleTint(0xff8ab8); this.shardE.explode(16, tt.x, tt.y);
-          for (let i = 0; i < 4; i++) { const s = this.img(tt.x + rnd(-24, 24), tt.y + rnd(-10, 10), 'tree3', .5, .93, .22).setDepth(tt.y + 10); s.scaleY = 0; this.tweens.add({ targets: s, scaleY: this.sx('tree3') * .3, duration: 120, yoyo: true, hold: 250, onComplete: () => s.destroy() }); }
+          if (this.pt('fx_rootspike')) { const s = this.img(tt.x, tt.y + 8, 'fx_rootspike', PA.fx_rootspike[1], PA.fx_rootspike[2], rnd(.95, 1.15)).setDepth(tt.y + 10); const k = s.scaleY; s.scaleY = 0; this.tweens.add({ targets: s, scaleY: k, duration: 110, ease: 'Back.easeOut', onComplete: () => this.tweens.add({ targets: s, alpha: 0, scaleY: k * .6, duration: 320, delay: 380, onComplete: () => s.destroy() }) }); }
+          else for (let i = 0; i < 4; i++) { const s = this.img(tt.x + rnd(-24, 24), tt.y + rnd(-10, 10), 'tree3', .5, .93, .22).setDepth(tt.y + 10); s.scaleY = 0; this.tweens.add({ targets: s, scaleY: this.sx('tree3') * .3, duration: 120, yoyo: true, hold: 250, onComplete: () => s.destroy() }); }
           sfx('spike');
           if (!h.dead && dist(h.x, h.y, tt.x, tt.y) < tt.r + 8) { this.hurtHero(e.atk * 1.5); this.cameras.main.shake(160, .006); }
         };
@@ -1252,6 +1295,7 @@ export class WorldScene extends Phaser.Scene {
   }
   brood(e, type = 'shardling', mul = 3, label = 'Brood Call') {
     this.num(e.x, e.y - topY(e) - 30, label, '#ff8ab8', 16);
+    if (e.type === 'thornmother' && this.pt('fx_spore')) { const sp = this.img(e.x, e.y - 40, 'fx_spore', .5, .6, .6).setDepth(e.y + 20).setAlpha(.9); this.tweens.add({ targets: sp, scale: sp.scale * 2, alpha: 0, duration: 1400, ease: 'Quad.easeOut', onComplete: () => sp.destroy() }); }
     const D0 = ENEMIES[type];
     for (let i = 0; i < 3; i++) {
       const a = rnd(0, Math.PI * 2); const m = this.spawnEnemy({ type, x: e.x, y: e.y, r: 10, count: 0, boss: true }, { x: e.x + Math.cos(a) * 110, y: e.y + Math.sin(a) * 70 });
