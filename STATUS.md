@@ -49,7 +49,8 @@ Nothing. Build 7.1 is live. Open question for Kasey: art direction for the in-ga
 - [x] Graphic overhaul slice (Glasswood Verge, Railwarden, Shardling, Glow-moth, Thorn-crawler). Shipped in build 8.
 - [ ] Judge build 8 on the iPhone: if the painted Verge and Railwarden are the look, the next batches are the Verge NPCs (Marr, Sparks, Okafor), the Thornmother, the other 5 Callings, then the other regions.
 - [ ] Before launch: remove or hide the Lodge Test mode section (build 8.1).
-- [ ] Known gaps: painted heroes slide instead of walking (Grok's walk frames had the whole body shifting, so they weren't usable), face and body options are hidden for painted Callings, and the Hero tab portrait is still the old drawn one.
+- [ ] Known gaps: painted heroes slide instead of walking, face and body options are hidden for painted Callings, and the Hero tab portrait is still the old drawn one.
+- [ ] Walk cycle: Grok's 4 male Vanguard walk frames line up (upper body identical, only the legs move), so they can be wired in. There are no female or Railwarden walk frames yet.
 - [ ] Unused from batch 2: Grok's separate Thornmother parts and Muse's thorn bolt (no Thornmother attack shoots one yet).
 - [ ] Grok: Recruit rank portraits (male and female) so Rank I matches the others.
 - [ ] Try build 7 on the iPhone: does the minimap, the objective arrow and the Orders tab feel right? Are the daily rewards too small or too big?
